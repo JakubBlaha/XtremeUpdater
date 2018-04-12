@@ -1,7 +1,9 @@
 import tkinter as tk
 import tkinter.filedialog
-from tkinter import ttk
+import urllib.request
 import os
+from os.path import join
+from tkinter import ttk
 from time import sleep
 from _thread import start_new
 
@@ -13,9 +15,30 @@ import wgmethods
 import customfont
 
 
+def get_data(url):
+    return urllib.request.urlopen(url).read()
+
+
+def all_children(wid, _class=None):
+    _list = wid.winfo_children()
+
+    for item in _list:
+        if item.winfo_children():
+            _list.extend(item.winfo_children())
+
+    if _class != None:
+        for index, wg in enumerate(_list):
+            if wg.winfo_class() != _class:
+                _list[index] = None
+
+    _list = [i for i in _list if i != None]
+
+    return _list
+
+
 class DllUpdater:
     available_dlls = (
-        'D3DCompiler_47.dll', 'D3DX9_43.dll', 'NPSWF32.dll',
+        'd3dcompiler_47.dll', 'd3dx9_43.dll', 'npswf32.dll',
         'api-ms-win-core-console-l1-1-0.dll',
         'api-ms-win-core-datetime-l1-1-0.dll',
         'api-ms-win-core-debug-l1-1-0.dll',
@@ -48,10 +71,38 @@ class DllUpdater:
         'api-ms-win-crt-process-l1-1-0.dll',
         'api-ms-win-crt-runtime-l1-1-0.dll', 'api-ms-win-crt-stdio-l1-1-0.dll',
         'api-ms-win-crt-string-l1-1-0.dll', 'api-ms-win-crt-time-l1-1-0.dll',
-        'api-ms-win-crt-utility-l1-1-0.dll', 'cg.dll', 'cgD3D9.dll',
-        'cgGL.dll', 'concrt140.dll', 'd3dx11_43.dll', 'msvcp140.dll',
+        'api-ms-win-crt-utility-l1-1-0.dll', 'cg.dll', 'cgd3d9.dll',
+        'cggl.dll', 'concrt140.dll', 'd3dx11_43.dll', 'msvcp140.dll',
         'tbb.dll', 'tbbmalloc.dll', 'ucrtbase.dll', 'vccorlib140.dll',
         'vcomp120.dll', 'vcomp140.dll', 'vcruntime140.dll')
+
+    domain = "https://mobasuite.com/downloads/dlls/"
+    cache_dir = ".cache"
+
+    def __mkdir(self):
+        if not os.path.exists(self.cache_dir):
+            os.mkdir(self.cache_dir)
+
+    def __download_dll(self, dllname):
+        data = get_data(join(self.domain, dllname))
+        with open(join(self.cache_dir, dllname), 'wb') as f:
+            f.write(data)
+
+    def __read_dll(self, dllname):
+        with open(join(self.cache_dir, dllname), 'rb') as f:
+            data = f.read()
+
+        return data
+
+    def __overwrite_dll(self, oldpath, dllname):
+        with open(oldpath, 'wb') as f:
+            f.write(self.__read_dll(dllname))
+
+    def update_dlls(self, path, dllnames):
+        self.__mkdir()
+        for dll in dllnames:
+            self.__download_dll(dll)
+            self.__overwrite_dll(join(path, dll), dll)
 
 
 class Root(tk.Tk):
@@ -77,7 +128,8 @@ class Window(tk.Toplevel):
         self.active_tab = "Games"
         self.cont_frm_id = None
         self.flash_browse_button = True
-        self.last_listbox_item_highlight = 0
+        self.listbox_item_height_defined = False
+        self.last_listbox_item_highlight = -1
 
         def nav_comm(id):
             self.tab_switch(id)
@@ -134,7 +186,7 @@ class Window(tk.Toplevel):
             self.game_path_frame, text="Select a game directory", **lb_cnf)
         self.browse_button = tk.Button(
             self.game_path_frame,
-            text="...",
+            text="\u2026",
             command=self.__update_game_path,
             **btn_cnf)
         self.dll_frame = tk.Frame(
@@ -158,9 +210,10 @@ class Window(tk.Toplevel):
             command=self.__select_all,
             **btn_cnf)
         self.dll_listbox = tk.Listbox(
-            self.dll_frame, width=90, height=16, **listbox_cnf)
+            self.dll_frame, width=90, height=13, **listbox_cnf)
         self.listbox_scrollbar = ttk.Scrollbar(
             self.dll_frame, command=self.dll_listbox.yview)
+        self.update_button = tk.Button(self.dll_frame, text="Update", command=self.__update_callback, **btn_cnf)
         self.dll_listbox.config(yscrollcommand=self.listbox_scrollbar.set)
         self.system_frame = tk.Frame(self, **cont_frm_cnf)
         self.spectre_patch_lbframe = tk.LabelFrame(
@@ -203,6 +256,7 @@ class Window(tk.Toplevel):
         self.available_updates_label.pack(side='left', anchor='w')
         self.select_all_button.pack(side='right')
         self.dll_listbox.pack(fill='both')
+        self.update_button.pack()
         # self.listbox_scrollbar.pack(side='left', fill='y')
         # system frame
         self.spectre_patch_lbframe.pack(anchor="w")
@@ -210,32 +264,74 @@ class Window(tk.Toplevel):
         self.spectre_patch_disable.pack()
         self.spectre_patch_enable.pack()
 
-        self.__bind_wgs()
+        # Bindings
+        self.buttons = all_children(self, 'Button')
+        for btn in self.buttons:
+            btn.bind(
+                "<Enter>",
+                lambda *args, btn=btn: wgmethods.fade(btn, tuple(btn_hover_cnf_cfg.keys()), tuple(btn_hover_cnf_cfg.values()))
+            )
+            btn.bind(
+                "<Leave>",
+                lambda *args, btn=btn: wgmethods.fade(btn, tuple(btn_normal_from_hover_cnf_cfg.keys()), tuple(btn_normal_cnf_cfg.values()))
+            )
+        self.spectrewrn_label.bind(
+            "<Button-3>", lambda *args: self.spectrewrn_label.pack_forget())
+        # self.dll_frame.bind("<Enter>", lambda *args: self.listbox_scrollbar.pack(side='left', fill='y'))
+        self.dll_frame.bind("<Leave>",
+                            lambda *args: self.listbox_scrollbar.pack_forget())
+        self.dll_listbox.bind("<<ListboxSelect>>",
+                              lambda *args: self.__update_select_button())
+        self.dll_listbox.bind("<Motion>", self.__listbox_hover_callback)
+        self.dll_listbox.bind("<MouseWheel>", self.__listbox_hover_callback)
 
-        self.canvas_setup()
+        self.title_label.bind("<Button-1>", self.__clickwin)
+        self.title_label.bind("<B1-Motion>", self.__dragwin)
+
+        # Canvas setup
+        self.cont_canvas.create_image(
+            -40,
+            -40,
+            image=get_img("img/acrylic_dark.png"),
+            anchor="nw",
+            tags="logo")
         start_new(self.__browse_button_remind_loop, ())
 
         self.__update_dll_listbox(["Hello", "world", "spam", "egg", "!!!"])
-
+        self.__disable_unavailable_dlls()
         self.__update_select_button()
 
-    def __update_listbox_item_height(self):
-        self.listbox_item_height_px = (self.dll_frame.winfo_height() -
-                                       self.dll_frame["highlightthickness"] * 2
-                                       ) // self.dll_listbox["height"]
+    def __get_selection(self):
+        selection = [self.dll_listbox.get(i) for i in self.dll_listbox.curselection()]
+        selection = [item for item in selection if selection.index(item) not in self.dll_listbox.disabled]
+        print(selection)
 
-    def __listbox_hover_item_update(self, event):
-        if not 'self.listbox_item_height_px' in locals():
+        return selection
+
+    def __update_callback(self):
+        dlls = self.__get_selection()
+        updater.update_dlls(self.path, dlls)
+
+    def __update_listbox_item_height(self):
+        self.listbox_item_height = (self.dll_frame.winfo_height() -
+                                    self.dll_frame["highlightthickness"] * 2
+                                    ) // self.dll_listbox["height"]
+        self.listbox_item_height_defined = True
+
+    def __listbox_hover_callback(self, event):
+        if not self.listbox_item_height_defined:
             self.__update_listbox_item_height()
 
-        new_listbox_item_highlight = event.y // self.listbox_item_height_px + self.dll_listbox.nearest(
+        new_listbox_item_highlight = event.y // self.listbox_item_height + self.dll_listbox.nearest(
             0) + ((-4 if event.delta > 0 else 4) if event.delta != 0 else 0)
         if new_listbox_item_highlight + 1 > self.dll_listbox.size(): return
         # wgmethods.fade_listbox_item(self.dll_listbox,
         #                             self.last_listbox_item_highlight,
         #                             "foreground", FG)
-        self.dll_listbox.itemconfig(self.last_listbox_item_highlight, fg=FG)
-        if self.dll_listbox.itemcget(new_listbox_item_highlight, "fg") != BG:
+        if new_listbox_item_highlight != self.last_listbox_item_highlight and self.last_listbox_item_highlight != -1:
+            self.dll_listbox.itemconfig(
+                self.last_listbox_item_highlight, fg=FG)
+        if new_listbox_item_highlight not in self.dll_listbox.disabled:
             # wgmethods.fade_listbox_item(self.dll_listbox,
             #                             new_listbox_item_highlight,
             #                             "foreground", PRIM)
@@ -246,7 +342,7 @@ class Window(tk.Toplevel):
         """Updates the Select all button automatically based on states of items of dll_listbox"""
         selectable = 0
         for i in range(self.dll_listbox.size()):
-            if self.dll_listbox.itemcget(i, 'fg') != DISABLED:
+            if i not in self.dll_listbox.disabled:
                 selectable += 1
 
         selection = len(self.dll_listbox.curselection())
@@ -295,45 +391,53 @@ class Window(tk.Toplevel):
         """Asks user for a game path and updates everything tied together with it"""
         self.flash_browse_button = False
 
-        path = tk.filedialog.askdirectory(title="Select game directory")
+        self.path = tk.filedialog.askdirectory(title="Select game directory")
 
         ext = ".dll"
         dll_names = [
-            name for name in os.listdir(path)
+            name.lower() for name in os.listdir(self.path)
             if os.path.splitext(name)[1] == ext
         ]
 
         self.__update_dll_listbox(dll_names)
+        self.__disable_unavailable_dlls()
+        self.__select_all()
         self.__update_select_button()
 
-        self.selected_game_label.config(text=os.path.basename(path))
+        self.selected_game_label.config(text=os.path.basename(self.path))
 
     def __update_dll_listbox(self, dll_names):
         """Overwrites dll_listbox items with new ones given in the dll_names parameter"""
         self.dll_listbox.delete(0, 'end')
+        self.dll_listbox.disabled = []
         for dll_name in dll_names:
             self.dll_listbox.insert('end', dll_name)
-            if dll_name not in DllUpdater.available_dlls:
+
+    def __disable_unavailable_dlls(self):
+        for index, dll_name in enumerate(self.dll_listbox.get(0, 'end')):
+            if dll_name not in [s.lower() for s in DllUpdater.available_dlls]:
                 self.dll_listbox.itemconfig(
-                    dll_names.index(dll_name),
-                    foreground=BG,
+                    index,
+                    foreground=DISABLED,
                     background=SEC,
-                    selectforeground=BG,
+                    selectforeground=DISABLED,
                     selectbackground=SEC)
+                self.dll_listbox.disabled.append(index)
             else:
                 self.dll_listbox.itemconfig(
-                    dll_names.index(dll_name),
+                    index,
                     foreground=FG,
                     background=SEC,
                     selectforeground=FG,
                     selectbackground=PRIM)
-        self.__select_all()
 
     def __remove_content_frame(self):
+        """Removes active content frame from cont_canvas"""
         self.cont_canvas.delete(self.cont_frm_id)
 
     def display_cont_frame(self, frame):
-        # This function overwrites frame content frame currently disaplayed on the canvas, frame attribute represents a tk.Frame instance which will be displayed on the canvas
+        """This function overwrites frame content frame currently disaplayed on the canvas, 
+        frame attribute represents a tk.Frame instance which will be displayed on the canvas"""
         self.__remove_content_frame()
         self.cont_frm_id = self.cont_canvas.create_window(
             (10, 10),
@@ -343,14 +447,14 @@ class Window(tk.Toplevel):
             height=self.cont_canvas.winfo_height() - 20)
 
     def logo_animation(self):
-        # This function creates logo animation
+        """Animates background image on the canvas"""
         for i in range(50):
             self.cont_canvas.move("logo", -1, -1)
             self.cont_canvas.update()
             sleep(i / 1000)
 
     def tab_switch(self, id):
-        # Content display
+        """Displays a frame of given id on cont_canvas"""
         id_frm = {"System": self.system_frame, "Games": self.games_frame}
 
         try:
@@ -359,7 +463,7 @@ class Window(tk.Toplevel):
         except KeyError:
             self.__remove_content_frame()
 
-        # Navigation bar animations and configurations
+        # Navigation bar configuration
         for btn in self.nav_frame.pack_slaves():
             if btn["text"] == id:
                 btn.unbind("<Leave>")
@@ -381,50 +485,13 @@ class Window(tk.Toplevel):
 
         self.active_tab = id
 
-    def canvas_setup(self):
-        # This function prepares always on canvas items
-        self.ximage = self.cont_canvas.create_image(
-            -40,
-            -40,
-            image=get_img("img/acrylic_dark.png"),
-            anchor="nw",
-            tags="logo")
-
-    def __bind_wgs(self):
-        # This function binds on-hover actions and makes window to be moveable by the user
-        self.btns = (self.games_button, self.chat_button, self.system_button,
-                     self.minimize_button, self.close_button,
-                     self.browse_button)
-        for btn in self.btns:
-            btn.bind(
-                "<Enter>",
-                lambda *args, btn=btn: wgmethods.fade(btn, tuple(btn_hover_cnf_cfg.keys()), tuple(btn_hover_cnf_cfg.values()))
-            )
-            btn.bind(
-                "<Leave>",
-                lambda *args, btn=btn: wgmethods.fade(btn, tuple(btn_normal_from_hover_cnf_cfg.keys()), tuple(btn_normal_cnf_cfg.values()))
-            )
-
-        self.title_label.bind("<Button-1>", self.__clickwin)
-        self.title_label.bind("<B1-Motion>", self.__dragwin)
-
-        self.spectrewrn_label.bind(
-            "<Button-3>", lambda *args: self.spectrewrn_label.pack_forget())
-        # self.dll_frame.bind("<Enter>", lambda *args: self.listbox_scrollbar.pack(side='left', fill='y'))
-        self.dll_frame.bind("<Leave>",
-                            lambda *args: self.listbox_scrollbar.pack_forget())
-        self.dll_listbox.bind("<<ListboxSelect>>",
-                              lambda *args: self.__update_select_button())
-        self.dll_listbox.bind("<Motion>", self.__listbox_hover_item_update)
-        self.dll_listbox.bind("<MouseWheel>", self.__listbox_hover_item_update)
-
     def __clickwin(self, event):
-        # This function is called when user clicks window-head in order to move the window, it prepares variables for dragwin function
+        """Prepares variables for __dragwin function"""
         self.offsetx = self.winfo_pointerx() - self.winfo_x()
         self.offsety = self.winfo_pointery() - self.winfo_y()
 
     def __dragwin(self, event):
-        # This function is called when user tries to move the window-head, it woves the window to new position
+        """Updates window position"""
         x = self.winfo_pointerx() - self.offsetx
         y = self.winfo_pointery() - self.offsety
         self.geometry('+%d+%d' % (x, y))
@@ -433,9 +500,10 @@ class Window(tk.Toplevel):
 customfont.loadfont(resource_path("fnt/Roboto-Regular.ttf"))
 customfont.loadfont(resource_path("fnt/Roboto-Light.ttf"))
 
+updater = DllUpdater()
+
 root = Root()
 start_new(root.top.logo_animation, ())
 start_new(root.top.tab_switch, (root.top.active_tab, ))
-root.top.tab_switch(root.top.active_tab)
 
 root.mainloop()
