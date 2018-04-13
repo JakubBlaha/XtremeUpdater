@@ -22,7 +22,9 @@ def hex_to_rgb(h):
     return [int(h[i:i + 2], 16) for i in (0, 2, 4)]
 
 def rgb_to_hex(rgb):
-    return f'#{format(rgb[0], "x")}{format(rgb[1], "x")}{format(rgb[2], "x")}'
+    _long_hex = lambda s: ('0' if len(s) == 1 else '') + s
+    _hex = lambda i: _long_hex(format(i, 'x'))
+    return f'#{_hex(rgb[0])}{_hex(rgb[1])}{_hex(rgb[2])}'
 
 def long_hex(h):
     if len(h) == 3:
