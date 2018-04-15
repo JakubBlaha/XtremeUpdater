@@ -63,7 +63,7 @@ class DllUpdater:
             os.mkdir(self.cache_dir)
 
     def __download_dll(self, dllname):
-        _adress = join(self.domain, 'dll', dllname) + '?raw=true'
+        _adress = join(self.domain, 'dll/', dllname) + '?raw=true'
         _data = get_data(_adress)
         with open(join(self.cache_dir, dllname), 'wb') as f:
             f.write(_data)
@@ -398,7 +398,6 @@ class Window(tk.Toplevel):
             self.dll_listbox.insert('end', dll_name)
 
     def _disable_unavailable_dlls(self):
-        print(updater.available_dlls)
         for index, dll_name in enumerate(self.dll_listbox.get(0, 'end')):
             if dll_name not in updater.available_dlls:
                 self.dll_listbox.itemconfig(
