@@ -55,7 +55,7 @@ class DllUpdater:
     def __init__(self):
         self.available_dlls = [
             item for item in get_data(
-                os.path.join(self.domain, 'availabledlls.txt') + '?raw=true')
+                os.path.join(self.domain, 'availabledlls.txt') + '?raw=true').decode().split('\n')
         ]
 
     def __mkdir(self):
@@ -398,8 +398,9 @@ class Window(tk.Toplevel):
             self.dll_listbox.insert('end', dll_name)
 
     def _disable_unavailable_dlls(self):
+        print(updater.available_dlls)
         for index, dll_name in enumerate(self.dll_listbox.get(0, 'end')):
-            if dll_name not in [s.lower() for s in DllUpdater.available_dlls]:
+            if dll_name not in updater.available_dlls:
                 self.dll_listbox.itemconfig(
                     index,
                     foreground=DISABLED,
@@ -490,7 +491,7 @@ class Window(tk.Toplevel):
         self.geometry('+%d+%d' % (x, y))
 
 
-sys.excepthook = excepthook
+# sys.excepthook = excepthook
 
 customfont.loadfont(resource_path("fnt/Roboto-Regular.ttf"))
 customfont.loadfont(resource_path("fnt/Roboto-Light.ttf"))
