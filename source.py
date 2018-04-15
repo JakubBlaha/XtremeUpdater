@@ -1,7 +1,10 @@
 import tkinter as tk
 import tkinter.filedialog
+import tkinter.messagebox
 import urllib.request
 import os
+import sys
+import ctypes
 from os.path import join
 from tkinter import ttk
 from time import sleep
@@ -13,6 +16,15 @@ from cw import center_window
 from resources import *
 import wgfunc
 import customfont
+
+
+def excepthook(exctype, value, traceback):
+    root = tk.Tk()
+    root.withdraw()
+    tk.messagebox.showerror(
+        title="XtremeUpdater | Error",
+        message=f"An following unhandled exception has occured!",
+        detail=value)
 
 
 def get_data(url):
@@ -37,54 +49,21 @@ def all_children(wid, _class=None):
 
 
 class DllUpdater:
-    available_dlls = (
-        'd3dcompiler_47.dll', 'd3dx9_43.dll', 'npswf32.dll',
-        'api-ms-win-core-console-l1-1-0.dll',
-        'api-ms-win-core-datetime-l1-1-0.dll',
-        'api-ms-win-core-debug-l1-1-0.dll',
-        'api-ms-win-core-errorhandling-l1-1-0.dll',
-        'api-ms-win-core-file-l1-1-0.dll', 'api-ms-win-core-file-l1-2-0.dll',
-        'api-ms-win-core-file-l2-1-0.dll', 'api-ms-win-core-handle-l1-1-0.dll',
-        'api-ms-win-core-heap-l1-1-0.dll',
-        'api-ms-win-core-interlocked-l1-1-0.dll',
-        'api-ms-win-core-libraryloader-l1-1-0.dll',
-        'api-ms-win-core-localization-l1-2-0.dll',
-        'api-ms-win-core-memory-l1-1-0.dll',
-        'api-ms-win-core-namedpipe-l1-1-0.dll',
-        'api-ms-win-core-processenvironment-l1-1-0.dll',
-        'api-ms-win-core-processthreads-l1-1-0.dll',
-        'api-ms-win-core-processthreads-l1-1-1.dll',
-        'api-ms-win-core-profile-l1-1-0.dll',
-        'api-ms-win-core-rtlsupport-l1-1-0.dll',
-        'api-ms-win-core-string-l1-1-0.dll',
-        'api-ms-win-core-synch-l1-1-0.dll', 'api-ms-win-core-synch-l1-2-0.dll',
-        'api-ms-win-core-sysinfo-l1-1-0.dll',
-        'api-ms-win-core-timezone-l1-1-0.dll',
-        'api-ms-win-core-util-l1-1-0.dll', 'api-ms-win-crt-conio-l1-1-0.dll',
-        'api-ms-win-crt-convert-l1-1-0.dll',
-        'api-ms-win-crt-environment-l1-1-0.dll',
-        'api-ms-win-crt-filesystem-l1-1-0.dll',
-        'api-ms-win-crt-heap-l1-1-0.dll', 'api-ms-win-crt-locale-l1-1-0.dll',
-        'api-ms-win-crt-math-l1-1-0.dll',
-        'api-ms-win-crt-multibyte-l1-1-0.dll',
-        'api-ms-win-crt-private-l1-1-0.dll',
-        'api-ms-win-crt-process-l1-1-0.dll',
-        'api-ms-win-crt-runtime-l1-1-0.dll', 'api-ms-win-crt-stdio-l1-1-0.dll',
-        'api-ms-win-crt-string-l1-1-0.dll', 'api-ms-win-crt-time-l1-1-0.dll',
-        'api-ms-win-crt-utility-l1-1-0.dll', 'cg.dll', 'cgd3d9.dll',
-        'cggl.dll', 'concrt140.dll', 'd3dx11_43.dll', 'msvcp140.dll',
-        'tbb.dll', 'tbbmalloc.dll', 'ucrtbase.dll', 'vccorlib140.dll',
-        'vcomp120.dll', 'vcomp140.dll', 'vcruntime140.dll')
-
-    domain = "https://github.com/JakubBlaha/XtremeUpdater/blob/master/dll/"
+    domain = "https://github.com/JakubBlaha/XtremeUpdater/blob/master/"
     cache_dir = ".cache"
+
+    def __init__(self):
+        self.available_dlls = [
+            item for item in get_data(
+                os.path.join(self.domain, 'availabledlls.txt') + '?raw=true')
+        ]
 
     def __mkdir(self):
         if not os.path.exists(self.cache_dir):
             os.mkdir(self.cache_dir)
 
     def __download_dll(self, dllname):
-        _adress = join(self.domain, dllname) + '?raw=true'
+        _adress = join(self.domain, 'dll', dllname) + '?raw=true'
         _data = get_data(_adress)
         with open(join(self.cache_dir, dllname), 'wb') as f:
             f.write(_data)
@@ -217,7 +196,14 @@ class Window(tk.Toplevel):
             self.games_frame,
             text="Update",
             command=self._update_callback,
-            **btn_cnf)
+            **{
+                **btn_cnf,
+                **{
+                    'font': ('Roboto Bold', 16)
+                }
+            })
+        self.progress_label = tk.Label(
+            self.games_frame, text="Follow flashing buttons..")
         self.dll_listbox.config(yscrollcommand=self.listbox_scrollbar.set)
         self.system_frame = tk.Frame(self, **cont_frm_cnf)
         self.spectre_patch_lbframe = tk.LabelFrame(
@@ -269,16 +255,16 @@ class Window(tk.Toplevel):
         self.spectre_patch_enable.pack()
 
         # Bindings
-        self.buttons = all_children(self, 'Button')
-        for btn in self.buttons:
+        for btn in all_children(self, 'Button'):
             btn.bind(
                 "<Enter>",
-                lambda *args, btn=btn: wgfunc.fade(btn, tuple(btn_hover_cnf_cfg.keys()), tuple(btn_hover_cnf_cfg.values()))
+                lambda *args, wg=btn: wgfunc.fade(wg, tuple(btn_hover_cnf_cfg.keys()), tuple(btn_hover_cnf_cfg.values()))
             )
             btn.bind(
                 "<Leave>",
-                lambda *args, btn=btn: wgfunc.fade(btn, tuple(btn_normal_from_hover_cnf_cfg.keys()), tuple(btn_normal_cnf_cfg.values()))
+                lambda *args, wg=btn: wgfunc.fade(wg, tuple(btn_normal_from_hover_cnf_cfg.keys()), tuple(btn_normal_cnf_cfg.values()))
             )
+
         self.spectrewrn_label.bind(
             "<Button-3>", lambda *args: self.spectrewrn_label.pack_forget())
         # self.dll_frame.bind("<Enter>", lambda *args: self.listbox_scrollbar.pack(side='left', fill='y'))
@@ -331,12 +317,12 @@ class Window(tk.Toplevel):
 
         if new_listbox_item_highlight != self.last_listbox_item_highlight and self.last_listbox_item_highlight != -1:
             self.dll_listbox.itemconfig(
-                self.last_listbox_item_highlight, fg=FG)
-        
+                self.last_listbox_item_highlight, bg=SEC)
+
         if new_listbox_item_highlight < 0: return
 
         if new_listbox_item_highlight not in self.dll_listbox.disabled:
-            self.dll_listbox.itemconfig(new_listbox_item_highlight, fg=PRIM)
+            self.dll_listbox.itemconfig(new_listbox_item_highlight, bg=HOVER)
             self.last_listbox_item_highlight = new_listbox_item_highlight
 
     def _update_select_button(self):
@@ -424,7 +410,7 @@ class Window(tk.Toplevel):
             else:
                 self.dll_listbox.itemconfig(
                     index,
-                    foreground=FG,
+                    foreground='#dddddd',
                     background=SEC,
                     selectforeground=FG,
                     selectbackground=PRIM)
@@ -504,8 +490,13 @@ class Window(tk.Toplevel):
         self.geometry('+%d+%d' % (x, y))
 
 
+sys.excepthook = excepthook
+
 customfont.loadfont(resource_path("fnt/Roboto-Regular.ttf"))
 customfont.loadfont(resource_path("fnt/Roboto-Light.ttf"))
+customfont.loadfont(resource_path("fnt/Roboto-Bold.ttf"))
+customfont.loadfont(resource_path("fnt/Roboto-Medium.ttf"))
+customfont.loadfont(resource_path("fnt/Roboto-Thin.ttf"))
 
 updater = DllUpdater()
 reminder = wgfunc.Reminder()

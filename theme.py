@@ -8,3 +8,4 @@ SEC = "#232a3a"
 DARK = "#10131a"
 
 DISABLED = BG
+HOVER = "#131a2a"

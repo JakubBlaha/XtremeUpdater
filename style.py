@@ -52,7 +52,7 @@ lbfrm_cnf = {
 cnv_cnf = {"highlightthickness": 0, "highlightbackground": "#10131a"}
 listbox_cnf = {
     "bg": SEC,
-    "font": "Roboto 11",
+    "font": ("Roboto", 11),
     "fg": FG,
     "relief": 'flat',
     "selectbackground": PRIM,

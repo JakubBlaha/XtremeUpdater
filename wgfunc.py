@@ -53,14 +53,16 @@ class Reminder:
         self._current = None
 
     def remind(self, wg):
-        self._current = wg
-        start_new(self._remind, (wg, self._current))
+        if wg != self._current:
+            self._current = wg
+            start_new(self._remind, (wg, self._current))
 
     def stop(self):
         self._current = None
 
     def _remind(self, wg, _foo):
         _attr = wg.cget(self.flash_attr)
+        sleep(2)
         while self._current == _foo:
             self._fade(wg, self.flash_attr, PRIM, 50)
             sleep(.2)
