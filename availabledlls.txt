@@ -43,7 +43,7 @@ cgd3d9.dll
 cggl.dll
 concrt140.dll
 d3dcompiler_43.dll
-D3DCompiler_47.dll
+d3dcompiler_47.dll
 d3dx11_43.dll
 d3dx9_43.dll
 msvcp140.dll
