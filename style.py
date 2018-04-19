@@ -24,11 +24,12 @@ btn_hover_cnf_cfg = {"fg": PRIM}
 btn_normal_from_hover_cnf_cfg = {"fg": btn_normal_cnf_cfg["fg"]}
 btn_active_cnf_cfg = {
     "bg": PRIM,
-    "fg": FG,
+    "fg": DARK,
 }
 lb_cnf = {"bg": DARK, "fg": FG, "font": ("Roboto", 11)}
 seclb_cnf = {"bg": DARK, "fg": PRIM, "font": ("Roboto", 8)}
-hlb_cnf = {"bg": DARK, "fg": FG, "font": ("Roboto", 11, "bold")}
+biglb_cnf = {**lb_cnf, 'fg': PRIM, 'font': ('Segoe UI', 24)}
+hlb_cnf = {"bg": DARK, "fg": PRIM, "font": ("Roboto", 11, "bold"), 'anchor': 'w'}
 wrnlb_cnf = {
     "bg": DARK,
     "fg": "red",
@@ -68,7 +69,6 @@ scrollbar_cnf = {"troughcolor": DARK}
 btn_nav_pck = {"side": tk.LEFT, "expand": True, "fill": tk.X}
 nav_frm_pck = {"side": tk.TOP, "anchor": "w", "fill": tk.X, "expand": True}
 head_frm_pck = {"side": tk.TOP, "fill": tk.X}
-title_lb_pck = {"side": tk.LEFT, "fill": tk.BOTH, "expand": True}
-logo_lb_pck = {"side": tk.LEFT}
+title_lb_pck = {"side": tk.LEFT, "fill": 'both', 'ipadx': 10, 'ipady': 5, 'expand': True}
 btn_head_pck = {"side": tk.RIGHT, "fill": tk.Y}
 cnv_pck = {"side": tk.TOP}

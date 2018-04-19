@@ -18,34 +18,6 @@ def _tuple(obj):
 def fade(wg, attrs, colors, steps=10):
     start_new(Reminder._fade, (wg, attrs, colors, steps))
 
-
-def fade_listbox_item(listbox, index, attrs, colors, steps=10):
-    def __fade(listbox, index, attrs, colors, __steps):
-        if type(attrs) != tuple and type(attrs) != list:
-            attrs = (attrs, )
-        if type(colors) != tuple and type(colors) != list:
-            colors = (colors, )
-
-        d = {}
-        for attr, color in zip(attrs, colors):
-            d[attr] = [
-                c for c in col.fade(
-                    listbox.itemcget(index, attr), color, __steps)
-            ]
-
-        cont.add_fading(listbox, index)
-        for i in range(__steps):
-            cnf = {}
-            for attr in list(d.keys()):
-                cnf[attr] = d[attr][i]
-            listbox.itemconfig(index, **cnf)
-            listbox.update()
-            sleep(0.01)
-        cont.remove_fading(listbox, index)
-
-    start_new(__fade, (listbox, index, attrs, colors, steps))
-
-
 class Reminder:
     flash_attr = 'bg'
 
@@ -88,15 +60,40 @@ class Reminder:
 
 class Container:
     def __init__(self):
-        self.fading = {}
+        self.fading = []
 
-    def add_fading(self, listbox, index):
-        if not listbox in tuple(self.fading.keys()):
-            self.fading[listbox] = []
-        self.fading[listbox] = self.fading[listbox].append(index)
+    def add_fading(self, wg):
+        self.fading.append(wg)
 
-    def remove_fading(self, listbox, index):
-        self.fading[listbox] = self.fading[listbox].remove(index)
+    def remove_fading(self, wg):
+        self.fading.remove(wg)
 
+    def is_fading(self, wg):
+        return wg in self.fading
+
+    def next_fading(self):
+        return self.fading[0]
+
+class TextFader:
+    to_fade = []
+
+    @staticmethod
+    def fade(wg, text):
+        TextFader.to_fade.append([wg, text])
+
+        if len(TextFader.to_fade)-1:
+            return
+
+        while len(TextFader.to_fade):
+            TextFader._fade(TextFader.to_fade[0][0], TextFader.to_fade[0][1])
+            del TextFader.to_fade[0]
+
+    @staticmethod
+    def _fade(wg, text):
+        _orig = wg.cget('fg')
+
+        Reminder._fade(wg, 'fg', wg.cget('bg'), 10)
+        wg.config(text=text)
+        Reminder._fade(wg, 'fg', _orig, 10)
 
 cont = Container()
