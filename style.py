@@ -14,9 +14,8 @@ btn_cnf = {
 }
 btn_nav_cnf = {
     **btn_cnf,
-    **{
         "font": ("Roboto", 14, "bold"),
-    }
+        'width': 14
 }
 btn_head_cnf = {"width": 2, "font": ("Roboto", 14), "bg": DARK}
 btn_normal_cnf_cfg = {"fg": FG, "bg": DARK}
@@ -66,7 +65,7 @@ listbox_cnf = {
 }
 scrollbar_cnf = {"troughcolor": DARK}
 
-btn_nav_pck = {"side": tk.LEFT, "expand": True, "fill": tk.X}
+btn_nav_pck = {"side": tk.LEFT, 'ipadx': 10}
 nav_frm_pck = {"side": tk.TOP, "anchor": "w", "fill": tk.X, "expand": True}
 head_frm_pck = {"side": tk.TOP, "fill": tk.X}
 title_lb_pck = {"side": tk.LEFT, "fill": 'both', 'ipadx': 10, 'ipady': 5, 'expand': True}

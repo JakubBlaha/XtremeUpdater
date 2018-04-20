@@ -92,8 +92,10 @@ class TextFader:
     def _fade(wg, text):
         _orig = wg.cget('fg')
 
-        Reminder._fade(wg, 'fg', wg.cget('bg'), 10)
-        wg.config(text=text)
+        if wg.cget('text') != '':
+            Reminder._fade(wg, 'fg', wg.cget('bg'), 10)
+
+        wg.config(text=text, fg=wg.cget('bg'))
         Reminder._fade(wg, 'fg', _orig, 10)
 
 cont = Container()

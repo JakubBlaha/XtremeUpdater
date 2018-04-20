@@ -5,11 +5,13 @@ import urllib.request
 import os
 import sys
 import ctypes
+import yaml
 from os.path import join
 from tkinter import ttk
 from time import sleep
 from _thread import start_new
 from github import Github
+from base64 import b64decode
 
 from theme import *
 from style import *
@@ -47,6 +49,43 @@ def all_children(wid, _class=None):
     _list = [i for i in _list if i != None]
 
     return _list
+
+
+class Git:
+    TOKEN = '094d1fa69e7545093334b5876a18948527515c64'
+    REPO = 'XtremeUpdater'
+    repo = None
+
+    def validate(fn):
+        def wrapper(*args, **kwargs):
+            if Git.repo == None:
+                github = Github(Git.TOKEN)
+                user = github.get_user()
+                Git.repo = user.get_repo(Git.REPO)
+            return fn(*args, **kwargs)
+        
+        return wrapper
+
+    @staticmethod
+    @validate
+    def list_dir(_dir):
+        for _file in Git.repo.get_contents(_dir):
+            yield _file.name
+
+    @staticmethod
+    @validate
+    def file_content(path):
+        return b64decode(Git.repo.get_contents(path).content)
+
+
+class CommonPaths:
+    @staticmethod
+    def paths():
+        cont = git.file_content('common_paths.json')
+        datastore = yaml.load(cont)
+
+        for path, name in zip(list(datastore['paths'].keys()), list(datastore['paths'].values())):
+            yield (path, name)
 
 
 class MyGames:
@@ -91,18 +130,32 @@ class MyGames:
 class DllUpdater:
     DOMAIN = "https://github.com/JakubBlaha/XtremeUpdater/blob/master/"
     CACHE_DIR = ".cache"
-    GITHUB_TOKEN = "303ba5620e50df340f827c20d2468af8e2001413"
+    GITHUB_TOKEN = "094d1fa69e7545093334b5876a18948527515c64"
     GITHUB_REPONAME = "XtremeUpdater"
     GITHBU_DLLDIR = "dll"
-    available_dlls = []
-    running = False
+    _available_dlls = []
 
     @staticmethod
     def load_available_dlls():
-        g = Github(DllUpdater.GITHUB_TOKEN)
-        for repo in g.search_repositories(DllUpdater.GITHUB_REPONAME):
-            for _file in repo.get_contents(DllUpdater.GITHBU_DLLDIR):
-                DllUpdater.available_dlls.append(_file.name)
+        try:
+            DllUpdater._available_dlls = list(Git.list_dir('dll'))
+
+        except:
+            window.info("Error while syncing with GitHub | Is your connection ok? Please write us a support request")
+            wgfunc.TextFader.fade(window.dummy_dll_list, "\uEA6A\nSync error")
+            
+            return False
+
+        else:
+            return True
+
+    @staticmethod
+    def available_dlls():
+        if DllUpdater._available_dlls == []:
+            DllUpdater.load_available_dlls()
+        
+        return DllUpdater._available_dlls
+
 
     @staticmethod
     def __mkdir():
@@ -156,6 +209,9 @@ class Root(tk.Tk):
 
 
 class Window(tk.Toplevel):
+    class ZeroLenDllListError(BaseException):
+        pass
+
     def __init__(self, parent):
         self.active_tab = "Games"
         self.cont_frm_id = None
@@ -250,6 +306,8 @@ class Window(tk.Toplevel):
         self.progress_label = tk.Label(self.update_frame, **seclb_cnf)
         self.saved_frame = tk.Frame(self, **cont_frm_cnf)
         self.system_frame = tk.Frame(self, **cont_frm_cnf)
+        self.fav_button = tk.Button(self.nav_frame, text="\ue735", command=lambda: self.tab_switch("\ue735"), **{**btn_nav_cnf, 'width': 1, 'font': ('Segoe MDL2 Assets', 14)})
+        self.fav_frame = tk.Frame(self, **cont_frm_cnf)
         self.spectre_patch_lbframe = tk.LabelFrame(
             self.system_frame,
             text="Spectre and Meltdown patch:",
@@ -284,6 +342,7 @@ class Window(tk.Toplevel):
         self.games_button.pack(**btn_nav_pck)
         self.saved_button.pack(**btn_nav_pck)
         self.system_button.pack(**btn_nav_pck)
+        self.fav_button.pack(**{**btn_nav_pck, 'side': 'right', 'ipadx': 20})
         self.cont_canvas.pack(**cnv_pck)
         # games frame
         self.game_path_frame.pack(anchor='w', fill='x')
@@ -299,7 +358,7 @@ class Window(tk.Toplevel):
         self.update_button.pack(side='right')
         # self.listbox_scrollbar.pack(side='left', fill='y')
         # system frame
-        self.spectre_patch_lbframe.pack(anchor="w")
+        self.spectre_patch_lbframe.pack(anchor="w", pady=10, padx=10)
         self.spectrewrn_label.pack()
         self.spectre_patch_disable.pack()
         self.spectre_patch_enable.pack()
@@ -338,11 +397,11 @@ class Window(tk.Toplevel):
             anchor="nw",
             tags="logo")
 
-        self.info("Follow the flashing buttons | Browse for a directory first")
+        self.info("Follow the blinking buttons | Browse for a directory first")
         reminder.remind(self.browse_button)
 
     def info(self, text):
-        wgfunc.TextFader.fade(self.progress_label, text)
+        start_new(wgfunc.TextFader.fade, (self.progress_label, text))
 
     def _get_selection(self):
         selection = [
@@ -358,7 +417,7 @@ class Window(tk.Toplevel):
     def _update_callback(self):
         self.update_button.config(state='disabled')
         self.browse_button.config(state='disabled')
-        remider.stop()
+        reminder.stop()
 
         dlls = self._get_selection()
         DllUpdater.update_dlls(self.path, dlls)
@@ -431,7 +490,7 @@ class Window(tk.Toplevel):
         self.select_all_button.config(command=self._select_all)
 
     def _browse_button_callback(self):
-        self.info("Follow the flashing buttons | Now select a directory")
+        self.info("Follow the blinking buttons | Now select a directory")
         reminder.stop()
         _path = self._ask_directory()
         if _path == '':
@@ -456,29 +515,50 @@ class Window(tk.Toplevel):
             if os.path.splitext(name)[1] == ext
         ]
 
+        if self.dll_listbox in self.dll_frame.pack_slaves():
+            self.dummy_dll_list.config(text='')
+        
+        self.dll_listbox.pack_forget()
+        self.dummy_dll_list.pack(fill='both', expand=True)
         self.info("Syncing with server | Please wait..")
         wgfunc.TextFader.fade(self.dummy_dll_list,
                               "\ue895\nLooking for available dll updates..")
+        
+        try:
+            self._update_dll_listbox(dll_names)
 
+        except self.ZeroLenDllListError:
+            return
 
-        DllUpdater.load_available_dlls()
-        self._update_dll_listbox(dll_names)
         self._disable_unavailable_dlls()
         self._select_all()
         self._update_select_button()
 
         self.dummy_dll_list.pack_forget()
+        self.dll_listbox.config(bg=cont_frm_cnf['bg'], highlightbackground=cont_frm_cnf['bg'])
         self.dll_listbox.pack(fill='both')
+        wgfunc.fade(self.dll_listbox, ('bg', 'highlightbackground'), (listbox_cnf['bg'], listbox_cnf['highlightbackground']))
+    
         self.select_all_button.config(state='normal')
         self.selected_game_label.config(text=os.path.basename(self.path))
         self.update_button.config(state='normal')
         self.info(
-            "Follow the flashing buttons | Now let's make your game run faster"
+            "Follow the blinking buttons | Now let's make your game run faster"
         )
         reminder.remind(self.update_button)
 
     def _update_dll_listbox(self, dll_names):
         """Overwrites dll_listbox items with new ones given in the dll_names parameter"""
+        if len(dll_names) == 0:
+            self.dll_listbox.pack_forget()
+            self.dummy_dll_list.config(text='')
+            self.dummy_dll_list.pack(fill='both', expand=True)
+            wgfunc.TextFader.fade(self.dummy_dll_list, "\ue783\nNo dlls found in this directory")
+            
+            self.info("We have not found any dlls in this directory | Please select another one")
+
+            raise self.ZeroLenDllListError
+
         self.dll_listbox.delete(0, 'end')
         self.dll_listbox.disabled = []
         for dll_name in dll_names:
@@ -486,7 +566,7 @@ class Window(tk.Toplevel):
 
     def _disable_unavailable_dlls(self):
         for index, dll_name in enumerate(self.dll_listbox.get(0, 'end')):
-            if dll_name not in DllUpdater.available_dlls:
+            if dll_name not in DllUpdater.available_dlls():
                 self.dll_listbox.itemconfig(
                     index,
                     foreground=DISABLED,
@@ -529,7 +609,8 @@ class Window(tk.Toplevel):
         id_frm = {
             'System': self.system_frame,
             'Games': self.games_frame,
-            'Collection': self.saved_frame
+            'Collection': self.saved_frame,
+            '\ue735': self.fav_frame
         }
 
         try:
@@ -588,6 +669,7 @@ if __name__ == '__main__':
     customfont.loadfont(resource_path("fnt/Roboto-Medium.ttf"))
     customfont.loadfont(resource_path("fnt/Roboto-Thin.ttf"))
 
+    git = Git()
     reminder = wgfunc.Reminder()
 
     root = Root()
