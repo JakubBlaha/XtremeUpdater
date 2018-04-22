@@ -1,0 +1,12 @@
+{
+  "name": "website",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "UNLICENSED",
+  "private": true,
+  "devDependencies": {
+    "autoprefixer": "^8.3.0",
+    "parcel-bundler": "^1.7.1",
+    "postcss-preset-env": "^4.0.0"
+  }
+}
