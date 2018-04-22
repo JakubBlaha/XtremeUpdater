@@ -12,6 +12,7 @@ from time import sleep
 from _thread import start_new
 from github import Github
 from base64 import b64decode
+from bs4 import BeautifulSoup
 
 from theme import *
 from style import *
@@ -50,42 +51,38 @@ def all_children(wid, _class=None):
 
     return _list
 
-
-class Git:
-    TOKEN = '094d1fa69e7545093334b5876a18948527515c64'
-    REPO = 'XtremeUpdater'
-    repo = None
-
-    def validate(fn):
-        def wrapper(*args, **kwargs):
-            if Git.repo == None:
-                github = Github(Git.TOKEN)
-                user = github.get_user()
-                Git.repo = user.get_repo(Git.REPO)
-            return fn(*args, **kwargs)
-        
-        return wrapper
-
-    @staticmethod
-    @validate
-    def list_dir(_dir):
-        for _file in Git.repo.get_contents(_dir):
-            yield _file.name
-
-    @staticmethod
-    @validate
-    def file_content(path):
-        return b64decode(Git.repo.get_contents(path).content)
-
-
 class CommonPaths:
     @staticmethod
     def paths():
-        cont = git.file_content('common_paths.json')
+        # cont = git.file_content('common_paths.json')
+        with open('CommonPaths.yaml') as f:
+            cont = f.read()
+
         datastore = yaml.load(cont)
 
-        for path, name in zip(list(datastore['paths'].keys()), list(datastore['paths'].values())):
-            yield (path, name)
+        return datastore['paths']
+
+    @staticmethod
+    def names():
+        # cont = git.file_content('common_paths.json')
+        with open('CommonPaths.yaml') as f:
+            cont = f.read()
+
+        datastore = yaml.load(cont)
+
+        return datastore['names']
+
+    @staticmethod
+    def local_common_names():
+        return [
+            name
+            for path, name in zip(CommonPaths.paths(), CommonPaths.names())
+            if os.path.isdir(os.path.join(os.path.splitdrive(os.getcwd())[0], path))
+        ]
+
+    @staticmethod
+    def names_paths():
+        return {name: path for name, path in zip(CommonPaths.names(), CommonPaths.paths())}
 
 
 class MyGames:
@@ -128,34 +125,39 @@ class MyGames:
 
 
 class DllUpdater:
-    DOMAIN = "https://github.com/JakubBlaha/XtremeUpdater/blob/master/"
+    URL = "https://github.com/JakubBlaha/XtremeUpdater/tree/master/dll"
     CACHE_DIR = ".cache"
-    GITHUB_TOKEN = "094d1fa69e7545093334b5876a18948527515c64"
     GITHUB_REPONAME = "XtremeUpdater"
-    GITHBU_DLLDIR = "dll"
+    GITHBU_DLLDIR = "dll/"
     _available_dlls = []
 
     @staticmethod
     def load_available_dlls():
         try:
-            DllUpdater._available_dlls = list(Git.list_dir('dll'))
+            html = get_data(DllUpdater.URL)
 
         except:
-            window.info("Error while syncing with GitHub | Is your connection ok? Please write us a support request")
+            window.info(
+                "Error while syncing with GitHub | Is your connection ok? Please write us a support request"
+            )
             wgfunc.TextFader.fade(window.dummy_dll_list, "\uEA6A\nSync error")
-            
+
             return False
 
         else:
+            soup = BeautifulSoup(html, 'html.parser')
+            for a in soup.find_all('a', {'class': 'js-navigation-open'}):
+                if a.parent.parent.get('class')[0] == 'content':
+                    DllUpdater._available_dlls.append(a.text)
+            
             return True
 
     @staticmethod
     def available_dlls():
         if DllUpdater._available_dlls == []:
             DllUpdater.load_available_dlls()
-        
-        return DllUpdater._available_dlls
 
+        return DllUpdater._available_dlls
 
     @staticmethod
     def __mkdir():
@@ -164,7 +166,7 @@ class DllUpdater:
 
     @staticmethod
     def __download_dll(dllname):
-        _adress = join(DllUpdater.DOMAIN, 'dll/', dllname) + '?raw=true'
+        _adress = join(DllUpdater.URL, DllUpdater.GITHBU_DLLDIR, dllname) + '?raw=true'
         _data = get_data(_adress)
         with open(join(DllUpdater.CACHE_DIR, dllname), 'wb') as f:
             f.write(_data)
@@ -226,65 +228,59 @@ class Window(tk.Toplevel):
         self.transient(parent)
         self.overrideredirect(True)
 
-        # Widget creation
-        self.head_frame = tk.Frame(self, width=800, height=32, **frm_cnf)
-        self.title_label = tk.Label(
-            self.head_frame, text=self.title(), **hlb_cnf)
-        self.close_button = tk.Button(
-            self.head_frame,
-            text="×",
-            command=exit,
-            **{
+        # Widgets
+        self.head = tk.Frame(self, width=800, height=32, **frm_cnf)
+        self.title = tk.Label(self.head, text=self.title(), **hlb_cnf)
+        self.close = tk.Button(
+            self.head, text="×", command=exit, **{
                 **btn_cnf,
                 **btn_head_cnf
             })
-        self.minimize_button = tk.Button(
-            self.head_frame,
+        self.minimize = tk.Button(
+            self.head,
             text="-",
             command=parent.iconify,
             **{
                 **btn_cnf,
                 **btn_head_cnf
             })
-        self.nav_frame = tk.Frame(self, **{**frm_cnf, **nav_frm_cnf})
-        self.games_button = tk.Button(
-            self.nav_frame,
+        self.navigation = tk.Frame(self, **{**frm_cnf, **nav_frm_cnf})
+        self.tab0 = tk.Button(
+            self.navigation,
             text="Games",
             command=lambda: self.tab_switch("Games"),
             **btn_nav_cnf)
-        self.saved_button = tk.Button(
-            self.nav_frame,
+        self.tab1 = tk.Button(
+            self.navigation,
             text="Collection",
             command=lambda: self.tab_switch("Collection"),
             **btn_nav_cnf)
-        self.system_button = tk.Button(
-            self.nav_frame,
+        self.tab2 = tk.Button(
+            self.navigation,
             text="System",
             command=lambda: self.tab_switch("System"),
             **btn_nav_cnf)
-        self.cont_canvas = tk.Canvas(self, width=800, height=400, **cnv_cnf)
-        self.games_frame = tk.Frame(self, **cont_frm_cnf)
-        self.game_path_frame = tk.Frame(self.games_frame, **cont_frm_cnf)
-        self.selected_game_label = tk.Label(
-            self.game_path_frame, text="Select a game directory", **lb_cnf)
-        self.browse_button = tk.Button(
-            self.game_path_frame,
+        self.canvas = tk.Canvas(self, width=800, height=400, **cnv_cnf)
+        self.games = tk.Frame(self, **cont_frm_cnf)
+        self.dirselection = tk.Frame(self.games, **cont_frm_cnf)
+        self.gamename = tk.Label(
+            self.dirselection, text="Select a game directory", **lb_cnf)
+        self.browse = tk.Button(
+            self.dirselection,
             text="\u2026",
-            command=self._browse_button_callback,
+            command=self._browse_callback,
             **btn_cnf)
-        self.dll_frame = tk.Frame(self.games_frame, **{
+        self.dll_frame = tk.Frame(self.games, **{
             **cont_frm_cnf, "padx": 0,
             "pady": 0,
             "highlightthickness": 0,
             "bd": 0
         })
-        self.dll_selection_nav_frame = tk.Frame(self.dll_frame, **cont_frm_cnf)
+        self.dll_frame_head = tk.Frame(self.dll_frame, **cont_frm_cnf)
         self.available_updates_label = tk.Label(
-            self.dll_selection_nav_frame,
-            text="Available dll updates",
-            **seclb_cnf)
+            self.dll_frame_head, text="Available dll updates", **seclb_cnf)
         self.select_all_button = tk.Button(
-            self.dll_selection_nav_frame,
+            self.dll_frame_head,
             text="\ue762",
             command=self._select_all,
             state='disabled',
@@ -304,12 +300,19 @@ class Window(tk.Toplevel):
                 **btn_cnf, 'font': ('Roboto Bold', 16)
             })
         self.progress_label = tk.Label(self.update_frame, **seclb_cnf)
-        self.saved_frame = tk.Frame(self, **cont_frm_cnf)
-        self.system_frame = tk.Frame(self, **cont_frm_cnf)
-        self.fav_button = tk.Button(self.nav_frame, text="\ue735", command=lambda: self.tab_switch("\ue735"), **{**btn_nav_cnf, 'width': 1, 'font': ('Segoe MDL2 Assets', 14)})
-        self.fav_frame = tk.Frame(self, **cont_frm_cnf)
+        self.collection_frame = tk.Frame(self, **cont_frm_cnf)
+        self.collectionlabel0 = tk.Label(
+            self.collection_frame, text="Detected games", **seclb_cnf)
+        self.commonpaths_listbox = tk.Listbox(
+            self.collection_frame,
+            width=90,
+            height=13,
+            **{
+                **listbox_cnf, 'selectmode': 'single'
+            })
+        self.system = tk.Frame(self, **cont_frm_cnf)
         self.spectre_patch_lbframe = tk.LabelFrame(
-            self.system_frame,
+            self.system,
             text="Spectre and Meltdown patch:",
             **lbfrm_cnf,
             width=300,
@@ -330,25 +333,34 @@ class Window(tk.Toplevel):
             self.dll_frame,
             text="\ue8b7\nPlease select a game directory",
             **biglb_cnf)
+        self.favorite = tk.Button(
+            self.navigation,
+            text="\ue735",
+            command=lambda: self.tab_switch("\ue735"),
+            **{
+                **btn_nav_cnf, 'width': 1,
+                'font': ('Segoe MDL2 Assets', 14)
+            })
+        self.favorite_frame = tk.Frame(self, **cont_frm_cnf)
 
         self.spectre_patch_lbframe.pack_propagate(False)
 
         # Widget display
-        self.head_frame.pack(**head_frm_pck)
-        self.title_label.pack(**title_lb_pck)
-        self.close_button.place(x=790, y=0, anchor='ne')
-        self.minimize_button.place(x=766, y=0, anchor='ne')
-        self.nav_frame.pack(**nav_frm_pck)
-        self.games_button.pack(**btn_nav_pck)
-        self.saved_button.pack(**btn_nav_pck)
-        self.system_button.pack(**btn_nav_pck)
-        self.fav_button.pack(**{**btn_nav_pck, 'side': 'right', 'ipadx': 20})
-        self.cont_canvas.pack(**cnv_pck)
-        # games frame
-        self.game_path_frame.pack(anchor='w', fill='x')
-        self.selected_game_label.pack(side='left', fill='x')
-        self.browse_button.pack(side='right')
-        self.dll_selection_nav_frame.pack(fill='x')
+        self.head.pack(**head_frm_pck)
+        self.title.pack(**title_lb_pck)
+        self.close.place(x=790, y=0, anchor='ne')
+        self.minimize.place(x=766, y=0, anchor='ne')
+        self.navigation.pack(**nav_frm_pck)
+        self.tab0.pack(**btn_nav_pck)
+        self.tab1.pack(**btn_nav_pck)
+        self.tab2.pack(**btn_nav_pck)
+        self.favorite.pack(**{**btn_nav_pck, 'side': 'right', 'ipadx': 20})
+        self.canvas.pack(**cnv_pck)
+        # Games
+        self.dirselection.pack(anchor='w', fill='x')
+        self.gamename.pack(side='left', fill='x')
+        self.browse.pack(side='right')
+        self.dll_frame_head.pack(fill='x')
         self.available_updates_label.pack(side='left', anchor='w')
         self.select_all_button.pack(side='right')
         self.dll_frame.pack(fill='both', expand=True)
@@ -357,7 +369,10 @@ class Window(tk.Toplevel):
         self.progress_label.pack(side='left')
         self.update_button.pack(side='right')
         # self.listbox_scrollbar.pack(side='left', fill='y')
-        # system frame
+        # Collection
+        self.collectionlabel0.pack(anchor='w')
+        self.commonpaths_listbox.pack(fill='both')
+        # System
         self.spectre_patch_lbframe.pack(anchor="w", pady=10, padx=10)
         self.spectrewrn_label.pack()
         self.spectre_patch_disable.pack()
@@ -385,20 +400,33 @@ class Window(tk.Toplevel):
         self.dll_listbox.bind("<Leave>", self._listbox_hover_callback)
         self.dll_listbox.bind("<MouseWheel>", self._listbox_scroll_callback)
 
-        self.title_label.bind("<Button-1>", self._clickwin)
-        self.title_label.bind("<B1-Motion>", self._dragwin)
-        self.dummy_dll_list.bind('<Button-1>', lambda *args: self._browse_button_callback())
+        self.title.bind("<Button-1>", self._clickwin)
+        self.title.bind("<B1-Motion>", self._dragwin)
+        self.dummy_dll_list.bind('<Button-1>',
+                                 lambda *args: self._browse_callback())
+
+        self.commonpaths_listbox.bind("<Double-Button-1>", self._common_path_listbox_callback)
 
         # Canvas setup
-        self.cont_canvas.create_image(
+        self.canvas.create_image(
             -40,
             -40,
             image=get_img("img/acrylic_dark.png"),
             anchor="nw",
             tags="logo")
 
+        self.load_common_paths()
+
         self.info("Follow the blinking buttons | Browse for a directory first")
-        reminder.remind(self.browse_button)
+        reminder.remind(self.browse)
+
+    def _common_path_listbox_callback(self, *args):
+        self.tab_switch('Games')
+        self._update_game_path(CommonPaths.names_paths()[self.commonpaths_listbox.get(self.commonpaths_listbox.curselection()[0])])
+
+    def load_common_paths(self):
+        for i in CommonPaths.local_common_names():
+            self.commonpaths_listbox.insert(0, i)
 
     def info(self, text):
         start_new(wgfunc.TextFader.fade, (self.progress_label, text))
@@ -416,26 +444,27 @@ class Window(tk.Toplevel):
 
     def _update_callback(self):
         self.update_button.config(state='disabled')
-        self.browse_button.config(state='disabled')
+        self.browse.config(state='disabled')
         reminder.stop()
 
         dlls = self._get_selection()
         DllUpdater.update_dlls(self.path, dlls)
 
         self.update_button.config(state='normal')
-        self.browse_button.config(state='normal')
+        self.browse.config(state='normal')
 
         self.info("Updating dlls done | Now we can speed up your system")
-        reminder.remind(self.system_button)
+        reminder.remind(self.tab2)
 
     def _listbox_scroll_callback(self, event):
         _new = self.last_listbox_item_highlight + event.delta // abs(
             event.delta) * -4
 
-        self.dll_listbox.itemconfig(self.last_listbox_item_highlight, bg=SEC)
-        self.dll_listbox.itemconfig(_new, bg=HOVER)
-
-        self.last_listbox_item_highlight = _new
+        s = self.dll_listbox.size()
+        if _new <= self.dll_listbox.size() - 1 and _new > -1 and self.dll_listbox.nearest(0) != 0 and self.dll_listbox.nearest(s) != s-10:
+            self.dll_listbox.itemconfig(self.last_listbox_item_highlight, bg=SEC)
+            self.dll_listbox.itemconfig(_new, bg=HOVER)
+            self.last_listbox_item_highlight = _new
 
     def _listbox_hover_callback(self, event):
         new_listbox_item_highlight = event.y // self.listbox_item_height + self.dll_listbox.nearest(
@@ -489,12 +518,12 @@ class Window(tk.Toplevel):
         self.dll_listbox.selection_clear(0, 'end')
         self.select_all_button.config(command=self._select_all)
 
-    def _browse_button_callback(self):
+    def _browse_callback(self):
         self.info("Follow the blinking buttons | Now select a directory")
         reminder.stop()
         _path = self._ask_directory()
         if _path == '':
-            reminder.remind(self.browse_button)
+            reminder.remind(self.browse)
             return
 
         start_new(self._update_game_path, (_path, ))
@@ -517,13 +546,13 @@ class Window(tk.Toplevel):
 
         if self.dll_listbox in self.dll_frame.pack_slaves():
             self.dummy_dll_list.config(text='')
-        
+
         self.dll_listbox.pack_forget()
         self.dummy_dll_list.pack(fill='both', expand=True)
         self.info("Syncing with server | Please wait..")
         wgfunc.TextFader.fade(self.dummy_dll_list,
                               "\ue895\nLooking for available dll updates..")
-        
+
         try:
             self._update_dll_listbox(dll_names)
 
@@ -535,12 +564,14 @@ class Window(tk.Toplevel):
         self._update_select_button()
 
         self.dummy_dll_list.pack_forget()
-        self.dll_listbox.config(bg=cont_frm_cnf['bg'], highlightbackground=cont_frm_cnf['bg'])
+        self.dll_listbox.config(
+            bg=cont_frm_cnf['bg'], highlightbackground=cont_frm_cnf['bg'])
         self.dll_listbox.pack(fill='both')
-        wgfunc.fade(self.dll_listbox, ('bg', 'highlightbackground'), (listbox_cnf['bg'], listbox_cnf['highlightbackground']))
-    
+        wgfunc.fade(self.dll_listbox, ('bg', 'highlightbackground'),
+                    (listbox_cnf['bg'], listbox_cnf['highlightbackground']))
+
         self.select_all_button.config(state='normal')
-        self.selected_game_label.config(text=os.path.basename(self.path))
+        self.gamename.config(text=os.path.basename(self.path))
         self.update_button.config(state='normal')
         self.info(
             "Follow the blinking buttons | Now let's make your game run faster"
@@ -553,9 +584,12 @@ class Window(tk.Toplevel):
             self.dll_listbox.pack_forget()
             self.dummy_dll_list.config(text='')
             self.dummy_dll_list.pack(fill='both', expand=True)
-            wgfunc.TextFader.fade(self.dummy_dll_list, "\ue783\nNo dlls found in this directory")
-            
-            self.info("We have not found any dlls in this directory | Please select another one")
+            wgfunc.TextFader.fade(self.dummy_dll_list,
+                                  "\ue783\nNo dlls found in this directory")
+
+            self.info(
+                "We have not found any dlls in this directory | Please select another one"
+            )
 
             raise self.ZeroLenDllListError
 
@@ -583,34 +617,34 @@ class Window(tk.Toplevel):
                     selectbackground=PRIM)
 
     def _remove_content_frame(self):
-        """Removes active content frame from cont_canvas"""
-        self.cont_canvas.delete(self.cont_frm_id)
+        """Removes active content frame from canvas"""
+        self.canvas.delete(self.cont_frm_id)
 
     def display_cont_frame(self, frame):
         """This function overwrites frame content frame currently disaplayed on the canvas, 
         frame attribute represents a tk.Frame instance which will be displayed on the canvas"""
         self._remove_content_frame()
-        self.cont_frm_id = self.cont_canvas.create_window(
+        self.cont_frm_id = self.canvas.create_window(
             (10, 10),
             window=frame,
             anchor="nw",
-            width=self.cont_canvas.winfo_width() - 20,
-            height=self.cont_canvas.winfo_height() - 20)
+            width=self.canvas.winfo_width() - 20,
+            height=self.canvas.winfo_height() - 20)
 
     def logo_animation(self):
         """Animates background image on the canvas"""
         for i in range(50):
-            self.cont_canvas.move("logo", -1, -1)
-            self.cont_canvas.update()
+            self.canvas.move("logo", -1, -1)
+            self.canvas.update()
             sleep(i / 1000)
 
     def tab_switch(self, id):
-        """Displays a frame of given id on cont_canvas"""
+        """Displays a frame of given id on canvas"""
         id_frm = {
-            'System': self.system_frame,
-            'Games': self.games_frame,
-            'Collection': self.saved_frame,
-            '\ue735': self.fav_frame
+            'System': self.system,
+            'Games': self.games,
+            'Collection': self.collection_frame,
+            '\ue735': self.favorite_frame
         }
 
         try:
@@ -620,7 +654,7 @@ class Window(tk.Toplevel):
             self._remove_content_frame()
 
         # Navigation bar configuration
-        for btn in self.nav_frame.pack_slaves():
+        for btn in self.navigation.pack_slaves():
             if btn["text"] == id:
                 btn.unbind("<Leave>")
                 btn.unbind("<Enter>")
@@ -641,12 +675,12 @@ class Window(tk.Toplevel):
 
         self.active_tab = id
 
-        if self.active_tab == 'System' and reminder._current == self.system_button:
+        if self.active_tab == 'System' and reminder._current == self.tab2:
 
             def _():
                 reminder.stop()
                 sleep(1)
-                wgfunc.fade(self.system_button, 'bg', PRIM)
+                wgfunc.fade(self.tab2, 'bg', PRIM)
 
             start_new(_, ())
 
@@ -669,7 +703,6 @@ if __name__ == '__main__':
     customfont.loadfont(resource_path("fnt/Roboto-Medium.ttf"))
     customfont.loadfont(resource_path("fnt/Roboto-Thin.ttf"))
 
-    git = Git()
     reminder = wgfunc.Reminder()
 
     root = Root()
