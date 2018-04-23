@@ -60,7 +60,7 @@ class CommonPaths:
 
         datastore = yaml.load(cont)
 
-        return datastore['paths']
+        return [os.path.join(os.path.abspath(os.sep), path) for path in datastore['paths']]
 
     @staticmethod
     def names():
@@ -405,7 +405,7 @@ class Window(tk.Toplevel):
         self.dummy_dll_list.bind('<Button-1>',
                                  lambda *args: self._browse_callback())
 
-        self.commonpaths_listbox.bind("<Double-Button-1>", self._common_path_listbox_callback)
+        self.commonpaths_listbox.bind("<<ListboxSelect>>", self._common_path_listbox_callback)
 
         # Canvas setup
         self.canvas.create_image(
@@ -422,7 +422,7 @@ class Window(tk.Toplevel):
 
     def _common_path_listbox_callback(self, *args):
         self.tab_switch('Games')
-        self._update_game_path(CommonPaths.names_paths()[self.commonpaths_listbox.get(self.commonpaths_listbox.curselection()[0])])
+        start_new(self._update_game_path, (CommonPaths.names_paths()[self.commonpaths_listbox.get('active')],))
 
     def load_common_paths(self):
         for i in CommonPaths.local_common_names():
@@ -510,7 +510,9 @@ class Window(tk.Toplevel):
 
     def _select_all(self):
         """Selects all items in dll_listbox"""
-        self.dll_listbox.selection_set(0, 'end')
+        self.commonpaths_listbox.unbind("<<ListboxSelect>>") # ------------------------------------| - hotfix (probably tkinter library issue)
+        self.dll_listbox.selection_set(0, 'end') #                                                 |
+        self.commonpaths_listbox.bind("<<ListboxSelect>>", self._common_path_listbox_callback) # - |
         self.select_all_button.config(command=self._deselect_all)
 
     def _deselect_all(self):
@@ -571,7 +573,7 @@ class Window(tk.Toplevel):
                     (listbox_cnf['bg'], listbox_cnf['highlightbackground']))
 
         self.select_all_button.config(state='normal')
-        self.gamename.config(text=os.path.basename(self.path))
+        wgfunc.TextFader.fade(self.gamename, os.path.basename(self.path))
         self.update_button.config(state='normal')
         self.info(
             "Follow the blinking buttons | Now let's make your game run faster"
