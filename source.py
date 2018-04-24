@@ -128,7 +128,6 @@ class DllUpdater:
     URL = "https://github.com/JakubBlaha/XtremeUpdater/tree/master/dll"
     CACHE_DIR = ".cache"
     GITHUB_REPONAME = "XtremeUpdater"
-    GITHBU_DLLDIR = "dll/"
     _available_dlls = []
 
     @staticmethod
@@ -166,7 +165,7 @@ class DllUpdater:
 
     @staticmethod
     def __download_dll(dllname):
-        _adress = join(DllUpdater.URL, DllUpdater.GITHBU_DLLDIR, dllname) + '?raw=true'
+         _adress = join(DllUpdater.URL, dllname) + '?raw=true'
         _data = get_data(_adress)
         with open(join(DllUpdater.CACHE_DIR, dllname), 'wb') as f:
             f.write(_data)
