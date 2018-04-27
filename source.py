@@ -21,6 +21,13 @@ import tkaddons
 import customfont
 
 
+def new_thread(fn):
+    def wrapper(*args, **kwargs):
+        start_new(fn, args, kwargs)
+
+    return wrapper
+
+
 def run_as_admin(path):
     subprocess.call([
         'powershell',
@@ -65,12 +72,6 @@ class Tweaks:
             fn(*args, **kwargs)
             window.info("Completed | Ready")
         
-        return wrapper
-
-    def new_thread(fn):
-        def wrapper(*args, **kwargs):
-            start_new(fn, args, kwargs)
-
         return wrapper
 
     @staticmethod
@@ -230,9 +231,9 @@ class DllUpdater:
             copy(join(path, dll), dst)
 
     @staticmethod
-    def _overwrite_dll(oldpath, dllname):
-        with open(oldpath, 'wb') as f:
-            f.write(DllUpdater._read_dll(dllname))
+    def _overwrite_dll(path, data):
+        with open(path, 'wb') as f:
+            f.write(data)
 
     @staticmethod
     def update_dlls(path, dllnames):
@@ -250,7 +251,7 @@ class DllUpdater:
             data = DllUpdater._download_dll(dll)
             window.info(
                 f"Overwriting {dll} ({i} of {dll_num}) | Please wait..")
-            DllUpdater._overwrite_dll(data)
+            DllUpdater._overwrite_dll(join(path, dll), data)
 
 
 class Root(tk.Tk):
@@ -351,7 +352,7 @@ class Window(tk.Toplevel):
             self.update_frame,
             text="Update",
             state='disabled',
-            command=lambda: start_new(self._update_callback, ()),
+            command=self._update_callback,
             **{
                 **btn_cnf, 'font': ('Roboto Bold', 16)
             })
@@ -509,6 +510,7 @@ class Window(tk.Toplevel):
 
         return selection
 
+    @new_thread
     def _update_callback(self):
         self.update_button.config(state='disabled')
         self.browse.config(state='disabled')
