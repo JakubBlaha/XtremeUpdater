@@ -1,5 +1,5 @@
 # Color palette:
-# http://www.color-hex.com/color-palette/46219
+# http://www.color-hex.com/color-palette/46219 (outdated)
 
 BG = "#404d6a"
 FG = "#ffffff"

@@ -15,10 +15,16 @@ def get_img(relative_path, _type="tk"):
 
     img = Image.open(path)
     if _type is "tk":
-        container.cont.append(ImageTk.PhotoImage(img))
+        container.cont.append(tkimage(img))
     elif _type is "PIL":
         container.cont.append(img)
 
+    return container.cont[-1]
+
+def tkimage(img):
+    tk_img = ImageTk.PhotoImage(img)
+    container.cont.append(tk_img)
+    
     return container.cont[-1]
 
 class container:
