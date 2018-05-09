@@ -430,7 +430,7 @@ class Window(tk.Toplevel):
         self.system = tk.Frame(self, **frm_cnf)
         self.spectre_patch_lbframe = tk.LabelFrame(
             self.system,
-            text="Spectre and Meltdown patch:",
+            text="Microsoft Spectre patch:",
             **lbfrm_cnf,
             width=300,
             height=120)
@@ -920,8 +920,6 @@ if __name__ == '__main__':
     customfont.loadfont(resource_path("fnt/Roboto-Regular.ttf"))
     customfont.loadfont(resource_path("fnt/Roboto-Light.ttf"))
     customfont.loadfont(resource_path("fnt/Roboto-Bold.ttf"))
-    customfont.loadfont(resource_path("fnt/Roboto-Medium.ttf"))
-    customfont.loadfont(resource_path("fnt/Roboto-Thin.ttf"))
 
     reminder = tkaddons.Reminder()
 

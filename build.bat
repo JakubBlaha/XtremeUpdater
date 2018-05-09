@@ -1,0 +1,1 @@
+pyinstaller --onefile --add-binary img/icon_32.ico;img --add-binary img/acrylic_dot.png;img --add-binary fnt/Roboto-Regular.ttf;fnt --add-binary fnt/Roboto-Bold.ttf;fnt --add-binary fnt/Roboto-Light.ttf;fnt source.py --name XtremeUpdater
