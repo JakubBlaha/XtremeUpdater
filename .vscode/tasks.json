@@ -4,6 +4,6 @@
     "version": "0.1.0",
     "command": "py",
     "isShellCommand": true,
-    "args": ["${workspaceFolder}/source.py", "--disable-updates"],
+    "args": ["${workspaceFolder}/main.py"],
     "showOutput":"never"
 }

@@ -97,6 +97,8 @@ ENV/
 # mypy
 .mypy_cache/
 
+# XtremeUpdater config and cache stuff
+
 *.xucfg
 
 /.backup

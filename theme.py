@@ -9,3 +9,13 @@ DARK = "#10131a"
 
 DISABLED = BG
 HOVER = "#131a2a"
+
+from kivy.utils import get_color_from_hex
+
+bg = get_color_from_hex(BG)
+fg = get_color_from_hex(FG)
+prim = get_color_from_hex(PRIM)
+sec = get_color_from_hex(SEC)
+dark = get_color_from_hex(DARK)
+disabled = get_color_from_hex(DISABLED)
+hover = get_color_from_hex(HOVER)
