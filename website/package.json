@@ -5,7 +5,7 @@
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
-    "build": "cross-env NODE_ENV=production parcel --out-dir ../docs index.html about.html"
+    "build": "cross-env NODE_ENV=production parcel --out-dir ../docs  --public-url https://xtremeware.github.io/XtremeUpdater/ index.html about.html"
   },
   "devDependencies": {
     "autoprefixer": "^8.3.0",
