@@ -3,15 +3,15 @@
 
 <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <link href="https://cdn.rawgit.com/michalsnik/aos/2.1.1/dist/aos.css" rel="stylesheet">
+    <!--<link href="https://cdn.rawgit.com/michalsnik/aos/2.1.1/dist/aos.css" rel="stylesheet">-->
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="shortcut icon" href="icon.png" />
     <title>XtremeUpdater</title>
 </head>
- 
+<!--  
 <script src="https://cdn.rawgit.com/michalsnik/aos/2.1.1/dist/aos.js"></script>
-
+-->
 <body onresize="resize()">
     <header id="header">
         <div id="header-navbar" class="nav" data-aos="fade-down">
@@ -54,9 +54,9 @@
     </footer>
 </body>
 <script>
-    AOS.init({
+    /*AOS.init({
         duration: 1200,
-    })
+    })*/
     
     var mainbottom = $('header').height() - 70;
     $(window).on('scroll', function() {
