@@ -1,11 +1,16 @@
 # XtremeUpdater
+*Note: XtremeUpdater is in alpha and is not stable at all. Dll backing and restoring should work, but please backup your dlls manually before using XtremeUpdater.*
+
+*The stable file to run is `source.py` **not** `main.py` at the moment. `main.py` is not completed and it's experimental.*
+
+Website is located at https://xtremeware.github.io/XtremeUpater
 
 ## V 0.1
 
--Fixed syncing error loop when syncing with GitHub \
--When sync error is raised, _Games_ tab will now reset to its default state after 2 seconds \
--Created internal classes of the `Window` class for repeated widgets such as _Navigation tabs_ \
--Cleaned up `style.py` \
--Revorked _CommonPaths_ \
--Revorked _background animation_ \
--Revorked _fading_
+- Fixed syncing error loop when syncing with GitHub
+- When sync error is raised, _Games_ tab will now reset to its default state after 2 seconds
+- Created internal classes of the `Window` class for repeated widgets such as _Navigation tabs_
+- Cleaned up `style.py`
+- Revorked _CommonPaths_
+- Revorked _background animation_
+- Revorked _fading_
