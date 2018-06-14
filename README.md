@@ -3,7 +3,7 @@
 
 *The stable file to run is `source.py` **not** `main.py` at the moment. `main.py` is not completed and it's experimental.*
 
-Website is located at https://xtremeware.github.io/XtremeUpater
+Website is located at https://xtremeware.github.io/XtremeUpdater
 
 ## V 0.1
 
