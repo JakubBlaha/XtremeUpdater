@@ -51,6 +51,7 @@ header:before {
     margin: auto;
     height: 60px;
     transition: none;
+    z-index: 10 !important;
 }
 
 /*header-navbar point of scroll*/
@@ -82,6 +83,7 @@ header:before {
     transition: .3s ease-in-out;
     z-index: 20;
     opacity: 100 !important;
+    z-index: 10 !important;
 }
 
 .header-nav-link {
