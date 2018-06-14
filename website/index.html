@@ -2,8 +2,6 @@
 <html>
 
 <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <!--<link href="https://cdn.rawgit.com/michalsnik/aos/2.1.1/dist/aos.css" rel="stylesheet">-->
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="shortcut icon" href="icon.png" />
@@ -30,6 +28,7 @@
         </div>
         <div id="header-title" data-aos="zoom-in">XTREME<br>GAMING</div>
     </header>
+    <div id="header-navbar-bg" role="presentation"></div>
     <main id='main'>
         <a href="#main" data-aos="zoom-in"><div id="main-circle" data-aos="zoom-in"></div></a>
         <div id="main-title" data-aos="zoom-in">What is our app for?</div>
@@ -47,56 +46,4 @@
         <a href="about.html">ABOUT US</a>
     </footer>
 </body>
-<script>
-    /*AOS.init({
-        duration: 1200,
-    })*/
-    
-    var mainbottom = $('header').height() - 70;
-    $(window).on('scroll', function() {
-        stop = Math.round($(window).scrollTop());
-        if (stop >= mainbottom) {
-            $('.nav').addClass('past-main');
-        } else {
-            $('.nav').removeClass('past-main');
-        }
-    });
-    
-    function resize() {
-        var mainbottom = $('header').height() - 70;
-        $(window).on('scroll', function() {
-            stop = Math.round($(window).scrollTop());
-            if (stop >= mainbottom) {
-                $('.nav').addClass('past-main');
-            } else {
-                $('.nav').removeClass('past-main');
-            }
-        });
-        
-        setTimeout(function () {
-            var mainbottom = $('header').height() - 70;
-            $(window).on('scroll', function() {
-                stop = Math.round($(window).scrollTop());
-                if (stop >= mainbottom) {
-                    $('.nav').addClass('past-main');
-                } else {
-                    $('.nav').removeClass('past-main');
-                }
-            });
-        }, 200);
-        
-        setTimeout(function () {
-            var mainbottom = $('header').height() - 70;
-            $(window).on('scroll', function() {
-                stop = Math.round($(window).scrollTop());
-                if (stop >= mainbottom) {
-                    $('.nav').addClass('past-main');
-                } else {
-                    $('.nav').removeClass('past-main');
-                }
-            });
-        }, 500);
-    }
-</script>
-
 </html>
