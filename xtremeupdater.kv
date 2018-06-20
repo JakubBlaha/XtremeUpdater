@@ -1,9 +1,15 @@
 #:kivy 1.10.0
 
 #:import theme theme
+#:import WindowDragBehavior main.WindowDragBehavior
+#:import PageSwitchBehavior main.PageSwitchBehavior
 #:import Thread threading.Thread
 #:import WindowDragBehavior main.WindowDragBehavior
 #:import Window kivy.core.window.Window
+#:import ListAdapter kivy.adapters.listadapter.ListAdapter
+#:import SimpleListAdapter kivy.adapters.simplelistadapter.SimpleListAdapter
+#:import ListItemButton kivy.uix.listview.ListItemButton
+#:import DllViewAdapter main.DllViewAdapter
 
 RootLayout:
 <Widget>:
@@ -12,7 +18,11 @@ RootLayout:
 <CustButton@Button>:
     background_color: Window.clearcolor
     background_normal: 'img/FFFFFF-1.png'
+    background_disabled_normal: self.background_normal
     background_down: self.background_normal
+    background_disabled_down: self.background_down
+
+<HeaderLabel@WindowDragBehavior+Label>
 
 <ContentLayout@BoxLayout>:
     orientation: 'vertical'
@@ -45,10 +55,8 @@ RootLayout:
     font_size: 18
     background_normal: 'img/noise_texture.png'
 
-<IconNavigationButton@NavigationButton>:
-    width: self.height
-    font_name: 'fnt/MaterialIcons-Regular.ttf'
-    font_size: 20
+<IconNavigationButton@NavigationButton+IconButton>
+    font_name: 'fnt/segmdl2.ttf'
 
 <Navigation@BoxLayout>:
     size_hint_y: None
@@ -62,21 +70,8 @@ RootLayout:
             pos: root.pos
             size: root.size
 
-<SelectableLabel>:
-    text_size: self.size
-    halign: 'left'
-    valign: 'center'
-    padding: 50, 0
-
-    canvas.before:
-        Color:
-            rgba: theme.prim if self.selected else theme.sec
-        Rectangle:
-            pos: self.pos
-            size: self.size
-
-<PlaceHolder@Label>:    
-    text: self.rendered_text
+<PlaceHolder@Label>:
+    text: '[size=72][font=fnt/segmdl2.ttf]{}[/font][/size]\n{}'.format(self.icon, self.message)
     markup: True
     color: theme.prim
     font_size: 36
@@ -84,7 +79,7 @@ RootLayout:
     halign: 'center'
     valign: 'center'
 
-<OverwriteLabel@FloatLayout>:
+<OverdrawLabel@FloatLayout>:
     size_hint: None, None
     size: 0, 0
     opacity: 0
@@ -107,13 +102,41 @@ RootLayout:
         markup: True
         font_size: 36
         text_size: self.size
-        text: f'[size=72][font=fnt/segmdl2.ttf]{root.icon}[/font][/size]\n{root.text}'
+        text: root.template.format(root.icon, root.text, root.secondary_text)
         halign: 'center'
         valign: 'center'
         opacity: root.opacity
 
 <Content@PageLayout>:
     border: 0
+
+<DllViewItem@ListItemButton>:
+    text_size: self.size
+    is_selected: self.is_selected and self.selectable
+    valign: 'center'
+    padding: 40, 0
+    background_normal: 'img/FFFFFF-1.png'
+    background_down: self.background_normal
+    selected_color: theme.prim
+    deselected_color: theme.sec
+    color: theme.fg if self.selectable else theme.disabled
+
+<DllView@ListView, ScrollView>:
+    bar_color: theme.prim
+    bar_inactive_color: theme.bg
+    scroll_type: ['content', 'bars']
+    bar_width: 10
+    scroll_distance: 0
+    scroll_wheel_distance: 100
+
+    adapter:
+        DllViewAdapter(
+        data=[],
+        args_converter=lambda index, rec: {'text': rec['text'], 'selectable': rec['selectable'], 'size_hint_y': None, 'height': 25},
+        cls='DllViewItem',
+        allow_empty_selection=True,
+        selection_mode='multiple'
+        )
 
 <RootLayout>:
     orientation: 'vertical'
@@ -163,11 +186,11 @@ RootLayout:
         Widget:
 
         IconNavigationButton:
-            text: '\ue838' 
+            text: '\ue734' 
             page_index: 3
 
         IconNavigationButton:
-            text: '\ue8b8'
+            text: '\ue713'
             page_index: 4
 
     Content:
@@ -182,7 +205,6 @@ RootLayout:
 
                 Label:
                     id: content_updater_path_info
-                    text: 'Game/path/here/'
                     text_size: self.size
                     halign: 'left'
                     padding: 10, 5
@@ -192,24 +214,9 @@ RootLayout:
                     text: '\uf12b'
                     background_color: theme.dark
                     on_release: Thread(target=root.load_directory).start()
-            
-            BoxLayout:
-                id: dll_view_holder
 
-                DllRecycleView:
-                    id: dll_view
-                    viewclass: 'SelectableLabel'
-                    bar_color: theme.prim
-
-                    SelectableRecycleBoxLayout:
-                        id: selectable_recycle_box_layout
-                        default_size: None, 26
-                        default_size_hint: 1, None
-                        size_hint_y: None
-                        height: self.minimum_height
-                        orientation: 'vertical'
-                        multiselect: True
-                        touch_multiselect: True
+            DllView:
+                id: dll_view
 
             BoxLayout:
                 id: update_and_restore_layout
@@ -229,6 +236,7 @@ RootLayout:
 
                 CustButton:
                     id: restore_button
+                    disabled: True
                     size_hint_x: None
                     text: 'Restore'
                     font_name: 'fnt/Roboto-Bold.ttf'
@@ -239,6 +247,7 @@ RootLayout:
 
                 CustButton:
                     id: update_button
+                    disabled: True
                     size_hint_x: None
                     text: 'Update'
                     font_name: 'fnt/Roboto-Bold.ttf'
@@ -246,34 +255,35 @@ RootLayout:
                     text_size: self.size
                     halign: 'center'
                     valign: 'bottom'
+                    on_release: root.update_callback()
 
         ContentLayout:
             id: content_games
 
             PlaceHolder:
                 icon: '\ue7fc'
-                shown_text: 'Game collection coming soon'
+                message: 'Game collection coming soon'
 
         ContentLayout:
             id: content_system
 
             PlaceHolder:
                 icon: '\ue770'
-                shown_text: 'System tweaks coming soon'
+                message: 'System tweaks coming soon'
 
         ContentLayout:
             id: content_favorite
 
             PlaceHolder:
                 icon: '\ue734'
-                shown_text: 'Favorite games coming soon'
+                message: 'Favorite games coming soon'
 
         ContentLayout:
             id: content_settings
 
             PlaceHolder:
                 icon: '\ue713'
-                shown_text: 'Nothing to set yet'
+                message: 'Nothing to set yet'
 
     Label:
         id: info_label

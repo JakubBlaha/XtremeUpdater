@@ -1,0 +1,14 @@
+Move unneccesary classes to kv file
+Make entry instead of path label
+Change all requests to kivy requests
+Dll versioning
+Try to combine PlaceHolder and OverdrawLabel together
+Error message on sync failure
+Exception handling when downloading
+Replace children for ids in `Clock.schedule_once(lambda *args: App.get_running_app().root.set_dll_buttons_state(self.children[0].get_selectable_nodes()), 0)`
+Animations on Update and Restore buttons
+Fix graphics bug when selecting dlls
+Add select/deselect all button
+Faster listview buttons
+do not download dll list everytime new directory is selected
+use propagate_selection_to_data in DllViewAdapter
