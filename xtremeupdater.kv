@@ -10,6 +10,8 @@
 #:import SimpleListAdapter kivy.adapters.simplelistadapter.SimpleListAdapter
 #:import ListItemButton kivy.uix.listview.ListItemButton
 #:import DllViewAdapter main.DllViewAdapter
+#:import Tweaks tweaks.Tweaks
+#:import DllUpdater main.DllUpdater
 
 RootLayout:
 <Widget>:
@@ -53,7 +55,8 @@ RootLayout:
     background_color: theme.dark
     font_name: 'fnt/Roboto-Bold.ttf'
     font_size: 18
-    background_normal: 'img/noise_texture.png'
+    background_normal: 'img/button_noise_with_border.png'
+    border: [2, 2, 2, 2]
 
 <IconNavigationButton@NavigationButton+IconButton>
     font_name: 'fnt/segmdl2.ttf'
@@ -102,7 +105,7 @@ RootLayout:
         markup: True
         font_size: 36
         text_size: self.size
-        text: root.template.format(root.icon, root.text, root.secondary_text)
+        text: root.template.format(root.icon, root.text)
         halign: 'center'
         valign: 'center'
         opacity: root.opacity
@@ -122,8 +125,8 @@ RootLayout:
     color: theme.fg if self.selectable else theme.disabled
 
 <DllView@ListView, ScrollView>:
-    bar_color: theme.prim
-    bar_inactive_color: theme.bg
+    bar_color: theme.sec
+    bar_inactive_color: theme.dark
     scroll_type: ['content', 'bars']
     bar_width: 10
     scroll_distance: 0
@@ -137,6 +140,27 @@ RootLayout:
         allow_empty_selection=True,
         selection_mode='multiple'
         )
+
+<PathInput@TextInput>:
+    size_hint_y: None
+    height: 36
+    background_color: theme.dark
+    cursor_color: theme.prim
+    cursor_width: 2
+    font_size: 18
+    foreground_color: theme.sec
+    multiline: False
+    selection_color: theme.prim
+    on_text_validate: app.root.load_dll_view_data(self.text)
+    background_normal: 'img/FFFFFF-0.png'
+
+<DllActionButton@CustButton>:
+    size_hint_x: None
+    font_name: 'fnt/Roboto-Bold.ttf'
+    text_size: self.size
+    halign: 'center'
+    valign: 'bottom'
+    padding: 0, 6
 
 <RootLayout>:
     orientation: 'vertical'
@@ -203,17 +227,26 @@ RootLayout:
                 size_hint_y: None
                 height: 40
 
-                Label:
+                PathInput:
                     id: content_updater_path_info
-                    text_size: self.size
-                    halign: 'left'
-                    padding: 10, 5
-                    color: theme.sec
+
+                IconButton:
+                    disabled: not app.refresh_button_active
+                    text: '\ue72c'
+                    background_color: theme.dark
+                    on_release: app.root.load_dll_view_data(app.root.ids.content_updater_path_info.text)
+
+                IconButton:
+                    id: invert_selection_button
+                    disabled: True
+                    text: '\ue8b3'
+                    background_color: theme.dark
+                    on_release: root.ids.dll_view.adapter.invert_selection()
 
                 IconButton:
                     text: '\uf12b'
                     background_color: theme.dark
-                    on_release: Thread(target=root.load_directory).start()
+                    on_release: root.load_directory()
 
             DllView:
                 id: dll_view
@@ -234,27 +267,16 @@ RootLayout:
 
                 Widget:
 
-                CustButton:
+                DllActionButton:
                     id: restore_button
-                    disabled: True
-                    size_hint_x: None
                     text: 'Restore'
-                    font_name: 'fnt/Roboto-Bold.ttf'
                     font_size: 18
-                    text_size: self.size
-                    halign: 'center'
-                    valign: 'bottom'
+                    on_release: root.restore_callback()
 
-                CustButton:
+                DllActionButton:
                     id: update_button
-                    disabled: True
-                    size_hint_x: None
                     text: 'Update'
-                    font_name: 'fnt/Roboto-Bold.ttf'
                     font_size: 24
-                    text_size: self.size
-                    halign: 'center'
-                    valign: 'bottom'
                     on_release: root.update_callback()
 
         ContentLayout:
@@ -266,10 +288,30 @@ RootLayout:
 
         ContentLayout:
             id: content_system
+            padding: 10, 10
+
+            BoxLayout:
+                canvas.before:
+                    Color:
+                        rgba: theme.hover
+
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+
+                size_hint: None, None
+                size: 280, 40
+
+                Label:
+                    text: "Clear user's temp folder"
+
+                IconButton:
+                    text: '\ue74d'
+                    on_release: Tweaks.clear_temps()
 
             PlaceHolder:
                 icon: '\ue770'
-                message: 'System tweaks coming soon'
+                message: 'More tweaks coming soon..'
 
         ContentLayout:
             id: content_favorite
@@ -293,6 +335,6 @@ RootLayout:
         halign: 'left'
         font_name: 'fnt/Roboto-Medium.ttf'
         font_size: 12
-        padding: 10, 5
+        padding: 10, 8
         text: "Welcome to XtremeUpdater | Let's start"
         color: theme.prim
