@@ -107,11 +107,6 @@ class DllUpdater:
         return cls._available_dlls
 
     @classmethod
-    def _mkbackupdir(cls):
-        if not os.path.exists(cls.BACKUP_DIR):
-            os.mkdir(cls.BACKUP_DIR)
-
-    @classmethod
     def _download_dll(cls, dllname):
         _adress = os.path.join(cls.RAW_URL, dllname)
         _data = get_data(_adress)
@@ -119,17 +114,15 @@ class DllUpdater:
         return _data
 
     @classmethod
-    def _backup_dlls(cls, path, dlls):
-        _to_backup = [item for item in os.listdir(path) if item in dlls]
-        for dll in _to_backup:
-            dst = os.path.realpath(
+    def _backup_dll(cls, path, dll):
+        dst = os.path.realpath(
                 os.path.join(cls.BACKUP_DIR,
                              os.path.splitdrive(path)[1][1:]))
 
-            if not os.path.exists(dst):
+        if not os.path.exists(dst):
                 os.makedirs(dst)
-
-            copy(os.path.join(path, dll), dst)
+            
+        copy(os.path.join(path, dll), dst)
 
     @staticmethod
     def _overwrite_dll(path, data):
@@ -140,22 +133,30 @@ class DllUpdater:
     def update_dlls(cls, path, dlls):
         dll_num = len(dlls)
 
-        cls._mkbackupdir()
-
-        info("Backing up dlls | Please wait..")
-        cls._backup_dlls(path, dlls)
-
         try:
             for index, dll in enumerate(dlls):
                 info(
                     f"Downloading {dll} ({index + 1} of {dll_num}) | Please wait.."
                 )
                 data = cls._download_dll(dll)
-                cls._overwrite_dll(os.path.join(path, dll), data)
+
+                local_dll_path = os.path.join(path, dll)
+                with open (local_dll_path, 'rb') as f:
+                    local_dll_data = f.read()
+
+                if data == local_dll_data:
+                    continue
+
+                cls._backup_dll(path, dll)
+                cls._overwrite_dll(local_dll_path, data)
+
         except:
             info("Couldn't download updated dll | Please try again")
             app().root.ids.dll_view.overdrawer.update(
                 icon='\uea39', text='Dll download failed')
+
+            import traceback
+            print(traceback.format_exc())
 
         else:
             info("We are done | Let's speed up your system now")
@@ -406,19 +407,15 @@ class DllViewAdapter(ListAdapter):
     def on_selection_change(self, *args):
         app().root.set_dll_buttons_state(self.selection)
 
-    def get_views(self, first=0, last=None) -> list:
-        last = last if last is not None else len(self.data)
-
-        # TODO indexing is kinda messed up
-
+    def get_selectable_views(self) -> list:
         return [
             self.get_view(index)
-            for index, item in enumerate(self.data[first:last])
+            for index, item in enumerate(self.data) if item['selectable']
         ]
 
     def invert_selection(self):
         def callback(*args):
-            self.select_list(self.get_views())
+            self.select_list(self.get_selectable_views())
 
         Clock.schedule_once(callback, 0)
 

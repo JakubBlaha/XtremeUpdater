@@ -6,6 +6,13 @@
 Website is located at https://xtremeware.github.io/XtremeUpdater.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
+## v0.4
+  **Tweaks**:
+    - Dlls now does not backup and overwrite when it's not updated
+
+  **Bugfixes**:
+    - Fixed error when updating dlls in some cases
+
 ## v0.3
   **New features**
    - *Select all* button to the *dll view*
