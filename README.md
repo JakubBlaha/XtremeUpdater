@@ -1,17 +1,37 @@
 # XtremeUpdater
 *Note: XtremeUpdater is in alpha and is not stable at all. Dll backing and restoring should work, but please backup your dlls manually before using XtremeUpdater.*
 
-*The stable file to run is `source.py` **not** `main.py` at the moment. `main.py` is not completed and it's experimental.*
-
 Website is located at https://xtremeware.github.io/XtremeUpdater.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
-## v0.4
-  **Tweaks**:
-    - Dlls now does not backup and overwrite when it's not updated
+## v0.5
+*Note: We are removing `source.py` and all of it's deps in this update and everything is now ported to [kivy](https://github.com/kivy/kivy) gui.*
 
-  **Bugfixes**:
-    - Fixed error when updating dlls in some cases
+  **New features**
+   - Mouse highlight
+   - *Game Collection*
+
+  **Removed features**
+   - Available dlls cache
+
+  **Tweaks**
+   - Made few tweaks to buttons
+   - Added texture to the head
+   - App title is now bold
+   - Changed app title colors
+   - Path input font is now bold
+
+  **Bugfixes**
+   - Fixed bug which caused *dll list* to not display during 2nd or more directory selection
+   - Fixed bug which caused *select all* button to stay enabled after updating completion
+   - Fixed bug which caused to load available dlls twice
+
+## v0.4
+**Tweaks**
+   - Dlls now do not backup and overwrite when they are not of a newer version
+
+**Bugfixes**
+   - Fixed error when updating dlls in some cases
 
 ## v0.3
   **New features**

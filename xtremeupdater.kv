@@ -2,16 +2,12 @@
 
 #:import theme theme
 #:import WindowDragBehavior main.WindowDragBehavior
-#:import PageSwitchBehavior main.PageSwitchBehavior
-#:import Thread threading.Thread
-#:import WindowDragBehavior main.WindowDragBehavior
 #:import Window kivy.core.window.Window
-#:import ListAdapter kivy.adapters.listadapter.ListAdapter
-#:import SimpleListAdapter kivy.adapters.simplelistadapter.SimpleListAdapter
 #:import ListItemButton kivy.uix.listview.ListItemButton
 #:import DllViewAdapter main.DllViewAdapter
 #:import Tweaks tweaks.Tweaks
-#:import DllUpdater main.DllUpdater
+#:import get_version_number get_version_number.get_version_number
+#:import join os.path.join
 
 RootLayout:
 <Widget>:
@@ -24,7 +20,23 @@ RootLayout:
     background_down: self.background_normal
     background_disabled_down: self.background_down
 
-<HeaderLabel@WindowDragBehavior+Label>
+<HeaderLabel@WindowDragBehavior+Label>:
+    canvas.before:
+        Color:
+            rgba: Window.clearcolor
+
+        Rectangle:
+            source: 'img/noise_texture_1000x30.png'
+            pos: self.pos
+            size: self.size
+
+    text: '[color=ddd]Xtreme[/color]Updater'
+    font_name: 'fnt/Roboto-Black.ttf'
+    text_size: self.size
+    halign: 'left'
+    padding: 10, 5
+    color: theme.prim
+    markup: True
 
 <ContentLayout@BoxLayout>:
     orientation: 'vertical'
@@ -40,6 +52,8 @@ RootLayout:
 <HeaderButton@CustButton>:
     size_hint_x: None
     width: self.height
+    background_normal: 'img/noise_texture.png'
+    border: 0, 0, 0, 0
 
 <IconButton@CustButton>:
     size_hint_x: None
@@ -55,7 +69,6 @@ RootLayout:
     background_color: theme.dark
     font_name: 'fnt/Roboto-Bold.ttf'
     font_size: 18
-    background_normal: 'img/button_noise_with_border.png'
     border: [2, 2, 2, 2]
 
 <IconNavigationButton@NavigationButton+IconButton>
@@ -124,13 +137,23 @@ RootLayout:
     deselected_color: theme.sec
     color: theme.fg if self.selectable else theme.disabled
 
+    Label:
+        text: get_version_number(join(app.root.ids.content_updater_path_info.text, root.text))
+        pos: root.pos
+        size: root.size
+        text_size: self.size
+        halign: 'right'
+        valign: 'center'
+        padding: root.padding
+        color: root.color
+
 <DllView@ListView, ScrollView>:
     bar_color: theme.sec
     bar_inactive_color: theme.dark
-    scroll_type: ['content', 'bars']
     bar_width: 10
     scroll_distance: 0
     scroll_wheel_distance: 100
+    scroll_type: ['content', 'bars']
 
     adapter:
         DllViewAdapter(
@@ -148,6 +171,7 @@ RootLayout:
     cursor_color: theme.prim
     cursor_width: 2
     font_size: 18
+    font_name: 'fnt/Roboto-Bold.ttf'
     foreground_color: theme.sec
     multiline: False
     selection_color: theme.prim
@@ -162,8 +186,72 @@ RootLayout:
     valign: 'bottom'
     padding: 0, 6
 
+<GameButton@Button>:
+    background_normal: 'img/FFFFFF-1.png'
+    background_down: self.background_normal
+    color: 0, 0, 0, 0
+    background_color: theme.sec
+    size_hint: None, None
+    size: 333, 187
+    opacity: .5
+
+    CustAsyncImage:
+        id: image
+        pos: root.pos
+        size: root.size
+        opacity: 0
+        anim_delay: 0.04
+        color: theme.prim
+
+    Label:
+        id: label
+        padding: 20, 10
+        text: root.text
+        pos: root.pos
+        size: root.size
+        valign: 'bottom'
+        text_size: self.size
+        font_name: 'fnt/Roboto-Black.ttf'
+        size_hint_y: None
+        height: 40
+        opacity: .5
+
+        canvas.before:
+            Color:
+                rgba: theme.sec
+            
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+<GameCollection@ScrollView>:
+    padding: 40, 0
+    size: self.parent.size
+    effect_cls: 'OpacityScrollEffect'
+    bar_color: theme.sec
+    bar_inactive_color: theme.dark
+    bar_width: 10
+    scroll_distance: 0
+    scroll_wheel_distance: 100
+
+    StackLayout:
+        id: board
+        size_hint_y: None
+        height: self.minimum_height
+
+
 <RootLayout>:
     orientation: 'vertical'
+
+    canvas.after:
+        Color:
+            rgb: theme.prim
+
+        Rectangle:
+            group: 'mouse_highlight'
+            source: 'img/mouse_highlight.png'
+            pos: self.mouse_highlight_pos
+            size: 120, 120
 
     BoxLayout:
         id: header
@@ -172,11 +260,6 @@ RootLayout:
 
         HeaderLabel:
             id: header_label
-            text: 'XtremeUpdater'
-            text_size: self.size
-            halign: 'left'
-            padding: 10, 5
-            color: theme.prim
 
         HeaderButton:
             id: minimize_button
@@ -282,9 +365,9 @@ RootLayout:
         ContentLayout:
             id: content_games
 
-            PlaceHolder:
-                icon: '\ue7fc'
-                message: 'Game collection coming soon'
+            GameCollection:
+                id: game_collection_view
+
 
         ContentLayout:
             id: content_system

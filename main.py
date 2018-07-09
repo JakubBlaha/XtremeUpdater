@@ -1,10 +1,11 @@
-import win32gui
-from threading import Thread
 from easygui import diropenbox
 import urllib.request
 from bs4 import BeautifulSoup
 from shutil import copy
+from threading import Thread
+import yaml
 import os
+from distutils.version import StrictVersion
 
 from theme import *
 from new_thread import new_thread
@@ -32,16 +33,21 @@ from kivy.uix.pagelayout import PageLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
-from kivy.uix.widget import Widget
-from kivy.uix.label import Label
-from kivy.properties import BooleanProperty, StringProperty, NumericProperty, ObjectProperty, ListProperty
+from kivy.uix.scrollview import ScrollView
+from kivy.uix.image import AsyncImage
+from kivy.properties import BooleanProperty, StringProperty, NumericProperty, ObjectProperty, ListProperty, DictProperty
 from kivy.adapters.listadapter import ListAdapter
 from kivy.uix.listview import ListItemButton
-from kivy.uix.switch import Switch
+from kivy.network.urlrequest import UrlRequest
 
+from windowdragbehavior import WindowDragBehavior
+from hovering_behavior import HoveringBehavior
+from custbutton import CustButton
+from get_image_url import TEMPLATE, HEADERS, get_image_url_from_response
 
 app = lambda: App.get_running_app()
 info = lambda text: app().root.info(text)
+
 
 def local_dlls(path):
     return [
@@ -58,53 +64,34 @@ class DllUpdater:
     URL = "https://github.com/XtremeWare/XtremeUpdater/tree/master/dll/"
     RAW_URL = "https://github.com/XtremeWare/XtremeUpdater/raw/master/dll/"
     BACKUP_DIR = ".backup/"
-    _available_dlls = []
-    succeed = BooleanProperty(True)
 
     @classmethod
-    def load_available_dlls(cls):
+    def available_dlls(cls):
         try:
             html = get_data(cls.URL)
 
         except:
-            cls.succeed = False
             app().refresh_button_active = True
 
             info('Syncing failed | Please try again')
-            app().root.ids.dll_view.overdrawer.update(
-                icon='\uea6a', text='Error when syncing')
+            OverdrawLabel(app().root.ids.dll_view, '\uea6a',
+                          'Error when syncing')
 
             return False
 
         else:
-            cls.succeed = True
             app().refresh_button_active = False
 
+            available_dlls = []
             soup = BeautifulSoup(html, 'html.parser')
             for a in soup.find_all('a', {'class': 'js-navigation-open'}):
                 if a.parent.parent.get('class')[0] == 'content':
-                    cls._available_dlls.append(a.text)
+                    available_dlls.append(a.text)
 
-            if cls._available_dlls:
-                info(
-                    'We have found some dll updates | Please select your updates'
-                )
-            else:
-                info(
-                    'We have not found any dll updates | Try selecting another directory'
-                )
+            info('We have found some dll updates | Please select dlls')
+            app().root.ids.dll_view.overdrawer.dismiss()
 
-            return True
-
-    @classmethod
-    def available_dlls(cls):
-        if not cls._available_dlls:
-            cls.load_available_dlls()
-
-        if not cls.succeed:
-            return False
-
-        return cls._available_dlls
+            return available_dlls
 
     @classmethod
     def _download_dll(cls, dllname):
@@ -116,12 +103,12 @@ class DllUpdater:
     @classmethod
     def _backup_dll(cls, path, dll):
         dst = os.path.realpath(
-                os.path.join(cls.BACKUP_DIR,
-                             os.path.splitdrive(path)[1][1:]))
+            os.path.join(cls.BACKUP_DIR,
+                         os.path.splitdrive(path)[1][1:]))
 
         if not os.path.exists(dst):
-                os.makedirs(dst)
-            
+            os.makedirs(dst)
+
         copy(os.path.join(path, dll), dst)
 
     @staticmethod
@@ -141,7 +128,7 @@ class DllUpdater:
                 data = cls._download_dll(dll)
 
                 local_dll_path = os.path.join(path, dll)
-                with open (local_dll_path, 'rb') as f:
+                with open(local_dll_path, 'rb') as f:
                     local_dll_data = f.read()
 
                 if data == local_dll_data:
@@ -152,16 +139,12 @@ class DllUpdater:
 
         except:
             info("Couldn't download updated dll | Please try again")
-            app().root.ids.dll_view.overdrawer.update(
-                icon='\uea39', text='Dll download failed')
-
-            import traceback
-            print(traceback.format_exc())
+            OverdrawLabel(app().root.ids.dll_view, '\uea39',
+                          'Dll download failed')
 
         else:
             info("We are done | Let's speed up your system now")
-            app().root.ids.dll_view.overdrawer.update(
-                icon='\ue930', text='Completed')
+            OverdrawLabel(app().root.ids.dll_view, '\ue930', 'Completed')
 
     @classmethod
     def restore_dlls(cls, path, dlls):
@@ -193,68 +176,114 @@ class DllUpdater:
         return os.listdir(bck_path)
 
 
-class WindowDragBehavior(Widget):
-    def on_touch_up(self, touch):
-        if hasattr(self, 'drag_clock'):
-            self.drag_clock.cancel()
+class GameCollection(ScrollView):
+    COMMON_PATHS_URL = 'https://raw.githubusercontent.com/XtremeWare/XtremeUpdater/master/res/CommonPaths.yaml'
+    data = DictProperty()
+    game_buttons = ListProperty()
+    datastore = ObjectProperty()
 
-    def on_touch_down(self, touch):
-        if not self.collide_point(*touch.pos):
+    def on_data(self, _, data):
+        self.ids.board.clear_widgets()
+
+        for game, path in self.data.items():
+            button = GameButton(text=game, path=path)
+            self.game_buttons.append(button)
+            self.ids.board.add_widget(button)
+
+    def update_local_games(self):
+        info('Syncing with GitHub | Please wait..')
+
+        def on_request_success(req, result):
+            info('Successfully synced with GitHub | Searching for games..')
+            self.datastore = yaml.safe_load(result)
+
+        UrlRequest(self.COMMON_PATHS_URL, on_request_success)
+
+    def on_datastore(self, _, datastore):
+        for game in datastore:
+            for path in datastore[game]:
+                path = os.path.join(os.path.splitdrive(os.getcwd())[0], path)
+                if os.path.isdir(path):
+                    self.data[game] = path
+
+        info('Game searching finished | Select your game')
+
+        self.update_images()
+
+    def update_images(self):
+        for button in self.game_buttons:
+            button.update_image()
+
+
+class CustAsyncImage(AsyncImage):
+    def _on_source_load(self, value):
+        super()._on_source_load(value)
+
+        self.parent.loading_image = False
+        self.color = (1, 1, 1) if value else prim
+        self.allow_stretch = value
+        self.parent.image_ready = True
+
+    def on_error(self, *args):
+        super().on_error(*args)
+
+        self.parent.loading_image = False
+
+        try:
+            self.parent.load_next_image()
+        except IndexError:
+            pass
+
+
+class GameButton(Button, HoveringBehavior):
+    image_ready = False
+    last_image_index = 0
+    loading_image = False
+    path = StringProperty()
+
+    def update_image(self, index=0):
+        if self.image_ready or self.loading_image:
             return
 
-        self.touch_x = touch.x
-        self.touch_y = Window.height - touch.y
+        self.loading_image = True
 
-        self.drag_clock = Clock.schedule_interval(lambda *args: self.__drag(),
-                                                  1 / 60)
+        query = self.text
+        query += 'logo wallpaper'
+        query = query.split()
+        query = '+'.join(query)
 
-    def __drag(self, *args):
-        x, y = win32gui.GetCursorPos()
+        UrlRequest(
+            TEMPLATE.format(query),
+            lambda req, result: self.on_request_success(req, result, index),
+            req_headers=HEADERS)
 
-        x -= self.touch_x
-        y -= self.touch_y
+    def load_next_image(self):
+        self.update_image(index=self.last_image_index + 1)
 
-        Window.left, Window.top = x, y
-
-
-class CustButton(Button):
-    hovering = BooleanProperty(False)
-    anim_in = Animation(color=prim, background_color=disabled, d=.1)
-    anim_disabled = Animation(opacity=0, d=.1)
-    anim_normal = Animation(opacity=1, d=.1)
-
-    def __init__(self, **kw):
-        super().__init__(**kw)
-
-        Clock.schedule_once(self._update_anim_out, 0)
-        Window.bind(mouse_pos=self.on_mouse_pos)
-
-    def _update_anim_out(self, *args):
-        self.anim_out = Animation(
-            color=self.color, background_color=self.background_color, d=.1)
+    def on_request_success(self, req=None, result=None, index=0):
+        image_url = get_image_url_from_response(result, index)
+        self.ids.image.source = image_url
+        self.ids.image.opacity = 1
+        self.last_image_index = index
 
     def on_mouse_pos(self, _, pos):
-        self.hovering = self.collide_point(*pos)
+        x1, y1 = self.to_window(*self.pos)
+        x2, y2 = x1 + self.width, y1 + self.height
+        mouse_x, mouse_y = map(int, pos)
+
+        self.hovering = x1 < mouse_x and x2 > mouse_x and y1 < mouse_y and y2 > mouse_y
 
     def on_hovering(self, _, is_hovering):
         if is_hovering:
-            self.on_enter()
+            Animation(opacity=1, d=.1).start(self)
+            Animation(color=prim, opacity=1, d=.1).start(self.ids.label)
         else:
-            self.on_leave()
+            Animation(opacity=.5, d=.1).start(self)
+            Animation(color=fg, opacity=.5, d=.1).start(self.ids.label)
 
-    def on_enter(self):
-        if not self.disabled:
-            self.anim_in.start(self)
-
-    def on_leave(self):
-        if not self.disabled:
-            self.anim_out.start(self)
-
-    def on_disabled(self, custbutton, is_disabled):
-        if is_disabled:
-            self.anim_disabled.start(self)
-        else:
-            self.anim_normal.start(self)
+    def on_release(self):
+        app().root.load_dll_view_data(self.path)
+        app().root.ids.content.page = 0
 
 
 class PageSwitchBehavior():
@@ -275,18 +304,21 @@ class NavigationButton(PageSwitchBehavior, CustButton):
     def highlight(self):
         self.__active = True
         self.anim_highlight.start(self)
+        self.orig_background_normal = self.background_normal
+        self.background_normal = 'img/FFFFFF-1.png'
 
     def nohighghlight(self):
         self.__active = False
         self.anim_nohighlight.start(self)
+        self.background_normal = self.orig_background_normal
 
     def on_leave(self, *args):
         if not self.__active:
-            super().on_leave()
+            super().on_leave(*args)
 
     def on_enter(self, *args):
         if not self.__active:
-            super().on_enter()
+            super().on_enter(*args)
 
 
 class Navigation(BoxLayout):
@@ -320,8 +352,18 @@ class Navigation(BoxLayout):
 
 
 class Content(PageLayout):
-    def on_page(self, Content, value):
-        self.parent.active = value
+    def on_page(self, _, page):
+        self.parent.ids.navigation.active = page
+        ACTIONS = {
+            1:
+            lambda: self.children[3].children[0].update_local_games()  # Why do not ids work?
+        }
+
+        try:
+            ACTIONS[page]()
+
+        except KeyError:
+            pass
 
 
 class PlaceHolder(Label):
@@ -337,11 +379,12 @@ class OverdrawLabel(FloatLayout):
 
     @mainthread
     def __init__(self, wg, icon='\ue943', text='', **kw):
-        self.icon = icon
-        self.text = 'Oops..' if not text else text
         self.wg = wg
 
         super().__init__(**kw)
+
+        self.icon = icon
+        self.text = text
 
         if hasattr(wg, 'overdrawer') and isinstance(wg.overdrawer,
                                                     OverdrawLabel):
@@ -350,37 +393,25 @@ class OverdrawLabel(FloatLayout):
         wg.overdrawer = self
         wg.add_widget(self)
 
-        self._display()
+        def on_frame(*args):
+            Animation.stop_all(self)
+            Animation(opacity=1, d=.2).start(self)
 
-    @mainthread
-    def _display(self):
-        Animation(opacity=1, d=.2).start(self)
-
-    @mainthread
-    def kill(self):
-        self.wg.remove_widget(self)
+        Clock.schedule_once(on_frame, 0)
 
     @mainthread
     def dismiss(self, *args):
-        Animation(opacity=0, d=.2).start(self)
+        def on_frame(*args):
+            Animation.stop_all(self)
+            anim = Animation(opacity=0, d=.2)
+            anim.bind(on_complete=lambda *args: self.wg.remove_widget(self))
+            anim.start(self)
 
-    @mainthread
-    def update(self, **kw):
-        def on_complete(*args):
-            self.icon = kw.get('icon', self.icon)
-            self.text = kw.get('text', self.text)
-
-            Animation(color=prim, d=.2).start(self.ids.label)
-
-        anim = Animation(color=sec, d=.2)
-        anim.bind(on_complete=on_complete)
-        anim.start(self.ids.label)
-
-        self._display()
+        Clock.schedule_once(on_frame, 0)
 
 
 class DllViewItem(ListItemButton):
-    selectable = BooleanProperty(True)
+    selectable = BooleanProperty(False)
 
     def on_is_selected(self, DllViewItem, is_selected):
         if is_selected and self.selectable:
@@ -390,27 +421,35 @@ class DllViewItem(ListItemButton):
 
 
 class DllViewAdapter(ListAdapter):
+    data_from_code = False
+
     def on_data(self, *args):
-        if not self.data:
+        if self.data_from_code or not self.data:
             return
 
-        available_dlls = DllUpdater.available_dlls()
-        if available_dlls == False:
-            self.data = []
+        self.data_from_code = True
 
+        available_dlls = DllUpdater.available_dlls()
         self.data = [{
             **item, 'selectable': item['text'] in available_dlls
         } for item in self.data]
 
-        app().root.ids.invert_selection_button.disabled = not self.data
+        def on_frame(*args):
+            app(
+            ).root.ids.invert_selection_button.disabled = not self.get_selectable_views(
+            )
+
+        Clock.schedule_once(on_frame, 0)
+
+        self.data_from_code = False
 
     def on_selection_change(self, *args):
         app().root.set_dll_buttons_state(self.selection)
 
     def get_selectable_views(self) -> list:
         return [
-            self.get_view(index)
-            for index, item in enumerate(self.data) if item['selectable']
+            self.get_view(index) for index, item in enumerate(self.data)
+            if item['selectable']
         ]
 
     def invert_selection(self):
@@ -420,32 +459,18 @@ class DllViewAdapter(ListAdapter):
         Clock.schedule_once(callback, 0)
 
 
-# EXPERIMENTAL
-class CustSwitch(Switch):
-    on = ObjectProperty()
-    off = ObjectProperty()
-    condition = ObjectProperty()
-    _no_trigger_active = False
-
-    def on_active(self, _, active):
-        if self._no_trigger_active:
-            return
-
-        if active:
-            self.on()
-
-        else:
-            self.off()
-
-        self.on_condition(None, self.condition)
-
-    def on_condition(self, _, condition):
-        self._no_trigger_active = True
-        self.active = condition()
-        self._no_trigger_active = False
-
-
 class RootLayout(BoxLayout):
+    mouse_highlight_pos = ListProperty([-120, -120])
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        Window.bind(mouse_pos=self.on_mouse_pos)
+
+    def on_mouse_pos(self, _, pos):
+        x, y = pos
+        x, y = x - 60, y - 60
+        self.mouse_highlight_pos = x, y
+
     def set_dll_buttons_state(self, enabled):
         self.ids.restore_button.disabled = not enabled
         self.ids.update_button.disabled = not enabled
@@ -454,11 +479,12 @@ class RootLayout(BoxLayout):
     def load_directory(self):
         info('Select a directory now | Waiting..')
         path = diropenbox()
-        self.ids.content_updater_path_info.text = path
         self.load_dll_view_data(path)
 
     @new_thread
     def load_dll_view_data(self, path):
+        self.ids.content_updater_path_info.text = path
+
         if not os.path.isdir(path):
             info('Seems like an invalid directory | Try again')
             return
@@ -476,23 +502,20 @@ class RootLayout(BoxLayout):
 
             return
 
-        self.ids.dll_view.overdrawer.update(
-            icon='\uede4',
-            text='Looking for dlls..',
-            secondary_text="It shouldn't take too long")
+        OverdrawLabel(self.ids.dll_view, '\uede4', 'Looking for dlls..')
 
         self.ids.dll_view.adapter.data = [{
             'text': item
         } for item in local_dlls(path)]
-        self.ids.dll_view.overdrawer.dismiss()
 
         self.ids.dll_view.adapter.invert_selection()
 
     def update_callback(self):
         self.set_dll_buttons_state(False)
-        draw = OverdrawLabel(self.ids.dll_view, '\ue896', 'Updating dlls..')
+        OverdrawLabel(self.ids.dll_view, '\ue896', 'Updating dlls..')
 
         dlls = [item.text for item in self.ids.dll_view.adapter.selection]
+        self.ids.dll_view.adapter.data = []
 
         Thread(
             target=DllUpdater.update_dlls,
