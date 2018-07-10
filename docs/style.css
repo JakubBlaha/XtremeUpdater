@@ -139,7 +139,7 @@ main {
     box-shadow: 0px 0px 5px #000;
 }
 
-main div.main-text {
+main p.main-text {
     display: inline-block;
     overflow: hidden;
 }
@@ -148,7 +148,7 @@ main div.main-text {
     margin: 10 auto;
     float: middle;
     overflow: hidden;
-    width: 866px;
+    width: 50vw;
     padding: 0 2vh;
     vertical-align: top;
     text-align: justify;
@@ -169,21 +169,78 @@ main div.main-text {
     z-index: -2;
 }
 
-#main-title {
+.main-title {
     margin: 5vh auto;
     text-align: center;
     font-size: 35px;
 }
 
-footer {
-    width: 100%;
+.sub-main-title{
+    font-style: italic;
+    margin-top: -30px;
+    margin-bottom: 30px;
+}
+
+.how-to-use-table{
+    width: 75%;
     margin: auto;
-    padding: 15px 0px;
+}
+
+.how-to-use-text{
+    text-align: center;
+    font-size: 30px;
+    text-shadow: #ccc 0 0 1px;
+}
+
+.how-to-use-image{
+    width: 100%;
+    opacity: .95;
+}
+
+.how-to-use-image:hover{
+    opacity: 1;
+    box-shadow: #dbac2a 0 0 7px;
+}
+
+.download-div{
+    margin: 20px auto;
+}
+
+.download-button{
+    font-size: 35px;
+    color: white;
+    background-color: #dbac2a;
+    border-radius: 3px;
+    padding: 10px 20px;
+}
+
+.download-button:hover{
+    box-shadow: #232a3a 0 2px 7px -2px;
+}
+
+footer {
+    padding: 20px;
+    height: 300px;
     background-color: #232a3a;
     background-size: cover;
     box-shadow: inset 0 0 4px #000000;
     color: white;
-    text-align: center;
+    position: relative;
+}
+
+footer ul{
+    float: left;
+    list-style-type: none;
+    margin: 0;
+}
+
+footer ul p{
+    color: #ccc;
+
+}
+
+footer ul li{
+    margin: 5px 0;
 }
 
 footer a {
@@ -193,6 +250,24 @@ footer a {
 
 footer a:hover {
     color: #dbac2a;
+}
+
+footer img{
+    width: 50px;
+    position: relative;
+    top: 18px;
+    left: -10px;
+}
+
+.footer-icon-link{
+    padding: 0 10px;
+}
+
+.copyright{
+    color: #ccc;
+    position: absolute;
+    bottom: 280px;
+    right: 20px;
 }
 
 .come-in {
