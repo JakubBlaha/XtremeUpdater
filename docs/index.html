@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 
@@ -39,7 +38,7 @@
                 <a href="index.html">
                     <div class="header-nav-link-active">HOME</div>
                 </a> |
-                <a href="https://github.com/XtremeWare/XtremeUpdater">
+                <a href="https://github.com/XtremeWare/XtremeUpdater" target='_blank'>
                     <div class="header-nav-link">CODE</div>
                 </a> |
                 <a href="about.html">
@@ -47,7 +46,8 @@
                 </a>
             </div>
         </div>
-        <div id="header-title" data-aos="zoom-in">XTREME<br>GAMING</div>
+        <div id="header-title" data-aos="zoom-in">XTREME
+            <br>GAMING</div>
     </header>
     <main>
         <a href="#main-title" data-aos="zoom-in">
@@ -55,12 +55,24 @@
         </a>
         <div id="main-title" data-aos="zoom-in">What is our app for?</div>
         <div class="main-text" data-aos="fade-right">
-            Are they playing slow games? Do you have a low end computer? Explore Xtreme Updater! He knows everything that windows do not. We focus mainly on MOBA games. Join discord! Everything is open source on github. We play these games ourselves to ensure the best possible acceleration quality. If the game is running fast, you will not see much difference, but if it's an old homer, there's just a few FPS on you. Our app is Designed to update old dlls within your games to provide you better compatibility and perfomance, since most games do not update these files themselfs. This can result in better perfomance and at least should provide more stable gaming expirience. Are your games running on Xtremely low FPS? Is steam coming out of your machine? Do you want to defend the fire on your AMD CPU? Go ahead and download XtremeUpdater. Our app dow not work by increasing priority of your games' processes or killing Avast. It works by updating Dynamic Link Libraries which are part of every win32 application. DLLs in games are often outdated and lack the needed performance. XtremeUpdater can fix that!!
+            Are they playing slow games? Do you have a low end computer? Explore Xtreme Updater! He knows everything that windows do
+            not. We focus mainly on MOBA games. Join discord! Everything is open source on github. We play these games ourselves
+            to ensure the best possible acceleration quality. If the game is running fast, you will not see much difference,
+            but if it's an old homer, there's just a few FPS on you. Our app is Designed to update old dlls within your games
+            to provide you better compatibility and perfomance, since most games do not update these files themselfs. This
+            can result in better perfomance and at least should provide more stable gaming expirience. Are your games running
+            on Xtremely low FPS? Is steam coming out of your machine? Do you want to defend the fire on your AMD CPU? Go
+            ahead and download XtremeUpdater. Our app dow not work by increasing priority of your games' processes or killing
+            Avast. It works by updating Dynamic Link Libraries which are part of every win32 application. DLLs in games are
+            often outdated and lack the needed performance. XtremeUpdater can fix that!!
         </div>
 
         <div id="main-title" data-aos="zoom-in">How to install our app?</div>
         <div class="main-text" data-aos="fade-left">
-            Are your games running on Xtremely low FPS? Is steam coming out of your machine? Do you want to defend the fire on your AMD CPU? Go ahead and download XtremeUpdater. Our app dow not work by increasing priority of your games' processes or killing Avast. It works by updating Dynamic Link Libraries which are part of every win32 application. DLLs in games are often outdated and lack the needed performance. XtremeUpdater can fix that!!
+            Are your games running on Xtremely low FPS? Is steam coming out of your machine? Do you want to defend the fire on your AMD
+            CPU? Go ahead and download XtremeUpdater. Our app dow not work by increasing priority of your games' processes
+            or killing Avast. It works by updating Dynamic Link Libraries which are part of every win32 application. DLLs
+            in games are often outdated and lack the needed performance. XtremeUpdater can fix that!!
         </div>
     </main>
     <footer>
@@ -70,65 +82,54 @@
     </footer>
 </body>
 <script>
-    /*AOS.init({
-            duration: 1200,
-        })*/
+        /*AOS.init({
+                duration: 1200,
+            })*/
 
-        (function($) {
+        (function ($) {
 
-        $.fn.visible = function(partial) {
+            $.fn.visible = function (partial) {
 
-            var $t = $(this),
-                $w = $(window),
-                viewTop = $w.scrollTop(),
-                viewBottom = viewTop + $w.height(),
-                _top = $t.offset().top,
-                _bottom = _top + $t.height(),
-                compareTop = partial === true ? _bottom : _top,
-                compareBottom = partial === true ? _top : _bottom;
+                var $t = $(this),
+                    $w = $(window),
+                    viewTop = $w.scrollTop(),
+                    viewBottom = viewTop + $w.height(),
+                    _top = $t.offset().top,
+                    _bottom = _top + $t.height(),
+                    compareTop = partial === true ? _bottom : _top,
+                    compareBottom = partial === true ? _top : _bottom;
 
-            return ((compareBottom <= viewBottom) && (compareTop >= viewTop));
+                return ((compareBottom <= viewBottom) && (compareTop >= viewTop));
 
-        };
+            };
 
-    })(jQuery);
+        })(jQuery);
 
-    var win = $(window);
+        var win = $(window);
 
-    var allMods = $(".main-text");
+        var allMods = $(".main-text");
 
-    allMods.each(function(i, el) {
-        var el = $(el);
-        if (el.visible(true)) {
-            el.addClass("already-visible");
-        }
-    });
-
-    win.scroll(function(event) {
-
-        allMods.each(function(i, el) {
+        allMods.each(function (i, el) {
             var el = $(el);
             if (el.visible(true)) {
-                el.addClass("come-in");
+                el.addClass("already-visible");
             }
         });
 
-    });
+        win.scroll(function (event) {
+
+            allMods.each(function (i, el) {
+                var el = $(el);
+                if (el.visible(true)) {
+                    el.addClass("come-in");
+                }
+            });
+
+        });
 
 
-    var mainbottom = $('header').height() - 70;
-    $(window).on('scroll', function() {
-        stop = Math.round($(window).scrollTop());
-        if (stop >= mainbottom) {
-            $('.nav').addClass('past-main');
-        } else {
-            $('.nav').removeClass('past-main');
-        }
-    });
-
-    function resize() {
         var mainbottom = $('header').height() - 70;
-        $(window).on('scroll', function() {
+        $(window).on('scroll', function () {
             stop = Math.round($(window).scrollTop());
             if (stop >= mainbottom) {
                 $('.nav').addClass('past-main');
@@ -137,9 +138,9 @@
             }
         });
 
-        setTimeout(function() {
+        function resize() {
             var mainbottom = $('header').height() - 70;
-            $(window).on('scroll', function() {
+            $(window).on('scroll', function () {
                 stop = Math.round($(window).scrollTop());
                 if (stop >= mainbottom) {
                     $('.nav').addClass('past-main');
@@ -147,20 +148,31 @@
                     $('.nav').removeClass('past-main');
                 }
             });
-        }, 200);
 
-        setTimeout(function() {
-            var mainbottom = $('header').height() - 70;
-            $(window).on('scroll', function() {
-                stop = Math.round($(window).scrollTop());
-                if (stop >= mainbottom) {
-                    $('.nav').addClass('past-main');
-                } else {
-                    $('.nav').removeClass('past-main');
-                }
-            });
-        }, 500);
-    }
+            setTimeout(function () {
+                var mainbottom = $('header').height() - 70;
+                $(window).on('scroll', function () {
+                    stop = Math.round($(window).scrollTop());
+                    if (stop >= mainbottom) {
+                        $('.nav').addClass('past-main');
+                    } else {
+                        $('.nav').removeClass('past-main');
+                    }
+                });
+            }, 200);
+
+            setTimeout(function () {
+                var mainbottom = $('header').height() - 70;
+                $(window).on('scroll', function () {
+                    stop = Math.round($(window).scrollTop());
+                    if (stop >= mainbottom) {
+                        $('.nav').addClass('past-main');
+                    } else {
+                        $('.nav').removeClass('past-main');
+                    }
+                });
+            }, 500);
+        }
 </script>
 
 </html>

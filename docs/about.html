@@ -46,7 +46,8 @@
                 </a>
             </div>
         </div>
-        <div id="header-title" data-aos="zoom-in">XTREME<br>GAMING</div>
+        <div id="header-title" data-aos="zoom-in">XTREME
+            <br>GAMING</div>
     </header>
     <main>
         <a href="#main-title" data-aos="zoom-in">
@@ -54,7 +55,19 @@
         </a>
         <div id="main-title" data-aos="zoom-in">Who are we?</div>
         <div class="main-text" data-aos="fade-right">
-            <strong>TO BE ADDED...</strong><br> Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean placerat. Fusce tellus odio, dapibus id fermentum quis, suscipit id erat. Aliquam erat volutpat. Fusce aliquam vestibulum ipsum. Cras pede libero, dapibus nec, pretium sit amet, tempor quis. In laoreet, magna id viverra tincidunt, sem odio bibendum justo, vel imperdiet sapien wisi sed libero. Nunc tincidunt ante vitae massa. Maecenas fermentum, sem in pharetra pellentesque, velit turpis volutpat ante, in pharetra metus odio a lectus. Nulla accumsan, elit sit amet varius semper, nulla mauris mollis quam, tempor suscipit diam nulla vel leo. Curabitur vitae diam non enim vestibulum interdum. Nulla pulvinar eleifend sem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Etiam dictum tincidunt diam. Integer rutrum, orci vestibulum ullamcorper ultricies, lacus quam ultricies odio, vitae placerat pede sem sit amet enim. Nullam dapibus fermentum ipsum. Fusce tellus. Mauris metus. Etiam bibendum elit eget erat.
+            <strong>TO BE ADDED...</strong>
+            <br> Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean placerat. Fusce tellus odio, dapibus id fermentum
+            quis, suscipit id erat. Aliquam erat volutpat. Fusce aliquam vestibulum ipsum. Cras pede libero, dapibus nec,
+            pretium sit amet, tempor quis. In laoreet, magna id viverra tincidunt, sem odio bibendum justo, vel imperdiet
+            sapien wisi sed libero. Nunc tincidunt ante vitae massa. Maecenas fermentum, sem in pharetra pellentesque, velit
+            turpis volutpat ante, in pharetra metus odio a lectus. Nulla accumsan, elit sit amet varius semper, nulla mauris
+            mollis quam, tempor suscipit diam nulla vel leo. Curabitur vitae diam non enim vestibulum interdum. Nulla pulvinar
+            eleifend sem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi
+            ut aliquid ex ea commodi consequatur? Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+            eu fugiat nulla pariatur. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia
+            consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Etiam dictum tincidunt diam. Integer rutrum,
+            orci vestibulum ullamcorper ultricies, lacus quam ultricies odio, vitae placerat pede sem sit amet enim. Nullam
+            dapibus fermentum ipsum. Fusce tellus. Mauris metus. Etiam bibendum elit eget erat.
         </div>
     </main>
     <footer>
@@ -64,65 +77,54 @@
     </footer>
 </body>
 <script>
-    /*AOS.init({
-            duration: 1200,
-        })*/
+        /*AOS.init({
+                duration: 1200,
+            })*/
 
-    (function($) {
+        (function ($) {
 
-        $.fn.visible = function(partial) {
+            $.fn.visible = function (partial) {
 
-            var $t = $(this),
-                $w = $(window),
-                viewTop = $w.scrollTop(),
-                viewBottom = viewTop + $w.height(),
-                _top = $t.offset().top,
-                _bottom = _top + $t.height(),
-                compareTop = partial === true ? _bottom : _top,
-                compareBottom = partial === true ? _top : _bottom;
+                var $t = $(this),
+                    $w = $(window),
+                    viewTop = $w.scrollTop(),
+                    viewBottom = viewTop + $w.height(),
+                    _top = $t.offset().top,
+                    _bottom = _top + $t.height(),
+                    compareTop = partial === true ? _bottom : _top,
+                    compareBottom = partial === true ? _top : _bottom;
 
-            return ((compareBottom <= viewBottom) && (compareTop >= viewTop));
+                return ((compareBottom <= viewBottom) && (compareTop >= viewTop));
 
-        };
+            };
 
-    })(jQuery);
+        })(jQuery);
 
-    var win = $(window);
+        var win = $(window);
 
-    var allMods = $(".main-text");
+        var allMods = $(".main-text");
 
-    allMods.each(function(i, el) {
-        var el = $(el);
-        if (el.visible(true)) {
-            el.addClass("already-visible");
-        }
-    });
-
-    win.scroll(function(event) {
-
-        allMods.each(function(i, el) {
+        allMods.each(function (i, el) {
             var el = $(el);
             if (el.visible(true)) {
-                el.addClass("come-in");
+                el.addClass("already-visible");
             }
         });
 
-    });
+        win.scroll(function (event) {
+
+            allMods.each(function (i, el) {
+                var el = $(el);
+                if (el.visible(true)) {
+                    el.addClass("come-in");
+                }
+            });
+
+        });
 
 
-    var mainbottom = $('header').height() - 70;
-    $(window).on('scroll', function() {
-        stop = Math.round($(window).scrollTop());
-        if (stop >= mainbottom) {
-            $('.nav').addClass('past-main');
-        } else {
-            $('.nav').removeClass('past-main');
-        }
-    });
-
-    function resize() {
         var mainbottom = $('header').height() - 70;
-        $(window).on('scroll', function() {
+        $(window).on('scroll', function () {
             stop = Math.round($(window).scrollTop());
             if (stop >= mainbottom) {
                 $('.nav').addClass('past-main');
@@ -131,9 +133,9 @@
             }
         });
 
-        setTimeout(function() {
+        function resize() {
             var mainbottom = $('header').height() - 70;
-            $(window).on('scroll', function() {
+            $(window).on('scroll', function () {
                 stop = Math.round($(window).scrollTop());
                 if (stop >= mainbottom) {
                     $('.nav').addClass('past-main');
@@ -141,20 +143,31 @@
                     $('.nav').removeClass('past-main');
                 }
             });
-        }, 200);
 
-        setTimeout(function() {
-            var mainbottom = $('header').height() - 70;
-            $(window).on('scroll', function() {
-                stop = Math.round($(window).scrollTop());
-                if (stop >= mainbottom) {
-                    $('.nav').addClass('past-main');
-                } else {
-                    $('.nav').removeClass('past-main');
-                }
-            });
-        }, 500);
-    }
+            setTimeout(function () {
+                var mainbottom = $('header').height() - 70;
+                $(window).on('scroll', function () {
+                    stop = Math.round($(window).scrollTop());
+                    if (stop >= mainbottom) {
+                        $('.nav').addClass('past-main');
+                    } else {
+                        $('.nav').removeClass('past-main');
+                    }
+                });
+            }, 200);
+
+            setTimeout(function () {
+                var mainbottom = $('header').height() - 70;
+                $(window).on('scroll', function () {
+                    stop = Math.round($(window).scrollTop());
+                    if (stop >= mainbottom) {
+                        $('.nav').addClass('past-main');
+                    } else {
+                        $('.nav').removeClass('past-main');
+                    }
+                });
+            }, 500);
+        }
 </script>
 
 </html>

@@ -6,8 +6,6 @@
     scroll-behavior: smooth;
 }
 
-
-
 body {
     margin: 0;
     font-family: 'Roboto', sans-serif;
@@ -87,7 +85,7 @@ header:before {
     position: fixed;
     display: inline-block;
     top: 20px;
-    font-size: 20px;
+    font-size: 24px;
     right: 25px;
     color: #dbac2a;
     overflow: hidden;
@@ -98,28 +96,21 @@ header:before {
     z-index: 10 !important;
 }
 
-.header-nav-link {
+.header-nav-link,
+.header-nav-link-active,
+.header-nav-link:hover {
     display: inline-block;
     white-space: normal;
     color: white;
     cursor: pointer;
     transition: .1s ease-in-out;
+    font-size: 20px;
 }
 
-.header-nav-link:hover {
-    display: inline-block;
-    white-space: normal;
-    color: #dbac2a;
-    font-weight: bold;
-    cursor: pointer;
-}
-
+.header-nav-link:hover,
 .header-nav-link-active {
-    display: inline-block;
-    white-space: normal;
     color: #dbac2a;
     font-weight: bold;
-    cursor: pointer;
 }
 
 #header-title {
