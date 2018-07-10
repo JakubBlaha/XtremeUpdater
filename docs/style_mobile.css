@@ -1,0 +1,231 @@
+@import "compass/css3";
+
+* {
+    @include box-sizing(border-box);
+    transition: .3s ease-in-out;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+}
+
+html {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+a {
+    text-decoration: none;
+    color: auto;
+}
+
+header {
+    width: 100% !important;
+    height: 80vh !important;
+    color: #dbac2a;
+    background-color: #232a3a;
+    margin: auto;
+    transition: .3s ease-in-out;
+    cursor: default;
+    box-shadow: 0px 0px 5px #000;
+    overflow: hidden;
+    opacity: 100%;
+    transition: none;
+}
+
+header:before {
+    content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+
+}
+
+#header-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    margin: auto;
+    height: 60px;
+    transition: none;
+    z-index: 10 !important;
+}
+
+/*header-navbar point of scroll*/
+
+.nav.past-main {
+    background-color: #232a3a;
+    box-shadow: 0px 0px 5px #000;
+}
+
+/*end*/
+
+#header-logo {
+    height: 45px;
+    position: fixed;
+    top: 10px;
+    left: 20px;
+    transition: .3s ease-in-out;
+}
+
+#header-nav {
+    position: fixed;
+    display: inline-block;
+    top: 20px;
+    font-size: 20px;
+    right: 25px;
+    color: #dbac2a;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: .3s ease-in-out;
+    z-index: 20;
+    opacity: 100 !important;
+    z-index: 10 !important;
+}
+
+.header-nav-link {
+    display: inline-block;
+    white-space: normal;
+    color: white;
+    cursor: pointer;
+    transition: .1s ease-in-out;
+}
+
+.header-nav-link:hover {
+    display: inline-block;
+    white-space: normal;
+    color: #dbac2a;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.header-nav-link-active {
+    display: inline-block;
+    white-space: normal;
+    color: #dbac2a;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#header-title {
+    text-shadow: 0px 2px 4px #000;
+    display: inline-block;
+    vertical-align: middle;
+    width: 100%;
+    font-weight: bold;
+    text-align: center;
+    font-size: 80px;
+    white-space: nowrap;
+
+    /*justify-content: center;
+    align-items: center;
+    transform: translateZ(-1px) scale(2);
+    display: flex;
+    flex: 1 0 auto;
+    position: relative;
+    z-index: 0;*/
+}
+
+main {
+    width: 100%;
+    padding: 5vh 0px;
+    text-align: center;
+    box-shadow: 0px 0px 5px #000;
+}
+
+main div.main-text {
+    display: inline-block;
+    overflow: hidden;
+}
+
+.main-text {
+    margin: 10 auto;
+    float: middle;
+    overflow: hidden;
+    width: 35%;
+    padding: 0 2vh;
+    vertical-align: top;
+    text-align: justify;
+    text-justify: inter-word
+}
+
+#main-circle {
+    width: 10vh;
+    height: 10vh;
+    margin: 0 auto;
+    text-align: center;
+    border-radius: 5vh;
+    background-image: url("icon.png");
+    background-size: cover;
+    box-shadow: inset 0 0 5px #000000;
+    transition: .3s ease-in-out;
+    position: relative;
+    z-index: -2;
+}
+
+#main-title {
+    margin: 5vh auto;
+    text-align: center;
+    font-size: 35px;
+}
+
+footer {
+    width: 100%;
+    margin: auto;
+    padding: 15px 0px;
+    background-color: #232a3a;
+    background-size: cover;
+    box-shadow: inset 0 0 4px #000000;
+    color: white;
+    text-align: center;
+}
+
+footer a {
+    text-decoration: none;
+    color: white;
+}
+
+footer a:hover {
+    color: #dbac2a;
+}
+
+.come-in {
+    transform: translateY(60px);
+    animation: come-in 0.8s ease forwards;
+}
+
+.come-in:nth-child(odd) {
+    animation-duration: 0.6s;
+}
+
+.already-visible {
+    transform: translateY(0);
+    animation: none;
+}
+
+@keyframes come-in {
+    to {
+        transform: translateY(0);
+    }
+}
+
+
+@media only screen and (max-width: 1200px) {
+    .main-text {
+        width: 70%;
+    }
+
+    #header-navbar {
+        background-color: #232a3a !important;
+        box-shadow: 0px 15px 25px #232a3a;
+    }
+}
+
+@media only screen and (max-width: 400px) {
+    .main-text {
+        width: 89%;
+    }
+}

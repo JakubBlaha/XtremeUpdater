@@ -19,3 +19,7 @@ sec = get_color_from_hex(SEC)
 dark = get_color_from_hex(DARK)
 disabled = get_color_from_hex(DISABLED)
 hover = get_color_from_hex(HOVER)
+
+if __name__ == '__main__':
+    print(*[item for item in globals().items()], sep='\n')
+    input()
