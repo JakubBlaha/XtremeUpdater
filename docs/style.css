@@ -1,7 +1,5 @@
-@import "compass/css3";
-
 * {
-    @include box-sizing(border-box);
+    box-sizing: border-box;
     transition: .3s ease-in-out;
     scroll-behavior: smooth;
 }
@@ -35,42 +33,43 @@ a {
 
 header {
     width: 100% !important;
-    height: 80vh !important;
+    height: calc(80vh - 60px) !important;
     color: #dbac2a;
     background-color: #232a3a;
     margin: auto;
     transition: .3s ease-in-out;
     cursor: default;
-    box-shadow: 0px 0px 5px #000;
     overflow: hidden;
-    opacity: 100%;
-    transition: none;
+    opacity: 100%;  
 }
 
 header:before {
-    content: '';
-    display: inline-block;
-    height: 100%;
-    vertical-align: middle;
-    margin-right: -0.25em;
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  margin-right: -0.25em;
 }
 
-#header-navbar {
+#header-navbar, #header-navbar-bg  {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     margin: auto;
     height: 60px;
-    transition: none;
-    z-index: 10 !important;
 }
 
-/*header-navbar point of scroll*/
+#header-navbar {
+    z-index: 1;
+}
 
-.nav.past-main {
-    background-color: #232a3a !important;
-    box-shadow: 0px 0px 5px #000 !important;
+#header-navbar-bg
+{
+    position: sticky;
+    overflow: hidden;
+    background-color: #232a3a;
+    box-shadow: 0 -5px 0 5px #232a3a, 0px 0px 5px #000;
 }
 
 /*end*/
