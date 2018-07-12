@@ -59,7 +59,7 @@ header:before {
     left: 0;
     width: 100%;
     margin: auto;
-    height: 60px;
+    height: 50px;
     transition: none;
     z-index: 10 !important;
 }
@@ -74,9 +74,9 @@ header:before {
 /*end*/
 
 #header-logo {
-    height: 45px;
+    height: 35px;
     position: fixed;
-    top: 10px;
+    top: 8px;
     left: 20px;
     transition: .3s ease-in-out;
 }
@@ -84,7 +84,7 @@ header:before {
 #header-nav {
     position: fixed;
     display: inline-block;
-    top: 20px;
+    top: 10px;
     font-size: 24px;
     right: 25px;
     color: #dbac2a;
@@ -171,8 +171,12 @@ main p.main-text {
 
 .main-title {
     margin: 5vh auto;
+    margin-bottom: 50px;
     text-align: center;
     font-size: 35px;
+    border-bottom: 10px solid #dbac2a;
+    padding-bottom: 10px;
+    display: inline-block;
 }
 
 .sub-main-title{
@@ -181,25 +185,25 @@ main p.main-text {
     margin-bottom: 30px;
 }
 
-.how-to-use-table{
-    width: 75%;
+.how-to-use-box{
+    max-width: 700px;
     margin: auto;
+    padding: 0 50px;
 }
 
 .how-to-use-text{
-    text-align: center;
-    font-size: 30px;
+    text-align: left;
+    font-size: 25px;
     text-shadow: #ccc 0 0 1px;
+    margin-top: 50px;
+    margin-bottom: 14px;
+    border-left: 10px solid #dbac2a;
+    padding-left: 10px;
 }
 
 .how-to-use-image{
-    width: 100%;
-    opacity: .95;
-}
-
-.how-to-use-image:hover{
-    opacity: 1;
     box-shadow: #dbac2a 0 0 7px;
+    width: 100%;
 }
 
 .download-div{
@@ -211,7 +215,10 @@ main p.main-text {
     color: white;
     background-color: #dbac2a;
     border-radius: 3px;
-    padding: 10px 20px;
+    padding: 10px 0;
+    margin: 50px auto;
+    display: block;
+    width: 50vw;
 }
 
 .download-button:hover{
@@ -266,7 +273,7 @@ footer img{
 .copyright{
     color: #ccc;
     position: absolute;
-    bottom: 280px;
+    bottom: 270px;
     right: 20px;
 }
 
@@ -296,6 +303,10 @@ footer img{
         width: 70%;
     }
 
+    .download-button {
+        width: 70%;
+    }
+
     #header-navbar {
         background-color: #232a3a !important;
         box-shadow: 0px 15px 25px #232a3a;
@@ -304,6 +315,10 @@ footer img{
 
 @media only screen and (max-width: 400px) {
     .main-text {
+        width: 89%;
+    }
+
+    .download-button {
         width: 89%;
     }
 }

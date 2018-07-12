@@ -202,9 +202,18 @@ class GameCollection(ScrollView):
     def on_datastore(self, _, datastore):
         for game in datastore:
             for path in datastore[game]:
-                path = os.path.join(os.path.splitdrive(os.getcwd())[0], path)
                 if os.path.isdir(path):
                     self.data[game] = path
+
+        # DUMMY
+        # self.data = {
+        #     name: 'DUMMY_PATH'
+        #     for name in [
+        #         'League of Legends', 'Dota 2', 'Getting Over It',
+        #         'Nier: Automata', 'Hearthstone', 'Overwatch',
+        #         'Heroes of the Storm'
+        #     ]
+        # }
 
         info('Game searching finished | Select your game')
 
@@ -260,16 +269,16 @@ class GameButton(Button, HoveringBehavior):
     def load_next_image(self):
         self.update_image(index=self.last_image_index + 1)
 
-    def on_request_success(self, req=None, result=None, index=0):
+    def on_request_success(self, req, result, index):
         image_url = get_image_url_from_response(result, index)
+        self.last_image_index = index
         self.ids.image.source = image_url
         self.ids.image.opacity = 1
-        self.last_image_index = index
 
     def on_mouse_pos(self, _, pos):
         x1, y1 = self.to_window(*self.pos)
         x2, y2 = x1 + self.width, y1 + self.height
-        mouse_x, mouse_y = map(int, pos)
+        mouse_x, mouse_y = pos
 
         self.hovering = x1 < mouse_x and x2 > mouse_x and y1 < mouse_y and y2 > mouse_y
 
