@@ -11,7 +11,7 @@ from theme import *
 from new_thread import new_thread
 
 import kivy
-kivy.require('1.10.0')
+kivy.require('1.10.1')
 
 from kivy import Config
 Config.set('graphics', 'multisamples', 0)
@@ -41,7 +41,7 @@ from kivy.uix.listview import ListItemButton
 from kivy.network.urlrequest import UrlRequest
 
 from windowdragbehavior import WindowDragBehavior
-from hovering_behavior import HoveringBehavior
+from hovering_behavior import RelativeLayoutHoveringBehavior
 from custbutton import CustButton
 from get_image_url import TEMPLATE, HEADERS, get_image_url_from_response
 
@@ -186,7 +186,8 @@ class GameCollection(ScrollView):
         self.ids.board.clear_widgets()
 
         for game, path in self.data.items():
-            button = GameButton(text=game, path=path)
+            path, exe = os.path.split(path)
+            button = GameButton(text=game, path=path, exe=exe)
             self.game_buttons.append(button)
             self.ids.board.add_widget(button)
 
@@ -202,7 +203,7 @@ class GameCollection(ScrollView):
     def on_datastore(self, _, datastore):
         for game in datastore:
             for path in datastore[game]:
-                if os.path.isdir(path):
+                if os.path.exists(path):
                     self.data[game] = path
 
         # DUMMY
@@ -244,11 +245,17 @@ class CustAsyncImage(AsyncImage):
             pass
 
 
-class GameButton(Button, HoveringBehavior):
+class GameButton(Button, RelativeLayoutHoveringBehavior):
     image_ready = False
     last_image_index = 0
     loading_image = False
     path = StringProperty()
+    exe = StringProperty()
+
+    def launch_game(self):
+        info(f'Launching {self.text} | Get ready')
+        if self.exe:
+            os.startfile(os.path.join(self.path, self.exe))
 
     def update_image(self, index=0):
         if self.image_ready or self.loading_image:
@@ -274,13 +281,6 @@ class GameButton(Button, HoveringBehavior):
         self.last_image_index = index
         self.ids.image.source = image_url
         self.ids.image.opacity = 1
-
-    def on_mouse_pos(self, _, pos):
-        x1, y1 = self.to_window(*self.pos)
-        x2, y2 = x1 + self.width, y1 + self.height
-        mouse_x, mouse_y = pos
-
-        self.hovering = x1 < mouse_x and x2 > mouse_x and y1 < mouse_y and y2 > mouse_y
 
     def on_hovering(self, _, is_hovering):
         if is_hovering:

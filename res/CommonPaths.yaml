@@ -1,3 +1,10 @@
+# There can be unlimited number of paths for each game. You are able to add path to exe file or just a dir.
+# x86 and x64 are just examples. To specify architecture is not required.
+# Add paths in following format:
+
+# GameName: [/some/path/x86/game.exe, /some/path/x64/game.exe, /some/other/path/game.exe, /some/dir/]
+
 League of Legends: [/Riot Games/League of Legends/LeagueClient.exe]
 World of Tanks: [/Games/WorldOfTanks/]
 Hearthstone: [/Program Files (x86)/Hearthstone/Hearthstone Beta Launcher.exe]
+Battlerite: [/Program Files (x86)/Steam/steamapps/common/Battlerite/Battlerite.exe]

@@ -8,6 +8,7 @@
 #:import Tweaks tweaks.Tweaks
 #:import get_version_number get_version_number.get_version_number
 #:import join os.path.join
+#:import RelativeLayoutHoveringBehavior hovering_behavior.RelativeLayoutHoveringBehavior
 
 RootLayout:
 <Widget>:
@@ -18,7 +19,7 @@ RootLayout:
     background_normal: 'img/FFFFFF-1.png'
     background_disabled_normal: self.background_normal
     background_down: self.background_normal
-    background_disabled_down: self.background_down
+    background_disabled_down: self.background_normal
 
 <HeaderLabel@WindowDragBehavior+Label>:
     canvas.before:
@@ -186,6 +187,11 @@ RootLayout:
     valign: 'bottom'
     padding: 0, 6
 
+<GameButtonMini@IconButton+RelativeLayoutHoveringBehavior>:
+    background_color: 0, 0, 0, 0
+    background_normal: 'img/FFFFFF-0.png'
+    background_hovering: self.background_normal
+
 <GameButton@Button>:
     background_normal: 'img/FFFFFF-1.png'
     background_down: self.background_normal
@@ -223,6 +229,15 @@ RootLayout:
             Rectangle:
                 pos: self.pos
                 size: self.size
+
+    GameButtonMini:
+        text: '\ue768'
+        x: root.x + root.width - self.width
+        y: root.y + root.height - self.height
+        size: 40, 40
+        opacity: 1 if root.hovering and root.exe else 0
+        on_release: root.launch_game()
+
 
 <GameCollection@ScrollView>:
     padding: 40, 0

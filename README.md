@@ -4,6 +4,14 @@
 Website is located at https://xtremeware.github.io/XtremeUpdater.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
+## v0.51
+*Note: Added support for kivy 1.10.1*
+
+ **New features**
+  - You can now start games from the game collection
+  
+  *Note: Some Steam games may not start correctly due to missing initialization of the Steam Client.*
+
 ## v0.5
 *Note: We are removing `source.py` and all of it's deps in this update and everything is now ported to [kivy](https://github.com/kivy/kivy) gui.*
 

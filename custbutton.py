@@ -5,7 +5,6 @@ from kivy.clock import Clock
 from hovering_behavior import HoveringBehavior
 from theme import *
 
-
 class CustButton(Button, HoveringBehavior):
     background_hovering = StringProperty('img/button_noise_with_border.png')
     color_hovering = ListProperty(prim)
@@ -43,10 +42,8 @@ class CustButton(Button, HoveringBehavior):
                 d=.1).start(self)
             self.background_normal = self.orig_background_normal
 
-    def on_disabled(self, _, is_disabled):
-        super().on_disabled(_, is_disabled)
-
-        if is_disabled:
+    def on_disabled(self, *args):
+        if self.disabled:
             Animation(opacity=0, d=.1).start(self)
 
         else:
