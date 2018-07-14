@@ -11,9 +11,6 @@
 #:import RelativeLayoutHoveringBehavior hovering_behavior.RelativeLayoutHoveringBehavior
 
 RootLayout:
-<Widget>:
-    font_name: 'fnt/Roboto-Regular.ttf'
-
 <CustButton@Button>:
     background_color: Window.clearcolor
     background_normal: 'img/FFFFFF-1.png'
@@ -68,13 +65,12 @@ RootLayout:
     size_hint_x: None
     width: 120
     background_color: theme.dark
-    font_name: 'fnt/Roboto-Bold.ttf'
+    bold: True
     font_size: 18
     border: [2, 2, 2, 2]
     background_normal: 'img/noise_texture.png'
 
 <IconNavigationButton@NavigationButton+IconButton>
-    font_name: 'fnt/segmdl2.ttf'
 
 <Navigation@BoxLayout>:
     size_hint_y: None
@@ -138,6 +134,8 @@ RootLayout:
     selected_color: theme.prim
     deselected_color: theme.sec
     color: theme.fg if self.selectable else theme.disabled
+    size_hint_y: None
+    height: 25
 
     Label:
         text: get_version_number(join(app.root.ids.content_updater_path_info.text, root.text))
@@ -160,9 +158,8 @@ RootLayout:
     adapter:
         DllViewAdapter(
         data=[],
-        args_converter=lambda index, rec: {'text': rec['text'], 'selectable': True, 'size_hint_y': None, 'height': 25},
+        args_converter=lambda index, item: {'text': item.get('text', ''), 'selectable': item.get('selectable', False)},
         cls='DllViewItem',
-        allow_empty_selection=True,
         selection_mode='multiple'
         )
 
@@ -173,7 +170,6 @@ RootLayout:
     cursor_color: theme.prim
     cursor_width: 2
     font_size: 18
-    font_name: 'fnt/Roboto-Bold.ttf'
     foreground_color: theme.sec
     multiline: False
     selection_color: theme.prim
@@ -182,7 +178,7 @@ RootLayout:
 
 <DllActionButton@CustButton>:
     size_hint_x: None
-    font_name: 'fnt/Roboto-Bold.ttf'
+    bold: True
     text_size: self.size
     halign: 'center'
     valign: 'bottom'

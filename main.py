@@ -3,6 +3,7 @@ from _thread import start_new
 import yaml
 import os
 import kivy
+import win32api
 kivy.require('1.10.1')
 
 from kivy import Config
@@ -12,6 +13,7 @@ Config.set('graphics', 'height', 550)
 Config.set('graphics', 'borderless', 1)
 Config.set('graphics', 'resizable', 0)
 Config.set('input', 'mouse', 'mouse, disable_multitouch')
+Config.set('kivy', 'icon', 'img/icon.png')
 
 from kivy.app import App
 from kivy.core.window import Window
@@ -38,6 +40,7 @@ from theme import *
 Window.clearcolor = sec
 
 app = App.get_running_app
+
 
 def info(text):
     app().root.info(text)
@@ -146,10 +149,15 @@ class GameCollection(ScrollView):
         UrlRequest(self.COMMON_PATHS_URL, on_request_success)
 
     def on_datastore(self, _, datastore):
-        for game in datastore:
-            for path in datastore[game]:
-                if os.path.exists(path):
-                    self.data[game] = path
+        drives = win32api.GetLogicalDriveStrings()
+        drives = drives.split('\000')[:-1]
+
+        for drive in drives:
+            for game in datastore:
+                for path in datastore[game]:
+                    path_with_drive = os.path.join(drive, path)
+                    if os.path.exists(path_with_drive):
+                        self.data[game] = path
 
         info('Game searching finished | Select your game')
 
@@ -310,11 +318,19 @@ class PlaceHolder(Label):
 class DllViewItem(ListItemButton):
     selectable = BooleanProperty(False)
 
-    def on_is_selected(self, DllViewItem, is_selected):
-        if is_selected and self.selectable:
-            self.select()
+    def on_is_selected(self, *args):
+        if self.is_selected and self.selectable:
+            super().select()
+
+            self.background_color = self.deselected_color
+            Animation.stop_all(self)
+            Animation(background_color=self.selected_color, d=.1).start(self)
         else:
-            self.deselect()
+            super().deselect()
+
+            self.background_color = self.selected_color
+            Animation.stop_all(self)
+            Animation(background_color=self.deselected_color, d=.1).start(self)
 
 
 class DllViewAdapter(ListAdapter):
@@ -358,7 +374,7 @@ class DllViewAdapter(ListAdapter):
     def get_selectable_views(self) -> list:
         return [
             self.get_view(index) for index, item in enumerate(self.data)
-            if item['selectable']
+            if item.get('selectable', False)
         ]
 
     def invert_selection(self):
@@ -366,9 +382,14 @@ class DllViewAdapter(ListAdapter):
             lambda *args: self.select_list(self.get_selectable_views()), 0)
 
 
-
 class RootLayout(BoxLayout, HoveringBehavior):
     mouse_highlight_pos = ListProperty([-120, -120])
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+        OverdrawLabel(self.ids.dll_view, '\uf12b',
+                      'First, select a directory')
 
     def on_mouse_pos(self, _, pos):
         x, y = pos
@@ -408,8 +429,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
             OverdrawLabel(self.ids.dll_view, '\uede4', 'Looking for dlls..')
 
             self.ids.dll_view.adapter.data = [{
-                'text': item,
-                'selectable': False
+                'text': item
             } for item in local_dlls]
             self.ids.dll_view.adapter.invert_selection()
 
@@ -453,10 +473,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
 
 class XtremeUpdaterApp(App):
-    def on_start(self):
-        # Remove this function
-        OverdrawLabel(self.root.ids.dll_view, '\uf12b',
-                      'First, select a directory')
+    icon = 'img/icon.png'        
 
 
 if __name__ == '__main__':

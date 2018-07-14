@@ -4,6 +4,22 @@
 Website is located at https://xtremeware.github.io/XtremeUpdater.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
+**Known issues**
+  - *Refresh button* does not work
+  - Images in *Game Collection* may sometimes fail to show up
+
+## v0.53
+**New features**
+  - Added support for multiple drives
+
+**Tweaks**
+  - App now has an icon in the window manager (Python icon on the taskbar still remains, of course)
+  - Selecting and deselecting dlls now has a little animation
+
+**Bugfixes**
+  - Fixed bug causing to allow unavailable dll selection
+  - Fixed bug causing the app to crash upon selecting directory offline
+
 ## v0.52
 *Code cleanup*
 
@@ -15,7 +31,7 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
 *Note: Added support for kivy 1.10.1*
 
  **New features**
-  - You can now start games from the game collection
+  - You can now start games from the *Game Collection*
   
   *Note: Some Steam games may not start correctly due to missing initialization of the Steam Client.*
 

@@ -1,5 +1,5 @@
 Dll versioning
 Try to combine PlaceHolder and OverdrawLabel together
 Fix refresh button
-Fix images
+Fix images; seems like they are able to load only 2 sources
 Images caching
