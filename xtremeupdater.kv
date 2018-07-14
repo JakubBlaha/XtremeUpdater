@@ -1,7 +1,7 @@
-#:kivy 1.10.0
+#:kivy 1.10.1
 
 #:import theme theme
-#:import WindowDragBehavior main.WindowDragBehavior
+#:import WindowDragBehavior windowdragbehavior.WindowDragBehavior
 #:import Window kivy.core.window.Window
 #:import ListItemButton kivy.uix.listview.ListItemButton
 #:import DllViewAdapter main.DllViewAdapter
@@ -71,6 +71,7 @@ RootLayout:
     font_name: 'fnt/Roboto-Bold.ttf'
     font_size: 18
     border: [2, 2, 2, 2]
+    background_normal: 'img/noise_texture.png'
 
 <IconNavigationButton@NavigationButton+IconButton>
     font_name: 'fnt/segmdl2.ttf'
@@ -159,7 +160,7 @@ RootLayout:
     adapter:
         DllViewAdapter(
         data=[],
-        args_converter=lambda index, rec: {'text': rec['text'], 'selectable': rec['selectable'], 'size_hint_y': None, 'height': 25},
+        args_converter=lambda index, rec: {'text': rec['text'], 'selectable': True, 'size_hint_y': None, 'height': 25},
         cls='DllViewItem',
         allow_empty_selection=True,
         selection_mode='multiple'
@@ -186,6 +187,7 @@ RootLayout:
     halign: 'center'
     valign: 'bottom'
     padding: 0, 6
+    disabled: True
 
 <GameButtonMini@IconButton+RelativeLayoutHoveringBehavior>:
     background_color: 0, 0, 0, 0
@@ -235,7 +237,8 @@ RootLayout:
         x: root.x + root.width - self.width
         y: root.y + root.height - self.height
         size: 40, 40
-        opacity: 1 if root.hovering and root.exe else 0
+        opacity: float(root.hovering)
+        disabled: not root.exe 
         on_release: root.launch_game()
 
 
@@ -329,7 +332,8 @@ RootLayout:
                     id: content_updater_path_info
 
                 IconButton:
-                    disabled: not app.refresh_button_active
+                    id: refresh_button
+                    disabled: True
                     text: '\ue72c'
                     background_color: theme.dark
                     on_release: app.root.load_dll_view_data(app.root.ids.content_updater_path_info.text)

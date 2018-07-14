@@ -4,6 +4,13 @@
 Website is located at https://xtremeware.github.io/XtremeUpdater.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
+## v0.52
+*Code cleanup*
+
+**Bugfixes**
+ - Fixed bug causing freeze when selecting directory without any dlls.
+ - Fixed bug which caused refresh button to crash the app
+
 ## v0.51
 *Note: Added support for kivy 1.10.1*
 

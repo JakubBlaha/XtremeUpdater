@@ -12,6 +12,18 @@ class HoveringBehavior(Widget):
     def on_mouse_pos(self, _, pos):
         self.hovering = super().collide_point(*pos)
 
+    def on_hovering(self, *args):
+        if self.hovering:
+            self.on_enter()
+        else:
+            self.on_leave()
+
+    def on_enter(self):
+        pass
+
+    def on_leave(self):
+        pass
+
 class RelativeLayoutHoveringBehavior(HoveringBehavior):
     def on_mouse_pos(self, _, pos):
         x1, y1 = self.to_window(*self.pos)

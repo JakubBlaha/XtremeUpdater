@@ -1,20 +1,12 @@
 from easygui import diropenbox
-import urllib.request
-from bs4 import BeautifulSoup
-from shutil import copy
-from threading import Thread
+from _thread import start_new
 import yaml
 import os
-from distutils.version import StrictVersion
-
-from theme import *
-from new_thread import new_thread
-
 import kivy
 kivy.require('1.10.1')
 
 from kivy import Config
-Config.set('graphics', 'multisamples', 0)
+Config.set('graphics', 'multisamples', 0)  # Hotfix for OpenGL detection bug
 Config.set('graphics', 'width', 1000)
 Config.set('graphics', 'height', 550)
 Config.set('graphics', 'borderless', 1)
@@ -22,158 +14,111 @@ Config.set('graphics', 'resizable', 0)
 Config.set('input', 'mouse', 'mouse, disable_multitouch')
 
 from kivy.app import App
-from kivy.clock import Clock
-from kivy.clock import mainthread
-from kivy.animation import Animation
 from kivy.core.window import Window
-Window.clearcolor = sec
+from kivy.animation import Animation
+from kivy.clock import Clock, mainthread
+from kivy.network.urlrequest import UrlRequest
+from kivy.adapters.listadapter import ListAdapter
 
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.pagelayout import PageLayout
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.label import Label
+from kivy.uix.pagelayout import PageLayout
 from kivy.uix.button import Button
-from kivy.uix.scrollview import ScrollView
+from kivy.uix.label import Label
 from kivy.uix.image import AsyncImage
-from kivy.properties import BooleanProperty, StringProperty, NumericProperty, ObjectProperty, ListProperty, DictProperty
-from kivy.adapters.listadapter import ListAdapter
 from kivy.uix.listview import ListItemButton
-from kivy.network.urlrequest import UrlRequest
+from kivy.uix.scrollview import ScrollView
+from kivy.properties import StringProperty, ObjectProperty, DictProperty, ListProperty, NumericProperty, BooleanProperty
 
-from windowdragbehavior import WindowDragBehavior
-from hovering_behavior import RelativeLayoutHoveringBehavior
-from custbutton import CustButton
-from get_image_url import TEMPLATE, HEADERS, get_image_url_from_response
+from dll_updater import DllUpdater
+from hovering_behavior import RelativeLayoutHoveringBehavior, HoveringBehavior
+from get_image_url import get_image_url_from_response, TEMPLATE, HEADERS
+from theme import *
 
-app = lambda: App.get_running_app()
-info = lambda text: app().root.info(text)
+Window.clearcolor = sec
 
+app = App.get_running_app
 
-def local_dlls(path):
-    return [
-        item for item in os.listdir(path)
-        if os.path.splitext(item)[1] == '.dll'
-    ]
+def info(text):
+    app().root.info(text)
 
 
-def get_data(url):
-    return urllib.request.urlopen(url).read()
+def new_thread(fn):
+    def wrapper(*args, **kwargs):
+        start_new(fn, args, kwargs)
+
+    return wrapper
 
 
-class DllUpdater:
-    URL = "https://github.com/XtremeWare/XtremeUpdater/tree/master/dll/"
-    RAW_URL = "https://github.com/XtremeWare/XtremeUpdater/raw/master/dll/"
-    BACKUP_DIR = ".backup/"
+class CustButton(Button, HoveringBehavior):
+    background_hovering = StringProperty('img/button_noise_with_border.png')
+    color_hovering = ListProperty(prim)
+    background_color_hovering = ListProperty(disabled)
 
-    @classmethod
-    def available_dlls(cls):
-        try:
-            html = get_data(cls.URL)
+    def __init__(self, **kw):
+        super().__init__(**kw)
 
-        except:
-            app().refresh_button_active = True
+        def on_frame(*args):
+            self.orig_background_color = self.background_color
+            self.orig_color = self.color
 
-            info('Syncing failed | Please try again')
-            OverdrawLabel(app().root.ids.dll_view, '\uea6a',
-                          'Error when syncing')
+        Clock.schedule_once(on_frame, 0)
 
-            return False
+    def on_enter(self):
+        if not self.disabled:
+            self.orig_background_normal = self.background_normal
+            Animation(
+                color=self.color_hovering,
+                background_color=self.background_color_hovering,
+                d=.1).start(self)
+            self.background_normal = self.background_hovering
 
-        else:
-            app().refresh_button_active = False
+    def on_leave(self):
+        if not self.disabled:
+            Animation(
+                color=self.orig_color,
+                background_color=self.orig_background_color,
+                d=.1).start(self)
+            self.background_normal = self.orig_background_normal
 
-            available_dlls = []
-            soup = BeautifulSoup(html, 'html.parser')
-            for a in soup.find_all('a', {'class': 'js-navigation-open'}):
-                if a.parent.parent.get('class')[0] == 'content':
-                    available_dlls.append(a.text)
-
-            info('We have found some dll updates | Please select dlls')
-            app().root.ids.dll_view.overdrawer.dismiss()
-
-            return available_dlls
-
-    @classmethod
-    def _download_dll(cls, dllname):
-        _adress = os.path.join(cls.RAW_URL, dllname)
-        _data = get_data(_adress)
-
-        return _data
-
-    @classmethod
-    def _backup_dll(cls, path, dll):
-        dst = os.path.realpath(
-            os.path.join(cls.BACKUP_DIR,
-                         os.path.splitdrive(path)[1][1:]))
-
-        if not os.path.exists(dst):
-            os.makedirs(dst)
-
-        copy(os.path.join(path, dll), dst)
-
-    @staticmethod
-    def _overwrite_dll(path, data):
-        with open(path, 'wb') as f:
-            f.write(data)
-
-    @classmethod
-    def update_dlls(cls, path, dlls):
-        dll_num = len(dlls)
-
-        try:
-            for index, dll in enumerate(dlls):
-                info(
-                    f"Downloading {dll} ({index + 1} of {dll_num}) | Please wait.."
-                )
-                data = cls._download_dll(dll)
-
-                local_dll_path = os.path.join(path, dll)
-                with open(local_dll_path, 'rb') as f:
-                    local_dll_data = f.read()
-
-                if data == local_dll_data:
-                    continue
-
-                cls._backup_dll(path, dll)
-                cls._overwrite_dll(local_dll_path, data)
-
-        except:
-            info("Couldn't download updated dll | Please try again")
-            OverdrawLabel(app().root.ids.dll_view, '\uea39',
-                          'Dll download failed')
+    def on_disabled(self, *args):
+        if self.disabled:
+            Animation(opacity=0, d=.1).start(self)
 
         else:
-            info("We are done | Let's speed up your system now")
-            OverdrawLabel(app().root.ids.dll_view, '\ue930', 'Completed')
+            Animation(opacity=1, d=.1).start(self)
 
-    @classmethod
-    def restore_dlls(cls, path, dlls):
-        info("Restoring | Please wait..")
 
-        dll_num = len(dlls)
-        bck_path = os.path.abspath(
-            os.path.join(cls.BACKUP_DIR,
-                         os.path.splitdrive(path)[1][1:]))
+class OverdrawLabel(FloatLayout):
+    icon = StringProperty()
+    text = StringProperty()
+    template = '[size=72][font=fnt/segmdl2.ttf]{}[/font][/size]\n{}'
+    wg = ObjectProperty()
 
-        restored = 0
-        for index, dll in enumerate(dlls):
-            i = index + 1
+    @mainthread
+    def __init__(self, wg, icon='\ue943', text='', **kw):
+        self.wg = wg
+        self.icon = icon
+        self.text = text
 
-            backed_dll_path = os.path.join(bck_path, dll)
-            try:
-                copy(backed_dll_path, path)
-            except:
-                pass
-            else:
-                restored += 1
+        super().__init__(**kw)
 
-        info(f"Restoring done | Restored {restored} of {dll_num} dlls")
+        if hasattr(wg, 'overdrawer') and isinstance(wg.overdrawer,
+                                                    OverdrawLabel):
+            wg.overdrawer.dismiss()
 
-    @classmethod
-    def available_restore(cls, path):
-        bck_path = os.path.abspath(os.path.join(cls.BACKUP_DIR, path))
+        wg.overdrawer = self
+        wg.add_widget(self)
 
-        return os.listdir(bck_path)
+        Animation.stop_all(self)
+        Animation(opacity=1, d=.2).start(self)
+
+    @mainthread
+    def dismiss(self, *args):
+        Animation.stop_all(self)
+        anim = Animation(opacity=0, d=.2)
+        anim.bind(on_complete=lambda *args: self.wg.remove_widget(self))
+        anim.start(self)
 
 
 class GameCollection(ScrollView):
@@ -206,16 +151,6 @@ class GameCollection(ScrollView):
                 if os.path.exists(path):
                     self.data[game] = path
 
-        # DUMMY
-        # self.data = {
-        #     name: 'DUMMY_PATH'
-        #     for name in [
-        #         'League of Legends', 'Dota 2', 'Getting Over It',
-        #         'Nier: Automata', 'Hearthstone', 'Overwatch',
-        #         'Heroes of the Storm'
-        #     ]
-        # }
-
         info('Game searching finished | Select your game')
 
         self.update_images()
@@ -223,26 +158,6 @@ class GameCollection(ScrollView):
     def update_images(self):
         for button in self.game_buttons:
             button.update_image()
-
-
-class CustAsyncImage(AsyncImage):
-    def _on_source_load(self, value):
-        super()._on_source_load(value)
-
-        self.parent.loading_image = False
-        self.color = (1, 1, 1) if value else prim
-        self.allow_stretch = value
-        self.parent.image_ready = True
-
-    def on_error(self, *args):
-        super().on_error(*args)
-
-        self.parent.loading_image = False
-
-        try:
-            self.parent.load_next_image()
-        except IndexError:
-            pass
 
 
 class GameButton(Button, RelativeLayoutHoveringBehavior):
@@ -254,8 +169,7 @@ class GameButton(Button, RelativeLayoutHoveringBehavior):
 
     def launch_game(self):
         info(f'Launching {self.text} | Get ready')
-        if self.exe:
-            os.startfile(os.path.join(self.path, self.exe))
+        os.startfile(os.path.join(self.path, self.exe))
 
     def update_image(self, index=0):
         if self.image_ready or self.loading_image:
@@ -282,44 +196,56 @@ class GameButton(Button, RelativeLayoutHoveringBehavior):
         self.ids.image.source = image_url
         self.ids.image.opacity = 1
 
-    def on_hovering(self, _, is_hovering):
-        if is_hovering:
-            Animation(opacity=1, d=.1).start(self)
-            Animation(color=prim, opacity=1, d=.1).start(self.ids.label)
-        else:
-            Animation(opacity=.5, d=.1).start(self)
-            Animation(color=fg, opacity=.5, d=.1).start(self.ids.label)
+    def on_enter(self):
+        Animation.stop_all(self)
+        Animation(opacity=1, d=.1).start(self)
+        Animation(color=prim, opacity=1, d=.1).start(self.ids.label)
+
+    def on_leave(self):
+        Animation.stop_all(self)
+        Animation(opacity=.5, d=.1).start(self)
+        Animation(color=fg, opacity=.5, d=.1).start(self.ids.label)
 
     def on_release(self):
         app().root.load_dll_view_data(self.path)
         app().root.ids.content.page = 0
 
 
-class PageSwitchBehavior():
-    page_index = NumericProperty(None)
+class CustAsyncImage(AsyncImage):
+    def _on_source_load(self, value):
+        super()._on_source_load(value)
 
-    def on_release(self):
-        if not isinstance(self.page_index, int):
-            raise AttributeError("Bad value for attribute 'page_index'")
+        self.color = (1, 1, 1) if value else prim
+        self.allow_stretch = value
+        self.parent.loading_image = False
+        self.parent.image_ready = True
 
-        self.parent.active = self.page_index
+    def on_error(self, *args):
+        super().on_error(*args)
+
+        self.parent.loading_image = False
+        try:
+            self.parent.load_next_image()
+
+        except IndexError:
+            pass
 
 
-class NavigationButton(PageSwitchBehavior, CustButton):
-    anim_nohighlight = Animation(background_color=dark, d=.1)
-    anim_highlight = Animation(background_color=prim, color=fg, d=.1)
+class NavigationButton(CustButton):
     __active = False
+    page_index = NumericProperty()
 
     def highlight(self):
         self.__active = True
-        self.anim_highlight.start(self)
-        self.orig_background_normal = self.background_normal
+        Animation.stop_all(self)
+        Animation(background_color=prim, color=fg, d=.1).start(self)
         self.background_normal = 'img/FFFFFF-1.png'
 
     def nohighghlight(self):
         self.__active = False
-        self.anim_nohighlight.start(self)
-        self.background_normal = self.orig_background_normal
+        Animation.stop_all(self)
+        Animation(background_color=dark, d=.1).start(self)
+        self.background_normal = 'img/noise_texture.png'
 
     def on_leave(self, *args):
         if not self.__active:
@@ -328,6 +254,11 @@ class NavigationButton(PageSwitchBehavior, CustButton):
     def on_enter(self, *args):
         if not self.__active:
             super().on_enter(*args)
+
+    def on_release(self):
+        if not self.__active:
+            super().on_release()
+            self.parent.active = self.page_index
 
 
 class Navigation(BoxLayout):
@@ -338,7 +269,6 @@ class Navigation(BoxLayout):
 
     def __init__(self, **kw):
         super().__init__(**kw)
-
         Clock.schedule_once(self._init_highlight, 0)
 
     def _init_highlight(self, *args):
@@ -350,9 +280,6 @@ class Navigation(BoxLayout):
         ][::-1]
 
     def on_active(self, *args):
-        if not isinstance(self.page_layout, PageLayout):
-            raise AttributeError("Bad value for attribute 'page_layout'")
-
         self.tabs[self.__last_highlight].nohighghlight()
         self.tabs[self.active].highlight()
 
@@ -380,45 +307,6 @@ class PlaceHolder(Label):
     icon = StringProperty('\ue946')
 
 
-class OverdrawLabel(FloatLayout):
-    icon = StringProperty()
-    text = StringProperty()
-    template = '[size=72][font=fnt/segmdl2.ttf]{}[/font][/size]\n{}'
-    wg = ObjectProperty()
-
-    @mainthread
-    def __init__(self, wg, icon='\ue943', text='', **kw):
-        self.wg = wg
-
-        super().__init__(**kw)
-
-        self.icon = icon
-        self.text = text
-
-        if hasattr(wg, 'overdrawer') and isinstance(wg.overdrawer,
-                                                    OverdrawLabel):
-            wg.overdrawer.dismiss()
-
-        wg.overdrawer = self
-        wg.add_widget(self)
-
-        def on_frame(*args):
-            Animation.stop_all(self)
-            Animation(opacity=1, d=.2).start(self)
-
-        Clock.schedule_once(on_frame, 0)
-
-    @mainthread
-    def dismiss(self, *args):
-        def on_frame(*args):
-            Animation.stop_all(self)
-            anim = Animation(opacity=0, d=.2)
-            anim.bind(on_complete=lambda *args: self.wg.remove_widget(self))
-            anim.start(self)
-
-        Clock.schedule_once(on_frame, 0)
-
-
 class DllViewItem(ListItemButton):
     selectable = BooleanProperty(False)
 
@@ -436,21 +324,33 @@ class DllViewAdapter(ListAdapter):
         if self.data_from_code or not self.data:
             return
 
-        self.data_from_code = True
+        try:
+            available_dlls = DllUpdater.available_dlls()
 
-        available_dlls = DllUpdater.available_dlls()
-        self.data = [{
-            **item, 'selectable': item['text'] in available_dlls
-        } for item in self.data]
+        except:
+            app().root.ids.refresh_button.disabled = False
+            info('Syncing failed | Please try again')
+            OverdrawLabel(app().root.ids.dll_view, '\uea6a',
+                          'Error when syncing')
 
-        def on_frame(*args):
-            app(
-            ).root.ids.invert_selection_button.disabled = not self.get_selectable_views(
-            )
+        else:
+            app().root.ids.refresh_button.disabled = True
+            info('We have found some dll updates | Please select dlls')
+            app().root.ids.dll_view.overdrawer.dismiss()
 
-        Clock.schedule_once(on_frame, 0)
+            self.data_from_code = True
+            self.data = [{
+                **item, 'selectable': item['text'] in available_dlls
+            } for item in self.data]
 
-        self.data_from_code = False
+            def on_frame(*args):
+                app(
+                ).root.ids.invert_selection_button.disabled = not self.get_selectable_views(
+                )
+
+            Clock.schedule_once(on_frame, 0)
+
+            self.data_from_code = False
 
     def on_selection_change(self, *args):
         app().root.set_dll_buttons_state(self.selection)
@@ -462,18 +362,13 @@ class DllViewAdapter(ListAdapter):
         ]
 
     def invert_selection(self):
-        def callback(*args):
-            self.select_list(self.get_selectable_views())
-
-        Clock.schedule_once(callback, 0)
+        Clock.schedule_once(
+            lambda *args: self.select_list(self.get_selectable_views()), 0)
 
 
-class RootLayout(BoxLayout):
+
+class RootLayout(BoxLayout, HoveringBehavior):
     mouse_highlight_pos = ListProperty([-120, -120])
-
-    def __init__(self, **kw):
-        super().__init__(**kw)
-        Window.bind(mouse_pos=self.on_mouse_pos)
 
     def on_mouse_pos(self, _, pos):
         x, y = pos
@@ -486,60 +381,66 @@ class RootLayout(BoxLayout):
 
     @new_thread
     def load_directory(self):
-        info('Select a directory now | Waiting..')
-        path = diropenbox()
-        self.load_dll_view_data(path)
+        self.info('Select a directory now | Waiting..')
+        self.load_dll_view_data(diropenbox())
 
     @new_thread
     def load_dll_view_data(self, path):
         self.ids.content_updater_path_info.text = path
 
         if not os.path.isdir(path):
-            info('Seems like an invalid directory | Try again')
+            self.info('Seems like an invalid directory | Try again')
             return
 
         self.set_dll_buttons_state(False)
         self.ids.invert_selection_button.disabled = True
-        app().refresh_button_active = False
+        self.ids.refresh_button.disabled = True
 
-        if not local_dlls(path):
-            self.ids.dll_view.overdrawer.update(
-                icon='\ue783', text='No dlls found here')
-            info(
+        local_dlls = DllUpdater.local_dlls(path)
+
+        if not local_dlls:
+            OverdrawLabel(self.ids.dll_view, '\ue783', 'No dlls found here')
+            self.info(
                 'We have not found any dlls in this directory | Try selecting another one'
             )
 
-            return
+        else:
+            OverdrawLabel(self.ids.dll_view, '\uede4', 'Looking for dlls..')
 
-        OverdrawLabel(self.ids.dll_view, '\uede4', 'Looking for dlls..')
+            self.ids.dll_view.adapter.data = [{
+                'text': item,
+                'selectable': False
+            } for item in local_dlls]
+            self.ids.dll_view.adapter.invert_selection()
 
-        self.ids.dll_view.adapter.data = [{
-            'text': item
-        } for item in local_dlls(path)]
-
-        self.ids.dll_view.adapter.invert_selection()
-
+    @new_thread
     def update_callback(self):
         self.set_dll_buttons_state(False)
+        self.ids.invert_selection_button.disabled = True
         OverdrawLabel(self.ids.dll_view, '\ue896', 'Updating dlls..')
 
         dlls = [item.text for item in self.ids.dll_view.adapter.selection]
-        self.ids.dll_view.adapter.data = []
 
-        Thread(
-            target=DllUpdater.update_dlls,
-            args=(self.ids.content_updater_path_info.text, dlls)).start()
+        try:
+            DllUpdater.update_dlls(self.ids.content_updater_path_info.text,
+                                   dlls)
+
+        except:
+            self.info("Couldn't download updated dll | Please try again")
+            OverdrawLabel(self.ids.dll_view, '\uea39', 'Update failed')
+
+        else:
+            self.info("We are done | Let's speed up your system now")
+            OverdrawLabel(self.ids.dll_view, '\ue930', 'Completed')
 
     def restore_callback(self):
-        dlls = [item.text for item in self.ids.dll_view.adapter.selection]
+        self.info("Restoring | Please wait..")
 
+        dlls = [item.text for item in self.ids.dll_view.adapter.selection]
         DllUpdater.restore_dlls(self.ids.content_updater_path_info.text, dlls)
 
     @mainthread
     def info(self, text):
-        if text == self.ids.info_label.text:
-            return
-
         Animation.cancel_all(self.ids.info_label)
 
         def on_complete(*args):
@@ -552,21 +453,10 @@ class RootLayout(BoxLayout):
 
 
 class XtremeUpdaterApp(App):
-    refresh_button_active = BooleanProperty(False)
-
-    def __init__(self, **kw):
-        super().__init__(**kw)
-
-    def build(self):
-        return RootLayout()
-
     def on_start(self):
+        # Remove this function
         OverdrawLabel(self.root.ids.dll_view, '\uf12b',
                       'First, select a directory')
-        self.root.set_dll_buttons_state(False)
-        Clock.schedule_once(
-            lambda *args: self.root.info('Select a directory | Click the folder button'),
-            2)
 
 
 if __name__ == '__main__':
