@@ -203,7 +203,7 @@ RootLayout:
         id: image
         pos: root.pos
         size: root.size
-        opacity: 0
+        opacity: 1
         anim_delay: 0.04
         color: theme.prim
 
@@ -420,10 +420,27 @@ RootLayout:
 
         ContentLayout:
             id: content_settings
+            padding: 10, 10
 
-            PlaceHolder:
-                icon: '\ue713'
-                message: 'Nothing to set yet'
+            BoxLayout:
+                canvas.before:
+                    Color:
+                        rgba: theme.hover
+
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+
+                size_hint: None, None
+                size: 340, 40
+
+                Label:
+                    text: "Clear [i]Game Collection[/i] cached images"
+                    markup: True
+
+                IconButton:
+                    text: '\ue74d'
+                    on_release: root.clear_images_cache()
 
     Label:
         id: info_label

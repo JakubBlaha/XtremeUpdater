@@ -4,6 +4,7 @@ import yaml
 import os
 import kivy
 import win32api
+import shutil
 kivy.require('1.10.1')
 
 from kivy import Config
@@ -130,15 +131,6 @@ class GameCollection(ScrollView):
     game_buttons = ListProperty()
     datastore = ObjectProperty()
 
-    def on_data(self, _, data):
-        self.ids.board.clear_widgets()
-
-        for game, path in self.data.items():
-            path, exe = os.path.split(path)
-            button = GameButton(text=game, path=path, exe=exe)
-            self.game_buttons.append(button)
-            self.ids.board.add_widget(button)
-
     def update_local_games(self):
         info('Syncing with GitHub | Please wait..')
 
@@ -159,19 +151,54 @@ class GameCollection(ScrollView):
                     if os.path.exists(path):
                         self.data[game] = path
 
+        self.ids.board.clear_widgets()
+
+        for game, path in self.data.items():
+            path, exe = os.path.split(path)
+            button = GameButton(text=game, path=path, exe=exe)
+            self.game_buttons.append(button)
+            self.ids.board.add_widget(button)
+            button.update_image()
+
         info('Game searching finished | Select your game')
 
-        self.update_images()
 
-    def update_images(self):
-        for button in self.game_buttons:
-            button.update_image()
+class ImageCacher:
+    CACHE_DIR = '.cache/img/'
+
+    @classmethod
+    def create_cache_dir(cls):
+        os.makedirs(cls.CACHE_DIR, exist_ok=True)
+
+    @classmethod
+    def download_image(cls, query, CustAsyncImageInstance):
+        if os.path.isfile(os.path.join(cls.CACHE_DIR, query)):
+            return
+
+        UrlRequest(
+            TEMPLATE.format(query),
+            lambda req, result: cls.on_request_success(req, result, query, CustAsyncImageInstance),
+            req_headers=HEADERS)
+
+    @classmethod
+    def on_request_success(cls, req, result, query, CustAsyncImageInstance):
+        cls.create_cache_dir()
+
+        def load_image(index):
+            UrlRequest(
+                get_image_url_from_response(result, index),
+                on_success=lambda *args: CustAsyncImageInstance.reload(),
+                on_failure=lambda *args: load_image(index + 1),
+                on_redirect=lambda *args: load_image(index + 1),
+                req_headers=HEADERS,
+                file_path=os.path.join(cls.CACHE_DIR, query)
+                )
+            CustAsyncImageInstance.last_image_index = index
+        
+        load_image(0)
 
 
 class GameButton(Button, RelativeLayoutHoveringBehavior):
-    image_ready = False
-    last_image_index = 0
-    loading_image = False
     path = StringProperty()
     exe = StringProperty()
 
@@ -179,30 +206,14 @@ class GameButton(Button, RelativeLayoutHoveringBehavior):
         info(f'Launching {self.text} | Get ready')
         os.startfile(os.path.join(self.path, self.exe))
 
-    def update_image(self, index=0):
-        if self.image_ready or self.loading_image:
-            return
-
-        self.loading_image = True
-
+    def update_image(self):
         query = self.text
-        query += 'logo wallpaper'
+        query += ' logo wallpaper'
         query = query.split()
         query = '+'.join(query)
 
-        UrlRequest(
-            TEMPLATE.format(query),
-            lambda req, result: self.on_request_success(req, result, index),
-            req_headers=HEADERS)
-
-    def load_next_image(self):
-        self.update_image(index=self.last_image_index + 1)
-
-    def on_request_success(self, req, result, index):
-        image_url = get_image_url_from_response(result, index)
-        self.last_image_index = index
-        self.ids.image.source = image_url
-        self.ids.image.opacity = 1
+        ImageCacher.download_image(query, self.ids.image)
+        self.ids.image.source = os.path.join(ImageCacher.CACHE_DIR, query)
 
     def on_enter(self):
         Animation.stop_all(self)
@@ -225,18 +236,6 @@ class CustAsyncImage(AsyncImage):
 
         self.color = (1, 1, 1) if value else prim
         self.allow_stretch = value
-        self.parent.loading_image = False
-        self.parent.image_ready = True
-
-    def on_error(self, *args):
-        super().on_error(*args)
-
-        self.parent.loading_image = False
-        try:
-            self.parent.load_next_image()
-
-        except IndexError:
-            pass
 
 
 class NavigationButton(CustButton):
@@ -388,8 +387,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        OverdrawLabel(self.ids.dll_view, '\uf12b',
-                      'First, select a directory')
+        OverdrawLabel(self.ids.dll_view, '\uf12b', 'First, select a directory')
 
     def on_mouse_pos(self, _, pos):
         x, y = pos
@@ -459,6 +457,14 @@ class RootLayout(BoxLayout, HoveringBehavior):
         dlls = [item.text for item in self.ids.dll_view.adapter.selection]
         DllUpdater.restore_dlls(self.ids.content_updater_path_info.text, dlls)
 
+    def clear_images_cache(self):
+        try:
+            shutil.rmtree(os.path.join(os.getcwd(), ImageCacher.CACHE_DIR))
+            info('Done | Removed cached images')
+
+        except FileNotFoundError:
+            info('No cached images | Nothing was removed')
+
     @mainthread
     def info(self, text):
         Animation.cancel_all(self.ids.info_label)
@@ -473,7 +479,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
 
 class XtremeUpdaterApp(App):
-    icon = 'img/icon.png'        
+    icon = 'img/icon.png'
 
 
 if __name__ == '__main__':

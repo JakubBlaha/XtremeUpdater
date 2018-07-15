@@ -8,6 +8,16 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
   - *Refresh button* does not work
   - Images in *Game Collection* may sometimes fail to show up
 
+## v0.55
+**New features**
+  - Added option to remove cached images from the *Game Collection*
+
+**Tweaks**
+  - Images in the *Game Collection* now cache in `.cache/img/`.
+
+**Bugfixes**
+  - Fixed bug which caused some images in the *Game Collection* to fail to load.
+
 ## v0.54
 **Bugfixes**
   - Fixed bug causing games located on other that the system drive to not start up and load to *Updater* correctly.
