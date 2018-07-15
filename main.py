@@ -155,8 +155,8 @@ class GameCollection(ScrollView):
         for drive in drives:
             for game in datastore:
                 for path in datastore[game]:
-                    path_with_drive = os.path.join(drive, path)
-                    if os.path.exists(path_with_drive):
+                    path = os.path.join(drive, path)
+                    if os.path.exists(path):
                         self.data[game] = path
 
         info('Game searching finished | Select your game')

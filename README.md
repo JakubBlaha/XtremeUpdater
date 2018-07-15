@@ -8,6 +8,10 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
   - *Refresh button* does not work
   - Images in *Game Collection* may sometimes fail to show up
 
+## v0.54
+**Bugfixes**
+  - Fixed bug causing games located on other that the system drive to not start up and load to *Updater* correctly.
+
 ## v0.53
 **New features**
   - Added support for multiple drives
