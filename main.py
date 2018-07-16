@@ -106,7 +106,7 @@ class OverdrawLabel(FloatLayout):
         self.text = text
 
         super().__init__(**kw)
-        
+
         for child in wg.children:
             if isinstance(child, OverdrawLabel):
                 child.dismiss()
@@ -142,7 +142,8 @@ class GameCollection(ScrollView):
         def on_request_success(req, result):
             self.datastore = yaml.safe_load(result)
 
-            os.makedirs(os.path.dirname(self.COMMON_PATHS_CACHE_PATH), exist_ok=True)
+            os.makedirs(
+                os.path.dirname(self.COMMON_PATHS_CACHE_PATH), exist_ok=True)
             with open(self.COMMON_PATHS_CACHE_PATH, 'w') as stream:
                 yaml.dump(self.datastore, stream)
 
@@ -156,16 +157,31 @@ class GameCollection(ScrollView):
 
         for drive in drives:
             for game in datastore:
-                for path in datastore[game]:
-                    path = os.path.join(drive, path)
+                for path in datastore[game]['paths']:
+                    path = os.path.join(
+                        drive, path) if not datastore[game].get(
+                            'expandUserPatch', False) else path
+                    launchPath = os.path.join(drive, datastore[game][
+                        'launchPath']) if not datastore[game].get(
+                            'expandUserLaunch',
+                            False) else datastore[game]['launchPath']
+
                     if os.path.exists(path):
-                        self.data[game] = path
+                        self.data[game] = {
+                            **datastore[game], 'path': path,
+                            'launchPath': launchPath
+                        }
+                        break
 
         self.ids.board.clear_widgets()
 
-        for game, path in self.data.items():
-            path, exe = os.path.split(path)
-            button = GameButton(text=game, path=path, exe=exe)
+        for game, data in self.data.items():
+            button = GameButton(
+                text=game,
+                path=data['path'],
+                exe=data['launchPath'],
+                expand_user_launch=data.get('expandUserLaunch', False),
+                expand_user_patch=data.get('expandUserPatch', False))
             self.game_buttons.append(button)
             self.ids.board.add_widget(button)
             button.update_image()
@@ -201,20 +217,27 @@ class ImageCacher:
                 on_failure=lambda *args: load_image(index + 1),
                 on_redirect=lambda *args: load_image(index + 1),
                 req_headers=HEADERS,
-                file_path=os.path.join(cls.CACHE_DIR, query)
-                )
+                file_path=os.path.join(cls.CACHE_DIR, query))
             CustAsyncImageInstance.last_image_index = index
-        
+
         load_image(0)
 
 
 class GameButton(Button, RelativeLayoutHoveringBehavior):
     path = StringProperty()
     exe = StringProperty()
+    expand_user_launch = BooleanProperty(False)
+    expand_user_patch = BooleanProperty(False)
 
     def launch_game(self):
         info(f'Launching {self.text} | Get ready')
-        os.startfile(os.path.join(self.path, self.exe))
+
+        path = self.exe
+
+        if self.expand_user_launch:
+            path = os.path.expanduser(path)
+
+        os.startfile(path)
 
     def update_image(self):
         query = self.text
@@ -236,7 +259,12 @@ class GameButton(Button, RelativeLayoutHoveringBehavior):
         Animation(color=fg, opacity=.5, d=.1).start(self.ids.label)
 
     def on_release(self):
-        app().root.load_dll_view_data(self.path)
+        path = self.path
+
+        if self.expand_user_patch:
+            path = os.path.expanduser(path)
+
+        app().root.load_dll_view_data(path)
         app().root.ids.content.page = 0
 
 
@@ -471,7 +499,6 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
         else:
             info('Done | Removed cached images')
-
 
     def clear_common_paths_cache(self):
         try:

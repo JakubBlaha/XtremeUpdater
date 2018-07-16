@@ -7,6 +7,9 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
 **Known issues**
   - Starting game from the *Game Collection* may sometimes cause *XtremeUpdater* to hang.
 
+## v0.57
+*New `CommonPaths.yaml` syntax and support for user directories.*
+
 ## v0.56
 **New features**
   - `CommonPaths.yaml` now caches.

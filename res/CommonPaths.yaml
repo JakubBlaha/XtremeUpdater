@@ -1,5 +1,3 @@
-# There can be unlimited number of paths for each game. You are able to add path to exe file or just a dir.
-# x86 and x64 are just examples. To specify architecture is not required.
 # Add paths in following format:
 
 # GameName:
