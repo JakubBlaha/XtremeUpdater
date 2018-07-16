@@ -33,4 +33,4 @@ BulletWitch:
 
 Battle.NET:
   paths: [Battle.net/]
-  launchPath: Battle.net/Battle.net Launcher.exe
+  launchPath: Battle.net/Battle.netLauncher.exe
