@@ -18,7 +18,8 @@ Hearthstone:
 
 Battlerite:
   paths: [/Program Files (x86)/Steam/steamapps/common/Battlerite/]
-  launchPath: /Program Files (x86)/Steam/steamapps/common/Battlerite/Battlerite.exe
+  launchPath: ~/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Steam/Battlerite.url
+  expandUser: True
 
 Nier-Automata:
   paths: [/NieR - Automata/]
