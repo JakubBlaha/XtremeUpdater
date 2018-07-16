@@ -4,10 +4,30 @@
 
 # GameName: [/some/path/x86/game.exe, /some/path/x64/game.exe, /some/other/path/game.exe, /some/dir/]
 
-League of Legends: [/Riot Games/League of Legends/LeagueClient.exe]
-World of Tanks: [/Games/WorldOfTanks/WoTLauncher.exe]
-Hearthstone: [/Program Files (x86)/Hearthstone/Hearthstone Beta Launcher.exe]
-Battlerite: [/Program Files (x86)/Steam/steamapps/common/Battlerite/Battlerite.exe]
-Nier-Automata: [/NieR - Automata/NieRAutomata.exe]
-BulletWitch: [/Bullet Witch/witch.exe]
-Battle.NET: [/Battle.net/Battle.net Launcher.exe]
+League of Legends:
+  paths: [/Riot Games/League of Legends/]
+  launchPath: /Riot Games/League of Legends/LeagueClient.exe
+
+World of Tanks:
+  paths: [/Games/WorldOfTanks/]
+  launchPath: /Games/WorldOfTanks/WoTLauncher.exe
+
+Hearthstone:
+  paths: [/Program Files (x86)/Hearthstone/]
+  launchPath: /Program Files (x86)/Hearthstone/Hearthstone Beta Launcher.exe
+
+Battlerite:
+  paths: [/Program Files (x86)/Steam/steamapps/common/Battlerite/]
+  launchPath: /Program Files (x86)/Steam/steamapps/common/Battlerite/Battlerite.exe
+
+Nier-Automata:
+  paths: [/NieR - Automata/]
+  launchPath: /NieR - Automata/NieRAutomata.exe
+
+BulletWitch:
+  paths: [/Bullet Witch/]
+  launchPath: /Bullet Witch/witch.exe
+
+Battle.NET:
+  paths: [/Battle.net/]
+  launchPath: /Battle.net/Battle.net Launcher.exe
