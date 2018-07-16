@@ -96,20 +96,20 @@ class CustButton(Button, HoveringBehavior):
 class OverdrawLabel(FloatLayout):
     icon = StringProperty()
     text = StringProperty()
-    template = '[size=72][font=fnt/segmdl2.ttf]{}[/font][/size]\n{}'
     wg = ObjectProperty()
+    TEMPLATE = '[size=72][font=fnt/segmdl2.ttf]{}[/font][/size]\n{}'
 
     @mainthread
-    def __init__(self, wg, icon='\ue943', text='', **kw):
+    def __init__(self, wg, icon, text, **kw):
         self.wg = wg
         self.icon = icon
         self.text = text
 
         super().__init__(**kw)
-
-        if hasattr(wg, 'overdrawer') and isinstance(wg.overdrawer,
-                                                    OverdrawLabel):
-            wg.overdrawer.dismiss()
+        
+        for child in wg.children:
+            if isinstance(child, OverdrawLabel):
+                child.dismiss()
 
         wg.overdrawer = self
         wg.add_widget(self)
@@ -127,6 +127,7 @@ class OverdrawLabel(FloatLayout):
 
 class GameCollection(ScrollView):
     COMMON_PATHS_URL = 'https://raw.githubusercontent.com/XtremeWare/XtremeUpdater/master/res/CommonPaths.yaml'
+    COMMON_PATHS_CACHE_PATH = '.cache/common/paths/CommonPaths.yaml'
     data = DictProperty()
     game_buttons = ListProperty()
     datastore = ObjectProperty()
@@ -134,9 +135,18 @@ class GameCollection(ScrollView):
     def update_local_games(self):
         info('Syncing with GitHub | Please wait..')
 
+        if os.path.isfile(self.COMMON_PATHS_CACHE_PATH):
+            with open(self.COMMON_PATHS_CACHE_PATH) as stream:
+                self.datastore = yaml.safe_load(stream)
+
         def on_request_success(req, result):
-            info('Successfully synced with GitHub | Searching for games..')
             self.datastore = yaml.safe_load(result)
+
+            os.makedirs(os.path.dirname(self.COMMON_PATHS_CACHE_PATH), exist_ok=True)
+            with open(self.COMMON_PATHS_CACHE_PATH, 'w') as stream:
+                yaml.dump(self.datastore, stream)
+
+            info('Successfully synced with GitHub | Updated database')
 
         UrlRequest(self.COMMON_PATHS_URL, on_request_success)
 
@@ -333,13 +343,9 @@ class DllViewItem(ListItemButton):
 
 
 class DllViewAdapter(ListAdapter):
-    data_from_code = False
-
-    def on_data(self, *args):
-        if self.data_from_code or not self.data:
-            return
-
+    def refresh_available(self):
         try:
+            app().root.ids.dll_view.overdrawer.dismiss()
             available_dlls = DllUpdater.available_dlls()
 
         except:
@@ -353,7 +359,6 @@ class DllViewAdapter(ListAdapter):
             info('We have found some dll updates | Please select dlls')
             app().root.ids.dll_view.overdrawer.dismiss()
 
-            self.data_from_code = True
             self.data = [{
                 **item, 'selectable': item['text'] in available_dlls
             } for item in self.data]
@@ -364,8 +369,6 @@ class DllViewAdapter(ListAdapter):
                 )
 
             Clock.schedule_once(on_frame, 0)
-
-            self.data_from_code = False
 
     def on_selection_change(self, *args):
         app().root.set_dll_buttons_state(self.selection)
@@ -427,8 +430,10 @@ class RootLayout(BoxLayout, HoveringBehavior):
             OverdrawLabel(self.ids.dll_view, '\uede4', 'Looking for dlls..')
 
             self.ids.dll_view.adapter.data = [{
-                'text': item
+                'text': item,
+                'selectable': False
             } for item in local_dlls]
+            self.ids.dll_view.adapter.refresh_available()
             self.ids.dll_view.adapter.invert_selection()
 
     @new_thread
@@ -460,10 +465,36 @@ class RootLayout(BoxLayout, HoveringBehavior):
     def clear_images_cache(self):
         try:
             shutil.rmtree(os.path.join(os.getcwd(), ImageCacher.CACHE_DIR))
-            info('Done | Removed cached images')
 
         except FileNotFoundError:
             info('No cached images | Nothing was removed')
+
+        else:
+            info('Done | Removed cached images')
+
+
+    def clear_common_paths_cache(self):
+        try:
+            os.remove(GameCollection.COMMON_PATHS_CACHE_PATH)
+
+        except FileNotFoundError:
+            info('No cached game database | Nothing was removed')
+
+        else:
+            info('Done | Removed cached game database')
+
+    def clear_cache(self):
+        try:
+            shutil.rmtree(os.path.join(os.getcwd(), '.cache'))
+
+        except FileNotFoundError:
+            info('No cached files | Nothing was removed')
+
+        else:
+            info('Done | Removed cached files')
+
+    def refresh_dll_view(self):
+        self.load_dll_view_data(self.ids.content_updater_path_info.text)
 
     @mainthread
     def info(self, text):

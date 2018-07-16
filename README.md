@@ -6,11 +6,25 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
 **Known issues**
   - *Refresh button* does not work
-  - Images in *Game Collection* may sometimes fail to show up
+  - Starting game from the *Game Collection* may sometimes cause *XtremeUpdater* to hang.
+
+## v0.56
+**New features**
+  - `CommonPaths.yaml` now caches.
+  - You can now remove cached `CommonPaths.yaml`.
+  - You can now remove all cache at once.
+
+**Tweaks**
+  - All buttons with labels (*Clear cache*, *Clear users temp folder*) now have the same width, button located at the left side and text aligned to the left.
+
+**Bugfixes**
+  - *Delete images cache* button is now correctly in the up left corner.
+  - Fixed refresh button.
+  - Fixed *WoT* in `CommonPaths.yaml`.
 
 ## v0.55
 **New features**
-  - Added option to remove cached images from the *Game Collection*
+  - Added option to remove cached images from the *Game Collection*.
 
 **Tweaks**
   - Images in the *Game Collection* now cache in `.cache/img/`.

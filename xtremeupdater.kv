@@ -116,7 +116,7 @@ RootLayout:
         markup: True
         font_size: 36
         text_size: self.size
-        text: root.template.format(root.icon, root.text)
+        text: root.TEMPLATE.format(root.icon, root.text)
         halign: 'center'
         valign: 'center'
         opacity: root.opacity
@@ -254,6 +254,34 @@ RootLayout:
         height: self.minimum_height
 
 
+<LabelIconButton@BoxLayout>:
+    text: ''
+    icon: ''
+    command: lambda: None
+
+    canvas.before:
+        Color:
+            rgba: theme.hover
+
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    size_hint: None, None
+    size: 340, 40
+
+    IconButton:
+        text: root.icon
+        on_release: root.command()
+
+    Label:
+        padding: 10, 0
+        text: root.text
+        markup: True
+        text_size: self.size
+        valign: 'center'
+
+
 <RootLayout>:
     orientation: 'vertical'
 
@@ -386,26 +414,13 @@ RootLayout:
 
         ContentLayout:
             id: content_system
-            padding: 10, 10
+            padding: 10
+            spacing: 10
 
-            BoxLayout:
-                canvas.before:
-                    Color:
-                        rgba: theme.hover
-
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
-
-                size_hint: None, None
-                size: 280, 40
-
-                Label:
-                    text: "Clear user's temp folder"
-
-                IconButton:
-                    text: '\ue74d'
-                    on_release: Tweaks.clear_temps()
+            LabelIconButton:
+                text: "Clear user's temp folder"
+                icon: '\ue74d'
+                command: Tweaks.clear_temps
 
             PlaceHolder:
                 icon: '\ue770'
@@ -420,27 +435,25 @@ RootLayout:
 
         ContentLayout:
             id: content_settings
-            padding: 10, 10
+            padding: 10
+            spacing: 10
 
-            BoxLayout:
-                canvas.before:
-                    Color:
-                        rgba: theme.hover
+            LabelIconButton:
+                text: "Clear cache"
+                icon: '\ue74d'
+                command: root.clear_cache
 
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
+            LabelIconButton:
+                text: "Clear [i]Game Collection[/i] cached images"
+                icon: '\ue74d'
+                command: root.clear_images_cache
 
-                size_hint: None, None
-                size: 340, 40
+            LabelIconButton:
+                text: "Clear cached game database"
+                icon: '\ue74d'
+                command: root.clear_common_paths_cache
 
-                Label:
-                    text: "Clear [i]Game Collection[/i] cached images"
-                    markup: True
-
-                IconButton:
-                    text: '\ue74d'
-                    on_release: root.clear_images_cache()
+            Widget
 
     Label:
         id: info_label
