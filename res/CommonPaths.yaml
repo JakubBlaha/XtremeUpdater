@@ -1,38 +1,41 @@
-# Add paths in following format:
+# Add games in following format:
 
 # GameName:
-#   paths: [some/path/x86/, some/path/x64/, some/other/path/]
-#   launchPath: path/can/be/to/exe/or/url/or/other/launchable/file.url
+#   path: some/path/
+#   launchPath: path/to/launchable/file.exe
 #   expandUserPatch: True -- ~/expanded/path/to/patch.url
 #   expandUserLaunch: True -- ~/expanded/path/to/launch.url
 #   isURL: True -- some://url
 
+# Putting a slash before any path will force XtremeUpdater to use the system drive for the game
+# In order to add a game with multiple paths add multiple games
+
 League of Legends:
-  paths: [Riot Games/League of Legends/]
+  path: Riot Games/League of Legends/
   launchPath: Riot Games/League of Legends/LeagueClient.exe
 
 World of Tanks:
-  paths: [Games/WorldOfTanks/]
+  path: Games/WorldOfTanks/
   launchPath: Games/WorldOfTanks/WoTLauncher.exe
 
 Hearthstone:
-  paths: [Program Files (x86)/Hearthstone/]
+  path: Program Files (x86)/Hearthstone/
   launchPath: battlenet://WTCG
   isURL: True
 
 Battlerite:
-  paths: [Program Files (x86)/Steam/steamapps/common/Battlerite/]
-  launchPath: ~/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Steam/Battlerite.url
-  expandUserLaunch: True
+  path: Program Files (x86)/Steam/steamapps/common/Battlerite/
+  launchPath: steam://rungameid/504370
+  isURL: True
 
 Nier-Automata:
-  paths: [NieR - Automata/]
+  path: NieR - Automata/
   launchPath: NieR - Automata/NieRAutomata.exe
 
 BulletWitch:
-  paths: [Bullet Witch/]
+  path: Bullet Witch/
   launchPath: Bullet Witch/witch.exe
 
 Battle.NET:
-  paths: [Battle.net/]
+  path: Battle.net/
   launchPath: Battle.net/Battle.netLauncher.exe
