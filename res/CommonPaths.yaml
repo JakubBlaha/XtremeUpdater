@@ -5,6 +5,7 @@
 #   launchPath: path/can/be/to/exe/or/url/or/other/launchable/file.url
 #   expandUserPatch: True -- ~/expanded/path/to/patch.url
 #   expandUserLaunch: True -- ~/expanded/path/to/launch.url
+#   isURL: True -- some://url
 
 League of Legends:
   paths: [Riot Games/League of Legends/]
@@ -17,6 +18,7 @@ World of Tanks:
 Hearthstone:
   paths: [Program Files (x86)/Hearthstone/]
   launchPath: battlenet://WTCG
+  isURL: True
 
 Battlerite:
   paths: [Program Files (x86)/Steam/steamapps/common/Battlerite/]
