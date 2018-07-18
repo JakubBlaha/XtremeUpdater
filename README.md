@@ -7,10 +7,21 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
 **Known issues**
   - Starting game from the *Game Collection* may sometimes cause *XtremeUpdater* to hang.
 
-## v0.57
+## v0.5.8
+**New features**
+  - Support for URLs in `CommonPaths.yaml`
+
+**Removed features**
+ - Support for multiple paths in `CommonPaths.yaml`\
+ *In order to add a game with multiple paths add it like multiple games*
+
+**Bufixes**
+  - Fixed bug causing images in the *Game Collection* to be sometimes orange tinted
+
+## v0.5.7
 *New `CommonPaths.yaml` syntax and support for user directories.*
 
-## v0.56
+## v0.5.6
 **New features**
   - `CommonPaths.yaml` now caches.
   - You can now remove cached `CommonPaths.yaml`.
@@ -24,7 +35,7 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
   - Fixed refresh button.
   - Fixed *WoT* in `CommonPaths.yaml`.
 
-## v0.55
+## v0.5.5
 **New features**
   - Added option to remove cached images from the *Game Collection*.
 
@@ -34,11 +45,11 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
 **Bugfixes**
   - Fixed bug which caused some images in the *Game Collection* to fail to load.
 
-## v0.54
+## v0.5.4
 **Bugfixes**
   - Fixed bug causing games located on other that the system drive to not start up and load to *Updater* correctly.
 
-## v0.53
+## v0.5.3
 **New features**
   - Added support for multiple drives.
 
@@ -50,14 +61,14 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
   - Fixed bug causing to allow unavailable dll selection.
   - Fixed bug causing the app to crash upon selecting directory offline.
 
-## v0.52
+## v0.5.2
 *Code cleanup*
 
 **Bugfixes**
  - Fixed bug causing freeze when selecting directory without any dlls.
  - Fixed bug which caused refresh button to crash the app.
 
-## v0.51
+## v0.5.1
 *Note: Added support for kivy 1.10.1*
 
  **New features**

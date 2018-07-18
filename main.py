@@ -1,5 +1,6 @@
 from easygui import diropenbox
 from _thread import start_new
+from webbrowser import open as openurl
 import yaml
 import os
 import kivy
@@ -128,8 +129,6 @@ class OverdrawLabel(FloatLayout):
 class GameCollection(ScrollView):
     COMMON_PATHS_URL = 'https://raw.githubusercontent.com/XtremeWare/XtremeUpdater/master/res/CommonPaths.yaml'
     COMMON_PATHS_CACHE_PATH = '.cache/common/paths/CommonPaths.yaml'
-    data = DictProperty()
-    game_buttons = ListProperty()
     datastore = ObjectProperty()
 
     def update_local_games(self):
@@ -144,47 +143,50 @@ class GameCollection(ScrollView):
 
             os.makedirs(
                 os.path.dirname(self.COMMON_PATHS_CACHE_PATH), exist_ok=True)
+
             with open(self.COMMON_PATHS_CACHE_PATH, 'w') as stream:
                 yaml.dump(self.datastore, stream)
 
             info('Successfully synced with GitHub | Updated database')
 
-        UrlRequest(self.COMMON_PATHS_URL, on_request_success)
+        def on_request_error(*args):
+            info('Failed to sync with GiHub | Cached version may be available')
 
-    def on_datastore(self, _, datastore):
+        UrlRequest(self.COMMON_PATHS_URL, on_request_success, on_error=on_request_error)
+
+    def on_datastore(self, *args):
+        self.ids.board.clear_widgets()
+
         drives = win32api.GetLogicalDriveStrings()
         drives = drives.split('\000')[:-1]
 
         for drive in drives:
-            for game in datastore:
-                for path in datastore[game]['paths']:
-                    path = os.path.join(
-                        drive, path) if not datastore[game].get(
-                            'expandUserPatch', False) else path
-                    launchPath = os.path.join(drive, datastore[game][
-                        'launchPath']) if not datastore[game].get(
-                            'expandUserLaunch',
-                            False) else datastore[game]['launchPath']
+            for game, data in self.datastore.items():
+                path = data.get('path', '')
+                launch_path = data.get('launchPath', '')
+                expand_patch = data.get('expandUserPatch', False)
+                expand_launch = data.get('expandUserLaunch', False)
+                is_url = data.get('isURL', False)
 
-                    if os.path.exists(path):
-                        self.data[game] = {
-                            **datastore[game], 'path': path,
-                            'launchPath': launchPath
-                        }
-                        break
+                if not expand_patch:
+                    path = os.path.join(drive, path)
 
-        self.ids.board.clear_widgets()
+                if not expand_launch and not is_url:
+                    launch_path = os.path.join(drive, launch_path)
 
-        for game, data in self.data.items():
-            button = GameButton(
-                text=game,
-                path=data['path'],
-                exe=data['launchPath'],
-                expand_user_launch=data.get('expandUserLaunch', False),
-                expand_user_patch=data.get('expandUserPatch', False))
-            self.game_buttons.append(button)
-            self.ids.board.add_widget(button)
-            button.update_image()
+                if not os.path.isdir(path):
+                    continue
+
+                button = GameButton(
+                    text=game,
+                    path=path,
+                    exe=launch_path,
+                    expand_user_patch=expand_patch,
+                    expand_user_launch=expand_launch,
+                    is_url=is_url
+                )
+                self.ids.board.add_widget(button)
+                button.update_image()
 
         info('Game searching finished | Select your game')
 
@@ -226,13 +228,18 @@ class ImageCacher:
 class GameButton(Button, RelativeLayoutHoveringBehavior):
     path = StringProperty()
     exe = StringProperty()
-    expand_user_launch = BooleanProperty(False)
-    expand_user_patch = BooleanProperty(False)
+    expand_user_launch = BooleanProperty()
+    expand_user_patch = BooleanProperty()
+    is_url = BooleanProperty()
 
     def launch_game(self):
         info(f'Launching {self.text} | Get ready')
 
         path = self.exe
+
+        if self.is_url:
+            openurl(path)
+            return
 
         if self.expand_user_launch:
             path = os.path.expanduser(path)
@@ -266,14 +273,6 @@ class GameButton(Button, RelativeLayoutHoveringBehavior):
 
         app().root.load_dll_view_data(path)
         app().root.ids.content.page = 0
-
-
-class CustAsyncImage(AsyncImage):
-    def _on_source_load(self, value):
-        super()._on_source_load(value)
-
-        self.color = (1, 1, 1) if value else prim
-        self.allow_stretch = value
 
 
 class NavigationButton(CustButton):
