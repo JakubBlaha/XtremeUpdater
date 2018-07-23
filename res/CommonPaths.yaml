@@ -38,7 +38,7 @@ BulletWitch:
 
 Battle.NET:
   path: Battle.net/
-  launchPath: Battle.net/Battle.netLauncher.exe
+  launchPath: Battle.net/Battle.net Launcher.exe
   
 Blade and Soul: 
   path: Program Files/NCSOFT/BnS/
