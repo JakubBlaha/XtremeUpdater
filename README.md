@@ -7,6 +7,27 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
 **Known issues**
   - Starting game from the *Game Collection* may sometimes cause *XtremeUpdater* to hang.
 
+## v0.5.9
+*Moved all the source code into `src\` folder.*
+
+**New features**
+  - You can now add any game to your *Game Collection* which we do not support yet.
+  Adding includes:
+    - Game name
+    - Game patch 
+    - Launch path / URL / command
+
+  - Removing customly added games to the *Game Collection*.
+  - Added option to mipmap textures in the *Game Collection*.
+
+**Tweaks**
+  - Tweaked *Content* (`PageLayout`) animation. It is now `out_expo`.
+  - Disabled buttons are no longer invisible.
+  - Tweaked some colors.
+
+**Bugfixes**
+  - Improved performance of the *Game Collection*.
+
 ## v0.5.8
 **New features**
   - Support for URLs in `CommonPaths.yaml`

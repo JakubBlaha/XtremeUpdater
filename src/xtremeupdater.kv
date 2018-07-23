@@ -133,7 +133,7 @@ RootLayout:
     background_down: self.background_normal
     selected_color: theme.prim
     deselected_color: theme.sec
-    color: theme.fg if self.selectable else theme.disabled
+    color: theme.fg if self.selectable else theme.bg
     size_hint_y: None
     height: 25
 
@@ -202,8 +202,9 @@ RootLayout:
     AsyncImage:
         id: image
         pos: root.pos
-        size: root.size
-        anim_delay: 0.04
+        size: root.width, root.height
+        anim_delay: 0.1
+        mipmap: app.store['Collection']['mipmapping']
 
     Label:
         id: label
@@ -235,6 +236,15 @@ RootLayout:
         disabled: not root.exe 
         on_release: root.launch_game()
 
+    GameButtonMini:
+        text: '\ue74d'
+        x: root.x + root.width - self.width * 2
+        y: root.y + root.height - self.height
+        size: 40, 40
+        opacity: float(root.hovering and root.custom)
+        disabled: not root.custom
+        on_release: root.remove_from_collection()
+
 
 <GameCollection@ScrollView>:
     padding: 40, 0
@@ -256,10 +266,11 @@ RootLayout:
     text: ''
     icon: ''
     command: lambda: None
+    font_size: 16
 
     canvas.before:
         Color:
-            rgba: theme.hover
+            rgba: theme.bg
 
         Rectangle:
             pos: self.pos
@@ -269,15 +280,134 @@ RootLayout:
     size: 340, 40
 
     IconButton:
+        id: button
         text: root.icon
         on_release: root.command()
 
     Label:
+        id: label
         padding: 10, 0
         text: root.text
         markup: True
         text_size: self.size
         valign: 'center'
+        font_size: root.font_size
+
+
+<SectionLabel@Label>:
+    color: theme.sec
+    font_size: 15
+    size_hint_y: None
+    height: 30
+    text_size: self.size
+    padding: 0, 2
+
+    canvas:
+        Color:
+            rgb: theme.sec
+
+        Line:
+            points: root.x, root.y, root.x + root.width, root.y
+
+
+<CustTextInput@TextInput>:
+    id: url_input
+    size_hint_x: None
+    width: 340
+    multiline: False
+    background_color: theme.sec
+    background_normal: 'img/FFFFFF-0'
+    background_active: 'img/FFFFFF-0'
+    cursor_color: theme.prim
+    font_size: 15
+    foreground_color: theme.fg
+    padding: 11, 11
+
+
+<GameRemovePopup@Popup>:
+    title: 'Really remove ?'
+    separator_color: theme.prim
+    separator_height: 4
+    title_size: 16
+    title_font: 'fnt/Roboto-Black.ttf'
+    size_hint: .5, .5
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        Label:
+            text: f'Do you really want to remove\n[color={theme.PRIM}][i]{root.game}[/i][/color] ?'
+            font_size: 32
+            text_size: self.size
+            padding: 20, 0
+            markup: True
+
+        BoxLayout:
+            Widget
+
+            IconButton:
+                text: '\ue711'
+                font_size: 24
+                color: 1, 0, 0, 1
+                background_normal: 'img/FFFFFF-0.png'
+                size_hint: None, None
+                width: 70
+                on_release: root.dismiss()
+
+            IconButton:
+                text: '\ue8fb'
+                font_size: 24
+                color: 0, 1, 0, 1
+                background_normal: 'img/FFFFFF-0.png'
+                size_hint: None, None
+                width: 70
+                on_release: root.proceed_command()
+
+
+<CustSwitch>:
+    size: 40, 40
+    canvas:
+        Color:
+            rgb: 1, 1, 1
+
+        Rectangle:
+            source: 'img/switch-background.png'
+            size: self.size
+            pos: self.pos
+
+    canvas.after:
+        Color:
+            rgba: theme.sec
+
+        Rectangle:
+            source: 'img/FFFFFF-1.png'
+            size: 20, self.height + 6
+            pos: self.x + self._switch_x, self.y - 3
+
+
+<LabelSwitch@BoxLayout>:
+    size_hint: 0, 0
+    size: 340, 40
+
+    canvas:
+        Color:
+            rgba: theme.bg
+
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    CustSwitch:
+        id: switch
+        size_hint_x: None
+        color: theme.prim
+        active: root.active
+
+    Label:
+        text: root.text
+        text_size: self.size
+        valign: 'center'
+        padding: 10, 0
 
 
 <RootLayout>:
@@ -342,6 +472,7 @@ RootLayout:
 
     Content:
         id: content
+        anim_kwargs: {'t': 'out_expo', 'd': .5}
 
         ContentLayout:
             id: content_updater
@@ -409,6 +540,17 @@ RootLayout:
             GameCollection:
                 id: game_collection_view
 
+            BoxLayout:
+                size_hint_y: None
+                height: 60
+                padding: 10
+
+                Widget
+
+                IconButton:
+                    text: '\ue710'
+                    on_release: root.goto_game_add_form()
+                    background_color: theme.dark
 
         ContentLayout:
             id: content_system
@@ -436,13 +578,29 @@ RootLayout:
             padding: 10
             spacing: 10
 
+            SectionLabel:
+                text: 'Game Collection'
+
             LabelIconButton:
-                text: "Clear cache"
+                text: f'Reset [color={theme.PRIM}][i]Game Collection[/i][/color]'
+                icon: '\ue74d'
+                command: root.reset_custom_paths
+
+            LabelSwitch:
+                active: app.store['Collection']['mipmapping']
+                text: 'Enable texture mipmapping'
+                active_callback: app.mipmap_switch_callback
+
+            SectionLabel:
+                text: 'Cache'
+
+            LabelIconButton:
+                text: "Clear all cache"
                 icon: '\ue74d'
                 command: root.clear_cache
 
             LabelIconButton:
-                text: "Clear [i]Game Collection[/i] cached images"
+                text: f"Clear [color={theme.PRIM}][i]Game Collection[/i][/color] cached images"
                 icon: '\ue74d'
                 command: root.clear_images_cache
 
@@ -451,7 +609,83 @@ RootLayout:
                 icon: '\ue74d'
                 command: root.clear_common_paths_cache
 
+            Widget:
+                size_hint: 0, 0
+
+        ContentLayout:
+            padding: 20, 0
+            spacing: 10
+
+            SectionLabel:
+                text: 'Game name'
+
+            CustTextInput:
+                id: game_name_input
+                size_hint_y: None
+                height: 40
+
+            SectionLabel:
+                text: 'Game dll directory'
+            
+            LabelIconButton:
+                id: game_add_form_dir
+                text: ''
+                icon: '\uf12b'
+                command: root.game_path_button_callback
+                font_size: 11
+
+            SectionLabel:
+                text: 'Game launchable file / URL'
+
+            BoxLayout:
+                size_hint_y: None
+                height: 40
+                spacing: self.parent.padding[0]
+
+                LabelIconButton:
+                    id: game_add_form_launch
+                    text: ''
+                    icon: '\ue7c3'
+                    disabled: bool(url_input.text)
+                    command: root.game_launch_path_button_callback
+                    font_size: 11
+
+                CustTextInput:
+                    id: url_input
+            
+            Label:
+                size_hint_y: None
+                height: 30
+                text: 'Launchable is ' + ('an URL' if game_add_form_launch.disabled else 'a file')
+                color: theme.prim
+                text_size: self.size
+                padding: 2, 0
+
+            SectionLabel:
+                text: 'All filled ?'
+
+            BoxLayout:
+                size_hint_y: None
+                height: 60
+                padding_y: 10
+
+                Widget
+
+                IconButton:
+                    text: '\ue711'
+                    background_color: theme.dark
+                    color: 1, 0, 0, 1
+                    on_release: root.cancel_add_game_callback()
+
+                IconButton:
+                    text: '\ue710'
+                    background_color: theme.dark
+                    color: 0, 1, 0, 1
+                    on_release: root.add_game_callback()
+                    disabled: not (game_name_input.text and game_add_form_dir.text and (game_add_form_launch.text or url_input.text))
+
             Widget
+
 
     Label:
         id: info_label
@@ -464,3 +698,4 @@ RootLayout:
         padding: 10, 8
         text: "Welcome to XtremeUpdater | Let's start"
         color: theme.prim
+        markup: True

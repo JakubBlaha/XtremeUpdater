@@ -102,7 +102,10 @@ ENV/
 
 *.xucfg
 
-/.backup
-
 # VSCode
 .vscode/
+
+# App dirs
+.cache/
+.config/
+.backup/
