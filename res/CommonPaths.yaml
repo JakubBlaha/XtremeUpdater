@@ -41,14 +41,14 @@ Battle.NET:
   launchPath: Battle.net/Battle.netLauncher.exe
   
 Blade and Soul: 
- path: Program Files/NCSOFT/BnS/
- launchPath: Program Files/NCWest/NCLauncher/NCLauncher.exe /LauncherID:"NCWest" /CompanyID:"12" /GameID:"BnS" /LUpdateAddr:"updater.nclauncher.ncsoft.com"
+  path: Program Files/NCSOFT/BnS/
+  launchPath: Program Files/NCWest/NCLauncher/NCLauncher.exe /LauncherID:"NCWest" /CompanyID:"12" /GameID:"BnS" /LUpdateAddr:"updater.nclauncher.ncsoft.com"
 
 Path of Exile:
-path: Steam/steamapps/common/Path of Exile/
-launchPath: steam://rungameid/238960
-isURL: True
+  path: Steam/steamapps/common/Path of Exile/
+  launchPath: steam://rungameid/238960
+  isURL: True
 
 FinalFantasy Lihting Returns:
-path: Steam/steamapps/common/LIGHTNING RETURNS FINAL FANTASY XIII/
-launchPath: Steam/steamapps/common/LIGHTNING RETURNS FINAL FANTASY XIII/LRF13.exe
+  path: Steam/steamapps/common/LIGHTNING RETURNS FINAL FANTASY XIII/
+  launchPath: Steam/steamapps/common/LIGHTNING RETURNS FINAL FANTASY XIII/LRF13.exe
