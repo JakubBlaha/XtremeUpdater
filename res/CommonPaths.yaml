@@ -41,7 +41,7 @@ Battle.NET:
   launchPath: Battle.net/Battle.netLauncher.exe
   
 Blade and Soul: 
- path: Program Files/NCSOFT/BnS
+ path: Program Files/NCSOFT/BnS/
  launchPath: Program Files/NCWest/NCLauncher/NCLauncher.exe /LauncherID:"NCWest" /CompanyID:"12" /GameID:"BnS" /LUpdateAddr:"updater.nclauncher.ncsoft.com"
 
 Path of Exile:
