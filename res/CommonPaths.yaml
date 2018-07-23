@@ -33,8 +33,8 @@ Nier-Automata:
   launchPath: NieR - Automata/NieRAutomata.exe
 
 BulletWitch:
-  path: Bullet Witch/
-  launchPath: Bullet Witch/witch.exe
+  path: Games/Bullet Witch/
+  launchPath: Games/Bullet Witch/witch.exe
 
 Battle.NET:
   path: Battle.net/
