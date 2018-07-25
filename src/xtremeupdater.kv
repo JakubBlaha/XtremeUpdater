@@ -7,7 +7,6 @@
 #:import DllViewAdapter main.DllViewAdapter
 #:import Tweaks tweaks.Tweaks
 #:import get_version_number get_version_number.get_version_number
-#:import join os.path.join
 #:import RelativeLayoutHoveringBehavior hovering_behavior.RelativeLayoutHoveringBehavior
 #:import is_admin main.is_admin
 
@@ -139,7 +138,7 @@ RootLayout:
     height: 25
 
     Label:
-        text: get_version_number(join(app.root.ids.content_updater_path_info.text, root.text))
+        text: get_version_number(app.root.ids.content_updater_path_info.text + root.text)
         pos: root.pos
         size: root.size
         text_size: self.size
@@ -163,6 +162,43 @@ RootLayout:
         cls='DllViewItem',
         selection_mode='multiple'
         )
+
+<SubdirItem@Button>:
+    text: '...' + self.path
+    background_normal: 'img/FFFFFF-0.png'
+    background_down: 'img/FFFFFF-0.png'
+    background_color: theme.sec
+    text_size: self.size
+    valign: 'center'
+    padding: 40, 0
+    on_release: app.root.load_dll_view_data(app.root.ids.content_updater_path_info.text + self.path)
+
+    canvas.before:
+        Color:
+            rgba: theme.prim
+            a: root.highlight_alpha
+        
+        Rectangle:
+            pos: self.pos
+            size: self.highlight_height, self.height
+
+
+<SubdirView@RecycleView>:
+    bar_color: theme.prim
+    bar_inactive_color: theme.dark
+    bar_width: 10
+    scroll_distance: 0
+    scroll_wheel_distance: 100
+    scroll_type: ['content', 'bars']
+
+    viewclass: 'SubdirItem'
+
+    RecycleBoxLayout:
+        default_size: None, 25
+        default_size_hint: 1, None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
 
 <PathInput@TextInput>:
     size_hint_y: None
@@ -397,9 +433,11 @@ RootLayout:
     Label:
         text: '\ue72e'
         font_name: 'fnt/segmdl2.ttf'
-        pos: root.x + root._switch_x + 1, root.y + 6
+        pos: root.x + root._switch_x, root.y + 4
         size: 20, 10
         opacity: float(root.disabled)
+        color: theme.bg
+        font_size: 16
 
 
 <LabelSwitch@BoxLayout>:
@@ -506,7 +544,7 @@ RootLayout:
                     disabled: True
                     text: '\ue72c'
                     background_color: theme.dark
-                    on_release: app.root.load_dll_view_data(app.root.ids.content_updater_path_info.text)
+                    on_release: app.root.setup_updater()
 
                 IconButton:
                     id: invert_selection_button
@@ -516,12 +554,20 @@ RootLayout:
                     on_release: root.ids.dll_view.adapter.invert_selection()
 
                 IconButton:
+                    text: '\ue8a4'
+                    disabled: not subdir_view.data
+                    background_color: theme.dark
+                    on_release: root.goto_tree()
+
+                IconButton:
                     text: '\uf12b'
                     background_color: theme.dark
                     on_release: root.load_directory()
+                    disabled: not root.dlls_loaded
 
             DllView:
                 id: dll_view
+
 
             BoxLayout:
                 id: update_and_restore_layout
@@ -708,6 +754,10 @@ RootLayout:
                     disabled: not (game_name_input.text and game_add_form_dir.text and (game_add_form_launch.text or url_input.text))
 
             Widget
+
+        ContentLayout:
+            SubdirView:
+                id: subdir_view
 
 
     Label:

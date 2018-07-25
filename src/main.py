@@ -80,8 +80,8 @@ class CustButton(Button, HoveringBehavior):
                 background_color=self.background_color_hovering,
                 d=.1).start(self)
 
-    def on_leave(self):
-        if not self.disabled:
+    def on_leave(self, force=False):
+        if not self.disabled or force:
             Animation(
                 color=self.orig_color,
                 background_color=self.orig_background_color,
@@ -90,6 +90,7 @@ class CustButton(Button, HoveringBehavior):
     def on_disabled(self, *args):
         if self.disabled:
             Animation(opacity=.1, d=.1).start(self)
+            Clock.schedule_once(lambda *args: self.on_leave(force=True))
 
         else:
             Animation(opacity=1, d=.1).start(self)
@@ -459,7 +460,7 @@ class Content(PageLayout):
 
         ACTIONS = {
             1:
-            lambda: self.children[4].children[1].update_local_games()
+            lambda: self.children[::-1][1].children[1].update_local_games()
         }
 
         try:
@@ -472,6 +473,18 @@ class Content(PageLayout):
 class PlaceHolder(Label):
     message = StringProperty('Coming soon')
     icon = StringProperty('\ue946')
+
+
+class SubdirItem(Button, RelativeLayoutHoveringBehavior):
+    path = StringProperty()
+    highlight_height = NumericProperty()
+    highlight_alpha = NumericProperty()
+
+    def on_hovering(self, *args):
+        if self.hovering:
+            Animation(highlight_height=self.width, highlight_alpha=1, d=.5, t='out_expo').start(self)
+        else:
+            Animation(highlight_height=0, highlight_alpha=0, d=.5, t='out_expo').start(self)
 
 
 class DllViewItem(ListItemButton):
@@ -494,31 +507,16 @@ class DllViewItem(ListItemButton):
 
 class DllViewAdapter(ListAdapter):
     def refresh_available(self):
-        try:
-            app().root.ids.dll_view.overdrawer.dismiss()
-            available_dlls = DllUpdater.available_dlls()
+        self.data = [{
+            **item, 'selectable': item['text'] in DllUpdater.available_dlls
+        } for item in self.data]
 
-        except:
-            app().root.ids.refresh_button.disabled = False
-            info('Syncing failed | Please try again')
-            OverdrawLabel(app().root.ids.dll_view, '\uea6a',
-                          'Error when syncing')
+        def on_frame(*args):
+            app(
+            ).root.ids.invert_selection_button.disabled = not self.get_selectable_views(
+            )
 
-        else:
-            app().root.ids.refresh_button.disabled = True
-            info('We have found some dll updates | Please select dlls')
-            app().root.ids.dll_view.overdrawer.dismiss()
-
-            self.data = [{
-                **item, 'selectable': item['text'] in available_dlls
-            } for item in self.data]
-
-            def on_frame(*args):
-                app(
-                ).root.ids.invert_selection_button.disabled = not self.get_selectable_views(
-                )
-
-            Clock.schedule_once(on_frame)
+        Clock.schedule_once(on_frame)
 
     def on_selection_change(self, *args):
         app().root.set_dll_buttons_state(self.selection)
@@ -536,11 +534,31 @@ class DllViewAdapter(ListAdapter):
 
 class RootLayout(BoxLayout, HoveringBehavior):
     mouse_highlight_pos = ListProperty([-120, -120])
+    dlls_loaded = BooleanProperty(False)
+    last_path = ''
 
     def __init__(self, **kw):
         super().__init__(**kw)
+        self.setup_updater()
+        
+    @new_thread
+    def setup_updater(self):
+        self.info('Syncing with github | Loading dll database..')
 
-        OverdrawLabel(self.ids.dll_view, '\uf12b', 'First, select a directory')
+        self.updater = DllUpdater()
+        self.dlls_loaded = self.updater.load_available_dlls()
+
+        if self.dlls_loaded:
+            self.ids.refresh_button.disabled = True
+            self.info('Syncing done | Successfully updated dll database')
+            OverdrawLabel(self.ids.dll_view, '\uf12b', 'First, select a directory')
+
+        else:
+            self.ids.refresh_button.disabled = False
+            self.info('Syncing failed | Please try again')
+            OverdrawLabel(self.ids.dll_view, '\uea6a',
+                          'Error when syncing')
+
 
     def on_mouse_pos(self, _, pos):
         x, y = pos
@@ -558,6 +576,15 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
     @new_thread
     def load_dll_view_data(self, path, quickupdate=False):
+        self.goto_updater()
+
+        path = os.path.abspath(path)
+
+        if path == self.last_path:
+            self.info('Directory has not changed | Nothing to do :{')
+            return
+
+        self.last_path = path
         self.ids.content_updater_path_info.text = path
 
         if not os.path.isdir(path):
@@ -566,7 +593,6 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
         self.set_dll_buttons_state(False)
         self.ids.invert_selection_button.disabled = True
-        self.ids.refresh_button.disabled = True
 
         local_dlls = DllUpdater.local_dlls(path)
 
@@ -577,7 +603,8 @@ class RootLayout(BoxLayout, HoveringBehavior):
             )
 
         else:
-            OverdrawLabel(self.ids.dll_view, '\uede4', 'Looking for dlls..')
+            self.info('We have found some dll updates | Please select dlls')
+            self.ids.dll_view.overdrawer.dismiss()
 
             self.ids.dll_view.adapter.data = [{
                 'text': item,
@@ -585,12 +612,13 @@ class RootLayout(BoxLayout, HoveringBehavior):
             } for item in local_dlls]
             self.ids.dll_view.adapter.refresh_available()
             self.ids.dll_view.adapter.invert_selection()
-            if quickupdate:
-                def on_frame(*args):
-                    self.ids.content.page = 0
-                    self.update_callback()
 
-                Clock.schedule_once(on_frame)
+            if quickupdate:
+                Clock.schedule_once(lambda *args: self.update_callback())
+
+        self.info('Loading subdirs | Please wait..')
+        self.ids.subdir_view.data = [{'path': subdir} for subdir in DllUpdater.dll_subdirs(path, self.updater.available_dlls)]
+        self.info('Subdirs loaded | Check it out!')
 
     @new_thread
     def update_callback(self):
@@ -651,11 +679,17 @@ class RootLayout(BoxLayout, HoveringBehavior):
     def refresh_dll_view(self):
         self.load_dll_view_data(self.ids.content_updater_path_info.text)
 
-    def goto_game_add_form(self):
-        self.ids.content.page = 5
+    def goto_updater(self):
+        self.ids.content.page = 0
 
     def goto_collection(self):
         self.ids.content.page = 1
+
+    def goto_game_add_form(self):
+        self.ids.content.page = 5
+
+    def goto_tree(self):
+        self.ids.content.page = 6
 
     def game_path_button_callback(self):
         path = diropenbox()

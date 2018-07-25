@@ -11,6 +11,7 @@ class DllUpdater:
     URL = "https://github.com/XtremeWare/XtremeUpdater/tree/master/dll/"
     RAW_URL = "https://github.com/XtremeWare/XtremeUpdater/raw/master/dll/"
     BACKUP_DIR = ".backup/"
+    available_dlls = []
 
     @staticmethod
     def local_dlls(path):
@@ -19,29 +20,29 @@ class DllUpdater:
             if os.path.splitext(item)[1] == '.dll'
         ]
 
-    @classmethod
-    def available_dlls(cls):
-        html = get_data(cls.URL)
+    def load_available_dlls(self):
+        try:
+            html = get_data(self.URL)
+            soup = BeautifulSoup(html, 'html.parser')
+            for a in soup.find_all('a', {'class': 'js-navigation-open'}):
+                if a.parent.parent.get('class')[0] == 'content':
+                    self.available_dlls.append(a.text)
 
-        available_dlls = []
-        soup = BeautifulSoup(html, 'html.parser')
-        for a in soup.find_all('a', {'class': 'js-navigation-open'}):
-            if a.parent.parent.get('class')[0] == 'content':
-                available_dlls.append(a.text)
+        except:
+            return False
 
-        return available_dlls
+        else:
+            return True                       
 
-    @classmethod
-    def _download_dll(cls, dllname):
-        _adress = os.path.join(cls.RAW_URL, dllname)
+    def _download_dll(self, dllname):
+        _adress = os.path.join(self.RAW_URL, dllname)
         _data = get_data(_adress)
 
         return _data
 
-    @classmethod
-    def _backup_dll(cls, path, dll):
+    def _backup_dll(self, path, dll):
         dst = os.path.realpath(
-            os.path.join(cls.BACKUP_DIR,
+            os.path.join(self.BACKUP_DIR,
                          os.path.splitdrive(path)[1][1:]))
 
         if not os.path.exists(dst):
@@ -54,15 +55,14 @@ class DllUpdater:
         with open(path, 'wb') as f:
             f.write(data)
 
-    @classmethod
-    def update_dlls(cls, path, dlls):
+    def update_dlls(self, path, dlls):
         dll_num = len(dlls)
 
         for index, dll in enumerate(dlls):
             info(
                 f"Downloading {dll} ({index + 1} of {dll_num}) | Please wait.."
             )
-            data = cls._download_dll(dll)
+            data = self._download_dll(dll)
 
             local_dll_path = os.path.join(path, dll)
             with open(local_dll_path, 'rb') as f:
@@ -71,14 +71,13 @@ class DllUpdater:
             if data == local_dll_data:
                 continue
 
-            cls._backup_dll(path, dll)
-            cls._overwrite_dll(local_dll_path, data)
+            self._backup_dll(path, dll)
+            self._overwrite_dll(local_dll_path, data)
 
-    @classmethod
-    def restore_dlls(cls, path, dlls):
+    def restore_dlls(self, path, dlls):
         dll_num = len(dlls)
         bck_path = os.path.abspath(
-            os.path.join(cls.BACKUP_DIR,
+            os.path.join(self.BACKUP_DIR,
                          os.path.splitdrive(path)[1][1:]))
 
         restored = 0
@@ -95,8 +94,18 @@ class DllUpdater:
 
         info(f"Done | Restored {restored} of {dll_num} dlls")
 
-    @classmethod
-    def available_restore(cls, path):
-        bck_path = os.path.abspath(os.path.join(cls.BACKUP_DIR, path))
+    def available_restore(self, path):
+        bck_path = os.path.abspath(os.path.join(self.BACKUP_DIR, path))
 
         return os.listdir(bck_path)
+
+    @staticmethod
+    def dll_subdirs(path, available_dlls):
+        dll_dirs = []
+        for dirpath, dirnames, filenames in os.walk(path):
+            for f in filenames:
+                if f.endswith('.dll') and f in available_dlls:
+                    dll_dirs.append(dirpath.replace(path, ''))
+                    break
+
+        return dll_dirs[1:]

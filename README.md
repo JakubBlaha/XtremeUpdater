@@ -5,6 +5,16 @@ Website is located at https://xtremeware.github.io/XtremeUpdater.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
 
+## v0.5.11
+**New features**
+  - Added option to find sub-directories with available dlls.
+
+**Tweaks**
+  - Available dlls are now loaded upon app startup. This leads to faster process of dlls updating.
+  - Readded available dlls cache.
+  - All slashes in *path input* now face backwards.
+  - Tweaked disabled switches.
+
 ## v0.5.10
 **New features**
   - *Quick update* button on every game tile in the *Game Collection*.
