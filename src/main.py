@@ -6,6 +6,7 @@ import os
 import kivy
 import win32api
 import shutil
+import ctypes
 kivy.require('1.10.1')
 
 from kivy import Config
@@ -45,6 +46,7 @@ from theme import *
 Window.clearcolor = sec
 
 app = App.get_running_app
+is_admin = ctypes.windll.shell32.IsUserAnAdmin
 
 
 def info(text):
@@ -360,6 +362,9 @@ class GameButton(Button, RelativeLayoutHoveringBehavior):
     def remove_from_collection(self):
         self.parent.parent.remove_from_collection(self)
 
+    def quick_update(self):
+        app().root.load_dll_view_data(self.path, quickupdate=True)
+
     def update_image(self):
         query = self.text
         query += ' logo wallpaper'
@@ -552,7 +557,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.load_dll_view_data(diropenbox())
 
     @new_thread
-    def load_dll_view_data(self, path):
+    def load_dll_view_data(self, path, quickupdate=False):
         self.ids.content_updater_path_info.text = path
 
         if not os.path.isdir(path):
@@ -580,6 +585,12 @@ class RootLayout(BoxLayout, HoveringBehavior):
             } for item in local_dlls]
             self.ids.dll_view.adapter.refresh_available()
             self.ids.dll_view.adapter.invert_selection()
+            if quickupdate:
+                def on_frame(*args):
+                    self.ids.content.page = 0
+                    self.update_callback()
+
+                Clock.schedule_once(on_frame)
 
     @new_thread
     def update_callback(self):

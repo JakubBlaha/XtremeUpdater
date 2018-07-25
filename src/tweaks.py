@@ -3,7 +3,10 @@ import os
 from tempfile import gettempdir
 from hurry.filesize import size
 from kivy.app import App
+from winreg import *
 
+
+app = App.get_running_app()
 
 def get_size(path):
     total_size = 0
@@ -27,4 +30,32 @@ class Tweaks:
         final_size_str = size(init_size - finish_size)
         final_size_str += '' if final_size_str.endswith('B') else 'B'
 
-        App.get_running_app().root.info(f'Deleted temp directory | Freed up {final_size_str}')
+        app.root.info(f'Deleted temp directory | Freed up {final_size_str}')
+
+    @staticmethod
+    def is_dvr():
+        reg = ConnectRegistry(None, HKEY_CURRENT_USER)
+        key = OpenKey(reg, r'System\GameConfigStore')
+        GameDVR_enabled = QueryValueEx(key, 'GameDVR_enabled')[0]
+
+        reg = ConnectRegistry(None, HKEY_LOCAL_MACHINE)
+        key = OpenKey(reg, r'SOFTWARE\Policies\Microsoft\Windows')
+        try:
+            key = CreateKey(key, 'GameDVR')
+            AllowGameDVR = QueryValueEx(key, 'AllowGameDVR')[0]
+
+        except:
+            AllowGameDVR = 1
+
+        return GameDVR_enabled or AllowGameDVR
+
+    def switch_dvr(_, enabled):
+        reg = ConnectRegistry(None, HKEY_CURRENT_USER)
+        key = OpenKey(reg, r'System\GameConfigStore', 0, KEY_SET_VALUE)
+        SetValueEx(key, 'GameDVR_enabled', None, REG_DWORD, enabled)
+
+        reg = ConnectRegistry(None, HKEY_LOCAL_MACHINE)
+        key = OpenKey(reg, r'SOFTWARE\Policies\Microsoft\Windows\GameDVR', 0, KEY_SET_VALUE)
+        SetValueEx(key, 'AllowGameDVR', None, REG_DWORD, enabled)
+
+        app.root.info('{} GameDVR | You may need to restart PC'.format('Enabled' if enabled else 'Disabled'))

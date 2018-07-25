@@ -9,6 +9,7 @@
 #:import get_version_number get_version_number.get_version_number
 #:import join os.path.join
 #:import RelativeLayoutHoveringBehavior hovering_behavior.RelativeLayoutHoveringBehavior
+#:import is_admin main.is_admin
 
 RootLayout:
 <CustButton@Button>:
@@ -205,6 +206,7 @@ RootLayout:
         size: root.width, root.height
         anim_delay: 0.1
         mipmap: app.store['Collection']['mipmapping']
+        nocache: True
 
     Label:
         id: label
@@ -237,8 +239,16 @@ RootLayout:
         on_release: root.launch_game()
 
     GameButtonMini:
-        text: '\ue74d'
+        text: '\ue78b'
         x: root.x + root.width - self.width * 2
+        y: root.y + root.height - self.height
+        size: 40, 40
+        opacity: float(root.hovering)
+        on_release: root.quick_update()
+
+    GameButtonMini:
+        text: '\ue74d'
+        x: root.x + root.width - self.width * 3
         y: root.y + root.height - self.height
         size: 40, 40
         opacity: float(root.hovering and root.custom)
@@ -365,6 +375,7 @@ RootLayout:
 
 
 <CustSwitch>:
+    size_hint: None, None
     size: 40, 40
     canvas:
         Color:
@@ -375,7 +386,6 @@ RootLayout:
             size: self.size
             pos: self.pos
 
-    canvas.after:
         Color:
             rgba: theme.sec
 
@@ -383,6 +393,13 @@ RootLayout:
             source: 'img/FFFFFF-1.png'
             size: 20, self.height + 6
             pos: self.x + self._switch_x, self.y - 3
+
+    Label:
+        text: '\ue72e'
+        font_name: 'fnt/segmdl2.ttf'
+        pos: root.x + root._switch_x + 1, root.y + 6
+        size: 20, 10
+        opacity: float(root.disabled)
 
 
 <LabelSwitch@BoxLayout>:
@@ -562,9 +579,15 @@ RootLayout:
                 icon: '\ue74d'
                 command: Tweaks.clear_temps
 
-            PlaceHolder:
-                icon: '\ue770'
-                message: 'More tweaks coming soon..'
+            LabelSwitch:
+                text: 'Allow GameDVR'
+                active_callback: Tweaks.switch_dvr
+                active: Tweaks.is_dvr()
+                disabled: not is_admin()
+            
+            Widget:
+                size_hint_y: None
+                height: 330
 
         ContentLayout:
             id: content_favorite

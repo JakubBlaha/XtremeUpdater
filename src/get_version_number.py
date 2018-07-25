@@ -10,4 +10,4 @@ def get_version_number(filename):
             map(str, (HIWORD(ms), LOWORD(ms), HIWORD(ls), LOWORD(ls))))
 
     except:
-        return f'Unknown version'
+        return f'N/A'

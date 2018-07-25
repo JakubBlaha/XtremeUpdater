@@ -4,8 +4,17 @@
 Website is located at https://xtremeware.github.io/XtremeUpdater.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
-**Known issues**
-  - Starting game from the *Game Collection* may sometimes cause *XtremeUpdater* to hang.
+
+## v0.5.10
+**New features**
+  - *Quick update* button on every game tile in the *Game Collection*.
+  - Added tweak to disable / enable *Xbox GameDVR*. Manual elevation is required.
+
+**Tweaks**
+ - When version number is not available for a dll *N/A* will be used instead of *Unknown version*.
+
+**Bugfixes**
+  - Fixed bug causing the app to cash after a while after adding a custom game to the *Game Collection*.
 
 ## v0.5.9
 *Moved all the source code into `src\` folder.*
@@ -153,4 +162,4 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
 ## v0.1
 **Bugfixes**
 - Fixed syncing error loop when syncing with GitHub.
-- When sync error is raised, *Games* tab will now reset to its default state after 2 seconds.
+- When sync error is raised, *Updater* tab will now reset to its default state after 2 seconds.
