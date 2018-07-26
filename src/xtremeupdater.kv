@@ -1,0 +1,821 @@
+#:kivy 1.10.1
+
+#:import theme theme
+#:import WindowDragBehavior windowdragbehavior.WindowDragBehavior
+#:import Window kivy.core.window.Window
+#:import ListItemButton kivy.uix.listview.ListItemButton
+#:import DllViewAdapter main.DllViewAdapter
+#:import Tweaks tweaks.Tweaks
+#:import get_version_number get_version_number.get_version_number
+#:import RelativeLayoutHoveringBehavior hovering_behavior.RelativeLayoutHoveringBehavior
+#:import is_admin main.is_admin
+#:import open webbrowser.open
+
+RootLayout:
+<CustButton@Button>:
+    background_color: Window.clearcolor
+    background_normal: 'img/FFFFFF-1.png'
+    background_disabled_normal: self.background_normal
+    background_down: self.background_normal
+    background_disabled_down: self.background_normal
+
+<HeaderLabel@WindowDragBehavior+Label>:
+    canvas.before:
+        Color:
+            rgba: Window.clearcolor
+
+        Rectangle:
+            source: 'img/noise_texture_1000x30.png'
+            pos: self.pos
+            size: self.size
+
+    text: '[color=ddd]Xtreme[/color]Updater'
+    font_name: 'fnt/Roboto-Black.ttf'
+    text_size: self.size
+    halign: 'left'
+    padding: 10, 5
+    color: theme.prim
+    markup: True
+
+<HeaderMiniLabel@Label>:
+    color: theme.bg
+    size: 40, 40
+    font_name: 'fnt/segmdl2.ttf'
+    font_size: 20
+
+    canvas.before:
+        PushMatrix
+        Rotate:
+            angle: self.rotation_angle
+            origin: self.center
+    
+    canvas.after:
+        PopMatrix
+        
+<ContentLayout@BoxLayout>:
+    orientation: 'vertical'
+
+    canvas.before:
+        Color:
+            rgba: theme.dark
+
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<HeaderButton@CustButton>:
+    size_hint_x: None
+    width: self.height
+    background_normal: 'img/noise_texture.png'
+    border: 0, 0, 0, 0
+
+<IconButton@CustButton>:
+    size_hint_x: None
+    width: self.height
+    font_name: 'fnt/segmdl2.ttf'
+    font_size: 20
+    background_color: theme.sec
+    background_down: self.background_normal
+
+<NavigationButton@CustButton>:
+    markup: True
+    size_hint_x: None
+    width: 120
+    background_color: theme.dark
+    bold: True
+    font_size: 17
+
+<IconNavigationButton@IconButton+NavigationButton>:
+    font_size: 18
+    text: self.icon
+
+<Navigation@BoxLayout>:
+    size_hint_y: None
+    height: 40
+
+    canvas.before:
+        Color:
+            rgba: theme.dark
+
+        Rectangle:
+            pos: root.pos
+            size: root.size
+
+<PlaceHolder@Label>:
+    text: '[size=72][font=fnt/segmdl2.ttf]{}[/font][/size]\n{}'.format(self.icon, self.message)
+    markup: True
+    color: theme.prim
+    font_size: 36
+    text_size: self.size
+    halign: 'center'
+    valign: 'center'
+
+<OverdrawLabel@FloatLayout>:
+    size_hint: None, None
+    size: 0, 0
+    opacity: 0
+
+    Label:
+        id: label
+
+        canvas.before:
+            Color:
+                rgba: theme.sec
+
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        pos: root.wg.pos
+        size_hint: None, None
+        size: root.wg.size
+        color: theme.prim
+        markup: True
+        font_size: 36
+        text_size: self.size
+        text: root.TEMPLATE.format(root.icon, root.text)
+        halign: 'center'
+        valign: 'center'
+        opacity: root.opacity
+
+<Content@PageLayout>:
+    border: 0
+
+<DllViewItem@ListItemButton>:
+    text_size: self.size
+    is_selected: self.is_selected and self.selectable
+    valign: 'center'
+    padding: 40, 0
+    background_normal: 'img/FFFFFF-1.png'
+    background_down: self.background_normal
+    selected_color: theme.prim
+    deselected_color: theme.sec
+    color: theme.fg if self.selectable else theme.bg
+    size_hint_y: None
+    height: 25
+
+    Label:
+        text: get_version_number(app.root.ids.content_updater_path_info.text + root.text)
+        pos: root.pos
+        size: root.size
+        text_size: self.size
+        halign: 'right'
+        valign: 'center'
+        padding: root.padding
+        color: root.color
+
+<DllView@ListView, ScrollView>:
+    bar_color: theme.sec
+    bar_inactive_color: theme.dark
+    bar_width: 10
+    scroll_distance: 0
+    scroll_wheel_distance: 100
+    scroll_type: ['content', 'bars']
+
+    adapter:
+        DllViewAdapter(
+        data=[],
+        args_converter=lambda index, item: {'text': item.get('text', ''), 'selectable': item.get('selectable', False)},
+        cls='DllViewItem',
+        selection_mode='multiple'
+        )
+
+<SubdirItem@Button>:
+    text: '...' + self.path
+    background_normal: 'img/FFFFFF-0.png'
+    background_down: 'img/FFFFFF-0.png'
+    background_color: theme.sec
+    text_size: self.size
+    valign: 'center'
+    padding: 40, 0
+    on_release: app.root.load_dll_view_data(app.root.ids.content_updater_path_info.text + self.path)
+    shorten: True
+
+    canvas.before:
+        Color:
+            rgba: theme.prim
+            a: root.highlight_alpha
+        
+        Rectangle:
+            pos: self.pos
+            size: self.highlight_height, self.height
+
+
+<SubdirView@RecycleView>:
+    bar_color: theme.prim
+    bar_inactive_color: theme.dark
+    bar_width: 10
+    scroll_distance: 0
+    scroll_wheel_distance: 100
+    scroll_type: ['content', 'bars']
+
+    viewclass: 'SubdirItem'
+
+    RecycleBoxLayout:
+        default_size: None, 25
+        default_size_hint: 1, None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
+
+<PathInput@TextInput>:
+    size_hint_y: None
+    height: 36
+    background_color: theme.dark
+    cursor_color: theme.prim
+    cursor_width: 2
+    font_size: 18
+    foreground_color: theme.sec
+    multiline: False
+    selection_color: theme.prim
+    on_text_validate: app.root.load_dll_view_data(self.text)
+    background_normal: 'img/FFFFFF-0.png'
+
+<DllActionButton@CustButton>:
+    size_hint_x: None
+    bold: True
+    text_size: self.size
+    halign: 'center'
+    valign: 'bottom'
+    padding: 0, 6
+    disabled: True
+
+<GameButtonMini@IconButton+RelativeLayoutHoveringBehavior>:
+    background_color: 0, 0, 0, 0
+    background_normal: 'img/FFFFFF-0.png'
+    background_hovering: self.background_normal
+
+<GameButton@Button>:
+    background_normal: 'img/FFFFFF-1.png'
+    background_down: self.background_normal
+    color: 0, 0, 0, 0
+    background_color: theme.sec
+    size_hint: None, None
+    size: 333, 187
+    opacity: .5
+
+    AsyncImage:
+        id: image
+        pos: root.pos
+        size: root.width, root.height
+        anim_delay: 0.1
+        mipmap: app.store['Collection']['mipmapping']
+        nocache: True
+
+    Label:
+        id: label
+        padding: 20, 10
+        text: root.text
+        pos: root.pos
+        size: root.size
+        valign: 'bottom'
+        text_size: self.size
+        font_name: 'fnt/Roboto-Black.ttf'
+        size_hint_y: None
+        height: 40
+        opacity: .5
+
+        canvas.before:
+            Color:
+                rgba: theme.sec
+            
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+    GameButtonMini:
+        text: '\ue768'
+        x: root.x + root.width - self.width
+        y: root.y + root.height - self.height
+        size: 40, 40
+        opacity: float(root.hovering)
+        disabled: not root.exe 
+        on_release: root.launch_game()
+
+    GameButtonMini:
+        text: '\ue78b'
+        x: root.x + root.width - self.width * 2
+        y: root.y + root.height - self.height
+        size: 40, 40
+        opacity: float(root.hovering)
+        on_release: root.quick_update()
+
+    GameButtonMini:
+        text: '\ue74d'
+        x: root.x + root.width - self.width * 3
+        y: root.y + root.height - self.height
+        size: 40, 40
+        opacity: float(root.hovering and root.custom)
+        disabled: not root.custom
+        on_release: root.remove_from_collection()
+
+
+<GameCollection@ScrollView>:
+    padding: 40, 0
+    size: self.parent.size
+    effect_cls: 'OpacityScrollEffect'
+    bar_color: theme.sec
+    bar_inactive_color: theme.dark
+    bar_width: 10
+    scroll_distance: 0
+    scroll_wheel_distance: 100
+
+    StackLayout:
+        id: board
+        size_hint_y: None
+        height: self.minimum_height
+
+
+<LabelIconButton@BoxLayout>:
+    text: ''
+    icon: ''
+    command: lambda: None
+    font_size: 16
+
+    canvas.before:
+        Color:
+            rgba: theme.bg
+
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    size_hint: None, None
+    size: 340, 40
+
+    IconButton:
+        id: button
+        text: root.icon
+        on_release: root.command()
+
+    Label:
+        id: label
+        padding: 10, 0
+        text: root.text
+        markup: True
+        text_size: self.size
+        valign: 'center'
+        font_size: root.font_size
+
+
+<SectionLabel@Label>:
+    color: theme.sec
+    font_size: 15
+    size_hint_y: None
+    height: 60
+    text_size: self.size
+    padding: 0, 2
+
+    canvas:
+        Color:
+            rgb: theme.sec
+
+        Line:
+            points: root.x, root.y, root.x + root.width, root.y
+
+
+<CustTextInput@TextInput>:
+    id: url_input
+    size_hint_x: None
+    width: 340
+    multiline: False
+    background_color: theme.sec
+    background_normal: 'img/FFFFFF-0'
+    background_active: 'img/FFFFFF-0'
+    cursor_color: theme.prim
+    font_size: 15
+    foreground_color: theme.fg
+    padding: 11, 11
+
+
+<GameRemovePopup@Popup>:
+    title: 'Really remove ?'
+    separator_color: theme.prim
+    separator_height: 4
+    title_size: 16
+    title_font: 'fnt/Roboto-Black.ttf'
+    size_hint: .5, .5
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        Label:
+            text: f'Do you really want to remove\n[color={theme.PRIM}][i]{root.game}[/i][/color] ?'
+            font_size: 32
+            text_size: self.size
+            padding: 20, 0
+            markup: True
+
+        BoxLayout:
+            Widget
+
+            IconButton:
+                text: '\ue711'
+                font_size: 24
+                color: 1, 0, 0, 1
+                background_normal: 'img/FFFFFF-0.png'
+                size_hint: None, None
+                width: 70
+                on_release: root.dismiss()
+
+            IconButton:
+                text: '\ue8fb'
+                font_size: 24
+                color: 0, 1, 0, 1
+                background_normal: 'img/FFFFFF-0.png'
+                size_hint: None, None
+                width: 70
+                on_release: root.proceed_command()
+
+
+<CustSwitch>:
+    size_hint: None, None
+    size: 40, 40
+    canvas:
+        Color:
+            rgb: 1, 1, 1
+
+        Rectangle:
+            source: 'img/switch-background.png'
+            size: self.size
+            pos: self.pos
+
+        Color:
+            rgba: theme.sec
+
+        Rectangle:
+            source: 'img/FFFFFF-1.png'
+            size: 20, self.height + 6
+            pos: self.x + self._switch_x, self.y - 3
+
+    Label:
+        text: '\ue72e'
+        font_name: 'fnt/segmdl2.ttf'
+        pos: root.x + root._switch_x, root.y + 4
+        size: 20, 10
+        opacity: float(root.disabled)
+        color: theme.bg
+        font_size: 16
+
+
+<LabelSwitch@BoxLayout>:
+    size_hint: 0, 0
+    size: 340, 40
+
+    canvas:
+        Color:
+            rgba: theme.bg
+
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    CustSwitch:
+        id: switch
+        size_hint_x: None
+        color: theme.prim
+        active: root.active
+
+    Label:
+        text: root.text
+        text_size: self.size
+        valign: 'center'
+        padding: 10, 0
+
+
+<RootLayout>:
+    orientation: 'vertical'
+
+    canvas.after:
+        Color:
+            rgb: theme.prim
+
+        Rectangle:
+            group: 'mouse_highlight'
+            source: 'img/mouse_highlight.png'
+            pos: self.mouse_highlight_pos
+            size: 120, 120
+
+    BoxLayout:
+        id: header
+        size_hint_y: None
+        height: 30
+
+        HeaderLabel:
+            id: header_label
+
+        HeaderButton:
+            id: minimize_button
+            text: '\u2212'
+            on_release: Window.minimize()
+
+        HeaderButton:
+            id: close_button
+            text: '\u00d7'
+            on_release: app.stop()
+
+    Navigation:
+        id: navigation
+        page_layout: content
+
+        NavigationButton:
+            id: navCustButtonupdater
+            text: 'Updater'
+            icon: '\ue78b'
+            page_index: 0
+
+        NavigationButton:
+            id: navCustButtongames
+            text: 'Games'
+            icon: '\ue7fc'
+            page_index: 1
+
+        NavigationButton:
+            id: navCustButtonsystem
+            text: 'System'
+            icon: '\ue770'
+            page_index: 2
+
+        Widget:
+
+        IconNavigationButton:
+            icon: '\ue734' 
+            page_index: 3
+
+        IconNavigationButton:
+            icon: '\ue713'
+            page_index: 4
+
+    Content:
+        id: content
+        anim_kwargs: {'t': 'out_expo', 'd': .5}
+
+        ContentLayout:
+            id: content_updater
+
+            BoxLayout:
+                size_hint_y: None
+                height: 40
+
+                PathInput:
+                    id: content_updater_path_info
+
+                IconButton:
+                    id: refresh_button
+                    disabled: True
+                    text: '\ue72c'
+                    background_color: theme.dark
+                    on_release: app.root.setup_updater()
+
+                IconButton:
+                    id: invert_selection_button
+                    disabled: True
+                    text: '\ue8b3'
+                    background_color: theme.dark
+                    on_release: root.ids.dll_view.adapter.invert_selection()
+
+                IconButton:
+                    text: '\ue8a4'
+                    disabled: not subdir_view.data
+                    background_color: theme.dark
+                    on_release: root.goto_tree()
+
+                IconButton:
+                    text: '\uf12b'
+                    background_color: theme.dark
+                    on_release: root.load_directory()
+                    disabled: not root.dlls_loaded
+
+            DllView:
+                id: dll_view
+
+
+            BoxLayout:
+                id: update_and_restore_layout
+                size_hint_y: None
+                height: 40
+                padding: 10, 0
+
+                canvas.before:
+                    Color:
+                        rgba: theme.sec
+
+                    Rectangle:
+                        pos: update_and_restore_layout.pos
+                        size: update_and_restore_layout.size
+
+                Widget:
+
+                DllActionButton:
+                    id: restore_button
+                    text: 'Restore'
+                    font_size: 18
+                    on_release: root.restore_callback()
+
+                DllActionButton:
+                    id: update_button
+                    text: 'Update'
+                    font_size: 24
+                    on_release: root.update_callback()
+
+        ContentLayout:
+            id: content_games
+
+            GameCollection:
+                id: game_collection_view
+
+            BoxLayout:
+                size_hint_y: None
+                height: 60
+                padding: 10
+
+                Widget
+
+                IconButton:
+                    text: '\ue710'
+                    on_release: root.goto_game_add_form()
+                    background_color: theme.dark
+
+        ContentLayout:
+            id: content_system
+            
+            ScrollView:
+                BoxLayout:
+                    orientation: 'vertical'
+                    padding: 10
+                    spacing: 10
+
+                    LabelIconButton:
+                        text: "Clear user's temp folder"
+                        icon: '\ue74d'
+                        command: Tweaks.clear_temps
+
+                    LabelSwitch:
+                        text: 'Allow GameDVR'
+                        active_callback: Tweaks.switch_dvr
+                        active: Tweaks.is_dvr()
+                        disabled: not is_admin()
+                    
+                    Widget:
+                        size_hint_y: None
+                        height: 330
+
+        ContentLayout:
+            id: content_favorite
+
+            PlaceHolder:
+                icon: '\ue734'
+                message: 'Favorite games coming soon'
+
+        ContentLayout:
+            id: content_settings
+
+            ScrollView:    
+                BoxLayout:
+                    orientation: 'vertical'
+                    padding: 10
+                    spacing: 10
+                    size_hint_y: None
+                    height: self.minimum_height
+
+                    SectionLabel:
+                        text: 'Support'
+
+                    LabelIconButton:
+                        text: 'Get a help'
+                        icon: '\ue897'
+                        command: lambda: open('https://discord.gg/Cs4rstF')
+
+                    LabelIconButton:
+                        text: 'Request a feature'
+                        icon: '\ue943'
+                        command: lambda: open('https://discord.gg/rdwCuge')
+
+                    LabelIconButton:
+                        text: 'Report a bug'
+                        icon: '\uebe8'
+                        command: lambda: open('https://discord.gg/sfcBuMU')
+
+                    SectionLabel:
+                        text: 'Game Collection'
+
+                    LabelIconButton:
+                        text: f'Reset [color={theme.PRIM}][i]Game Collection[/i][/color]'
+                        icon: '\ue74d'
+                        command: root.reset_custom_paths
+
+                    LabelSwitch:
+                        active: app.store['Collection']['mipmapping']
+                        text: 'Enable texture mipmapping'
+                        active_callback: app.mipmap_switch_callback
+
+                    SectionLabel:
+                        text: 'Cache'
+
+                    LabelIconButton:
+                        text: "Clear all cache"
+                        icon: '\ue74d'
+                        command: root.clear_cache
+
+                    LabelIconButton:
+                        text: f"Clear [color={theme.PRIM}][i]Game Collection[/i][/color] cached images"
+                        icon: '\ue74d'
+                        command: root.clear_images_cache
+
+                    LabelIconButton:
+                        text: "Clear cached game database"
+                        icon: '\ue74d'
+                        command: root.clear_common_paths_cache
+
+
+        ContentLayout:
+            padding: 20, 0
+            spacing: 10
+
+            SectionLabel:
+                text: 'Game name'
+
+            CustTextInput:
+                id: game_name_input
+                size_hint_y: None
+                height: 40
+
+            SectionLabel:
+                text: 'Game dll directory'
+            
+            LabelIconButton:
+                id: game_add_form_dir
+                text: ''
+                icon: '\uf12b'
+                command: root.game_path_button_callback
+                font_size: 11
+
+            SectionLabel:
+                text: 'Game launchable file / URL'
+
+            BoxLayout:
+                size_hint_y: None
+                height: 40
+                spacing: self.parent.padding[0]
+
+                LabelIconButton:
+                    id: game_add_form_launch
+                    text: ''
+                    icon: '\ue7c3'
+                    disabled: bool(url_input.text)
+                    command: root.game_launch_path_button_callback
+                    font_size: 11
+
+                CustTextInput:
+                    id: url_input
+            
+            Label:
+                size_hint_y: None
+                height: 30
+                text: 'Launchable is ' + ('an URL' if game_add_form_launch.disabled else 'a file')
+                color: theme.prim
+                text_size: self.size
+                padding: 2, 0
+
+            SectionLabel:
+                text: 'All filled ?'
+
+            BoxLayout:
+                size_hint_y: None
+                height: 60
+                padding_y: 10
+
+                Widget
+
+                IconButton:
+                    text: '\ue711'
+                    background_color: theme.dark
+                    color: 1, 0, 0, 1
+                    on_release: root.cancel_add_game_callback()
+
+                IconButton:
+                    text: '\ue710'
+                    background_color: theme.dark
+                    color: 0, 1, 0, 1
+                    on_release: root.add_game_callback()
+                    disabled: not (game_name_input.text and game_add_form_dir.text and (game_add_form_launch.text or url_input.text))
+
+            Widget
+
+        ContentLayout:
+            SubdirView:
+                id: subdir_view
+
+
+    Label:
+        id: info_label
+        size_hint_y: None
+        height: 30
+        text_size: self.size
+        halign: 'left'
+        font_name: 'fnt/Roboto-Medium.ttf'
+        font_size: 12
+        padding: 10, 8
+        text: "Welcome to XtremeUpdater | Let's start"
+        color: theme.prim
+        markup: True

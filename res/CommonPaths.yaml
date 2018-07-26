@@ -1,2 +1,55 @@
-League of Legends: [/Riot Games/League of Legends/]
-World of Tanks: ["/Games/WorldOfTanks"]
+# Add games in following format:
+
+# GameName:
+#   path: some/path/
+#   launchPath: path/to/launchable/file.exe
+#   expandUserPatch: True -- ~/expanded/path/to/patch.url
+#   expandUserLaunch: True -- ~/expanded/path/to/launch.url
+#   isURL: True -- some://url
+
+# Putting a slash before any path will force XtremeUpdater to use the system drive for the game
+# In order to add a game with multiple paths add multiple games
+
+League of Legends:
+  path: Riot Games/League of Legends/
+  launchPath: Riot Games/League of Legends/LeagueClient.exe
+
+World of Tanks:
+  path: Games/WorldOfTanks/
+  launchPath: Games/WorldOfTanks/WoTLauncher.exe
+
+Hearthstone:
+  path: Program Files (x86)/Hearthstone/
+  launchPath: battlenet://WTCG
+  isURL: True
+
+Battlerite:
+  path: Program Files (x86)/Steam/steamapps/common/Battlerite/
+  launchPath: steam://rungameid/504370
+  isURL: True
+
+Nier-Automata:
+  path: NieR - Automata/
+  launchPath: NieR - Automata/NieRAutomata.exe
+
+BulletWitch:
+  path: Games/Bullet Witch/
+  launchPath: Games/Bullet Witch/witch.exe
+
+Battle.NET:
+  path: Battle.net/
+  launchPath: Battle.net/Battle.net Launcher.exe
+  
+Blade and Soul: 
+  path: Program Files/NCSOFT/BnS/
+  launchPath: Program Files\NCWest\NCLauncher\NCLauncher.exe /LauncherID:"NCWest" /CompanyID:"12" /GameID:"BnS" /LUpdateAddr:"updater.nclauncher.ncsoft.com"
+
+Path of Exile:
+  path: Steam/steamapps/common/Path of Exile/
+  launchPath: steam://rungameid/238960
+  isURL: True
+
+Final Fantasy Lighting Returns:
+  path: Steam/steamapps/common/LIGHTNING RETURNS FINAL FANTASY XIII/
+  launchPath: steam://rungameid/345350
+  isURL: True

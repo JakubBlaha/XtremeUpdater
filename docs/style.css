@@ -2,6 +2,7 @@
     box-sizing: border-box;
     transition: .3s ease-in-out;
     scroll-behavior: smooth;
+    font-family: 'Roboto', sans-serif;
 }
 
 body {
@@ -11,10 +12,11 @@ body {
 
 body::-webkit-scrollbar {
     width: 1em;
+    z-index: 20;
 }
 
 body::-webkit-scrollbar-track {
-    background: transparent;
+    background: white;
 }
 
 body::-webkit-scrollbar-thumb {
@@ -37,16 +39,18 @@ header {
     margin: auto;
     transition: .3s ease-in-out;
     cursor: default;
+    box-shadow: 0px 0px 5px #000;
     overflow: hidden;
-    opacity: 100%;  
+    opacity: 100%;
+    transition: none;
 }
 
 header:before {
-  content: '';
-  display: inline-block;
-  height: 100%;
-  vertical-align: middle;
-  margin-right: -0.25em;
+    content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+    margin-right: -0.25em;
 }
 
 #header-navbar, #header-navbar-bg  {
@@ -55,15 +59,17 @@ header:before {
     left: 0;
     width: 100%;
     margin: auto;
-    height: 60px;
+    height: 50px;
+    transition: none;
 }
 
 #header-navbar {
-    z-index: 1;
+    z-index: 10 !important;
 }
 
-#header-navbar-bg
-{
+/*header-navbar point of scroll*/
+
+#header-navbar-bg {
     position: sticky;
     overflow: hidden;
     background-color: #232a3a;
@@ -73,9 +79,9 @@ header:before {
 /*end*/
 
 #header-logo {
-    height: 45px;
+    height: 35px;
     position: fixed;
-    top: 10px;
+    top: 8px;
     left: 20px;
     transition: .3s ease-in-out;
 }
@@ -83,7 +89,7 @@ header:before {
 #header-nav {
     position: fixed;
     display: inline-block;
-    top: 20px;
+    top: 10px;
     font-size: 24px;
     right: 25px;
     color: #dbac2a;
@@ -136,9 +142,14 @@ main {
     padding: 5vh 0px;
     text-align: center;
     box-shadow: 0px 0px 5px #000;
+    overflow: hidden;
 }
 
-main div.main-text {
+main p {
+    overflow: hidden;
+}
+
+main p.main-text {
     display: inline-block;
     overflow: hidden;
 }
@@ -147,8 +158,7 @@ main div.main-text {
     margin: 10 auto;
     float: middle;
     overflow: hidden;
-    width: 866px;
-    padding: 0 2vh;
+    width: 50vw;
     vertical-align: top;
     text-align: justify;
     text-justify: inter-word
@@ -157,7 +167,7 @@ main div.main-text {
 #main-circle {
     width: 10vh;
     height: 10vh;
-    margin: 0 auto;
+    margin: 15px auto;
     text-align: center;
     border-radius: 5vh;
     background-image: url("icon.png");
@@ -168,21 +178,101 @@ main div.main-text {
     z-index: -2;
 }
 
-#main-title {
+.about-profile-img {
+    width: 10vh;
+    height: 10vh;
+    margin: 15px auto;
+    margin-left: -2vh;
+    border-radius: 5vh;
+    object-fit: cover;
+    box-shadow: 0 0 7px -2px #000000;
+    float: top;
+}
+
+.main-title {
     margin: 5vh auto;
+    margin-bottom: 50px;
     text-align: center;
     font-size: 35px;
+    border-bottom: 10px solid #dbac2a;
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+.sub-main-title {
+    font-style: italic;
+    margin-top: -30px;
+    margin-bottom: 30px;
+}
+
+.how-to-use-box {
+    max-width: 700px;
+    margin: auto;
+    padding: 0 50px;
+}
+
+.how-to-use-text {
+    text-align: left;
+    font-size: 25px;
+    text-shadow: #ccc 0 0 1px;
+    margin-top: 50px;
+    margin-bottom: 14px;
+    border-left: 10px solid #dbac2a;
+    padding-left: 10px;
+}
+
+.how-to-use-image {
+    box-shadow: #dbac2a 0 0 7px;
+    width: 100%;
+}
+
+.download-div {
+    margin: 20px auto;
+}
+
+.download-button {
+    font-size: 35px;
+    color: white;
+    background-color: #dbac2a;
+    border-radius: 3px;
+    padding: 10px 0;
+    margin: 50px auto;
+    display: block;
+    width: 50vw;
+    max-width: 300px;
+    min-width: 215px;
+    overflow: hidden;
+}
+
+.download-button:hover {
+    box-shadow: #232a3a 0 2px 7px -2px;
 }
 
 footer {
-    width: 100%;
-    margin: auto;
-    padding: 15px 0px;
+    padding: 20px;
+    /*height: 300px;*/
     background-color: #232a3a;
     background-size: cover;
     box-shadow: inset 0 0 4px #000000;
     color: white;
-    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+footer ul {
+    list-style-type: none;
+    margin: 0;
+    display: inline-block;
+    vertical-align: top;
+}
+
+footer ul p {
+    color: #ccc;
+
+}
+
+footer ul li {
+    margin: 5px 0;
 }
 
 footer a {
@@ -194,6 +284,29 @@ footer a:hover {
     color: #dbac2a;
 }
 
+footer img {
+    width: 50px;
+    position: relative;
+    top: 18px;
+    left: -10px;
+}
+
+.footer-icon-link {
+    padding: 0 10px;
+}
+
+#footer-container {
+    display: inline-block;
+}
+
+.copyright {
+    color: #ccc;
+    float: right;
+    display: inline-block;
+    vertical-align: top;
+
+}
+/*
 .come-in {
     transform: translateY(60px);
     animation: come-in 0.8s ease forwards;
@@ -212,13 +325,15 @@ footer a:hover {
     to {
         transform: translateY(0);
     }
-}
+}*/
 
 
 @media only screen and (max-width: 1200px) {
     .main-text {
-        width: 70%;
+        width: 85%;
     }
+
+
 
     #header-navbar {
         background-color: #232a3a !important;
@@ -226,8 +341,51 @@ footer a:hover {
     }
 }
 
+@media only screen and (max-width: 782px) {
+    footer .copyright {
+        float: left;
+        padding: 20px;
+    }
+
+    #footer-container {
+        display: block;
+    }
+
+    /*
+    footer {
+        height: 340px;
+    }*/
+}
+
 @media only screen and (max-width: 400px) {
     .main-text {
         width: 89%;
     }
+
+
 }
+
+/*
+@media only screen and (max-width: 525px) {    
+    footer {
+        height: 410px;
+    }
+}
+
+@media only screen and (max-width: 397px) {    
+    footer {
+        height: 430px;
+    }
+}
+
+@media only screen and (max-width: 346px) {    
+    footer {
+        height: 500px;
+    }
+}
+
+@media only screen and (max-width: 312px) {    
+    footer {
+        height: 520px;
+    }
+}*/
