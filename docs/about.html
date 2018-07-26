@@ -24,6 +24,7 @@
         } else {
             document.getElementById('stylesheet').href = "style.css";
         }
+    }
 </script>
 
 <!--  
@@ -53,7 +54,7 @@
         <a href="#main-title" data-aos="zoom-in">
             <div id="main-circle" data-aos="zoom-in"></div>
         </a>
-        <div id="main-title" data-aos="zoom-in"><strong>Who are we?</strong></div>
+        <div class="main-title" data-aos="zoom-in"><strong>Who are we?</strong></div><br>
         <img alt='Reiny Zamayuti' src='https://scontent.fprg2-1.fna.fbcdn.net/v/t1.0-9/378066_278605828865146_307852255_n.jpg?_nc_cat=0&oh=ef0c563bd47704ba862f3604e1548615&oe=5BDF814B' class='about-profile-img'>
         <img alt='Jakub Bláha' src='https://scontent.fprg2-1.fna.fbcdn.net/v/t1.0-9/28276339_482910655437319_5641446940146482225_n.jpg?_nc_cat=0&oh=d259392836f3b0abde083425233c4d68&oe=5BCEFD25' class='about-profile-img'>
         <img alt='David Knack' src='icon.png' class='about-profile-img'>
@@ -61,107 +62,109 @@
         <br>
         <p class="main-text" data-aos="fade-right">
             <strong>TO BE ADDED...</strong>
-            <br> Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean placerat. Fusce tellus odio, dapibus id fermentum
-            quis, suscipit id erat. Aliquam erat volutpat. Fusce aliquam vestibulum ipsum. Cras pede libero, dapibus nec,
-            pretium sit amet, tempor quis. In laoreet, magna id viverra tincidunt, sem odio bibendum justo, vel imperdiet
-            sapien wisi sed libero. Nunc tincidunt ante vitae massa. Maecenas fermentum, sem in pharetra pellentesque, velit
-            turpis volutpat ante, in pharetra metus odio a lectus. Nulla accumsan, elit sit amet varius semper, nulla mauris
-            mollis quam, tempor suscipit diam nulla vel leo. Curabitur vitae diam non enim vestibulum interdum. Nulla pulvinar
-            eleifend sem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi
-            ut aliquid ex ea commodi consequatur? Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
-            eu fugiat nulla pariatur. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia
-            consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Etiam dictum tincidunt diam. Integer rutrum,
-            orci vestibulum ullamcorper ultricies, lacus quam ultricies odio, vitae placerat pede sem sit amet enim. Nullam
-            dapibus fermentum ipsum. Fusce tellus. Mauris metus. Etiam bibendum elit eget erat.
+            <br> Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean placerat. Fusce tellus odio, dapibus id fermentum quis, suscipit id erat. Aliquam erat volutpat. Fusce aliquam vestibulum ipsum. Cras pede libero, dapibus nec, pretium sit amet, tempor quis. In laoreet, magna id viverra tincidunt, sem odio bibendum justo, vel imperdiet sapien wisi sed libero. Nunc tincidunt ante vitae massa. Maecenas fermentum, sem in pharetra pellentesque, velit turpis volutpat ante, in pharetra metus odio a lectus. Nulla accumsan, elit sit amet varius semper, nulla mauris mollis quam, tempor suscipit diam nulla vel leo. Curabitur vitae diam non enim vestibulum interdum. Nulla pulvinar eleifend sem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Etiam dictum tincidunt diam. Integer rutrum, orci vestibulum ullamcorper ultricies, lacus quam ultricies odio, vitae placerat pede sem sit amet enim. Nullam dapibus fermentum ipsum. Fusce tellus. Mauris metus. Etiam bibendum elit eget erat.
         </p>
     </main>
     <footer>
-        <ul>
-            <p>Website sections</p>
-            <li>
-                <a href="index.html">Home</a>
-            </li>
-            <li>
-                <a href="about.html">About us</a>
-            </li>
-        </ul>
-        <ul>
-            <p>Source code</p>
-            <li>
-                <a href="https://github.com/XtremeWare/XtremeUpdater" target='_blank'>GitHub</a>
-            </li>
-        </ul>
-        <ul>
-            <p>Contact</p>
-            <li>
-                <a href="https://discord.gg/ZD6rxw9" target='_blank' class="footer-icon-link">
+        <div id='footer-container'>
+            <ul>
+                <p>Website sections</p>
+                <li>
+                    <a href="index.html">Home</a>
+                </li>
+                <li>
+                    <a href="about.html">About us</a>
+                </li>
+            </ul>
+            <ul>
+                <p>Source code</p>
+                <li>
+                    <a href="https://github.com/XtremeWare/XtremeUpdater" target='_blank'>GitHub</a>
+                </li>
+            </ul>
+            <ul>
+                <p>Contact</p>
+                <li>
+                    <a href="https://discord.gg/ZD6rxw9" target='_blank' class="footer-icon-link">
                     <img src="icon-discord.png" alt="Discord logo">Discord</a>
-            </li>
-            <li>
-                <a href="" target='_blank' class="footer-icon-link">
+                </li>
+                <li>
+                    <a href="" target='_blank' class="footer-icon-link">
                     <img src="icon-facebook.png" alt="Facebook logo">Facebook</a>
-            </li>
-            <li>
-                <a href="" target='_blank' class="footer-icon-link">
+                </li>
+                <li>
+                    <a href="" target='_blank' class="footer-icon-link">
                     <img src="icon-twitter.png" alt="Twitter logo">Twitter</a>
-            </li>
-            <li>
-                <a href="https://github.com/XtremeWare" target='_blank' class="footer-icon-link">
+                </li>
+                <li>
+                    <a href="https://github.com/XtremeWare" target='_blank' class="footer-icon-link">
                     <img src="icon-github.svg" alt="GitHub logo">GitHub</a>
-            </li>
-        </ul>
+                </li>
+            </ul>
+        </div>
         <p class="copyright">&copy; 2018 XtremeWare</p>
     </footer>
 </body>
 <script>
-        /*AOS.init({
-                duration: 1200,
-            })*/
+    /*AOS.init({
+                    duration: 1200,
+                })*/
 
-        (function ($) {
+    (function($) {
 
-            $.fn.visible = function (partial) {
+        $.fn.visible = function(partial) {
 
-                var $t = $(this),
-                    $w = $(window),
-                    viewTop = $w.scrollTop(),
-                    viewBottom = viewTop + $w.height(),
-                    _top = $t.offset().top,
-                    _bottom = _top + $t.height(),
-                    compareTop = partial === true ? _bottom : _top,
-                    compareBottom = partial === true ? _top : _bottom;
+            var $t = $(this),
+                $w = $(window),
+                viewTop = $w.scrollTop(),
+                viewBottom = viewTop + $w.height(),
+                _top = $t.offset().top,
+                _bottom = _top + $t.height(),
+                compareTop = partial === true ? _bottom : _top,
+                compareBottom = partial === true ? _top : _bottom;
 
-                return ((compareBottom <= viewBottom) && (compareTop >= viewTop));
+            return ((compareBottom <= viewBottom) && (compareTop >= viewTop));
 
-            };
+        };
 
-        })(jQuery);
+    })(jQuery);
 
-        var win = $(window);
+    var win = $(window);
 
-        var allMods = $(".main-text");
+    var allMods = $(".main-text");
 
-        allMods.each(function (i, el) {
+    allMods.each(function(i, el) {
+        var el = $(el);
+        if (el.visible(true)) {
+            el.addClass("already-visible");
+        }
+    });
+
+    win.scroll(function(event) {
+
+        allMods.each(function(i, el) {
             var el = $(el);
             if (el.visible(true)) {
-                el.addClass("already-visible");
+                el.addClass("come-in");
             }
         });
 
-        win.scroll(function (event) {
-
-            allMods.each(function (i, el) {
-                var el = $(el);
-                if (el.visible(true)) {
-                    el.addClass("come-in");
-                }
-            });
-
-        });
+    });
 
 
+    var mainbottom = $('header').height() - 70;
+    $(window).on('scroll', function() {
+        stop = Math.round($(window).scrollTop());
+        if (stop >= mainbottom) {
+            $('.nav').addClass('past-main');
+        } else {
+            $('.nav').removeClass('past-main');
+        }
+    });
+
+    function resize() {
         var mainbottom = $('header').height() - 70;
-        $(window).on('scroll', function () {
+        $(window).on('scroll', function() {
             stop = Math.round($(window).scrollTop());
             if (stop >= mainbottom) {
                 $('.nav').addClass('past-main');
@@ -170,9 +173,9 @@
             }
         });
 
-        function resize() {
+        setTimeout(function() {
             var mainbottom = $('header').height() - 70;
-            $(window).on('scroll', function () {
+            $(window).on('scroll', function() {
                 stop = Math.round($(window).scrollTop());
                 if (stop >= mainbottom) {
                     $('.nav').addClass('past-main');
@@ -180,31 +183,20 @@
                     $('.nav').removeClass('past-main');
                 }
             });
+        }, 200);
 
-            setTimeout(function () {
-                var mainbottom = $('header').height() - 70;
-                $(window).on('scroll', function () {
-                    stop = Math.round($(window).scrollTop());
-                    if (stop >= mainbottom) {
-                        $('.nav').addClass('past-main');
-                    } else {
-                        $('.nav').removeClass('past-main');
-                    }
-                });
-            }, 200);
-
-            setTimeout(function () {
-                var mainbottom = $('header').height() - 70;
-                $(window).on('scroll', function () {
-                    stop = Math.round($(window).scrollTop());
-                    if (stop >= mainbottom) {
-                        $('.nav').addClass('past-main');
-                    } else {
-                        $('.nav').removeClass('past-main');
-                    }
-                });
-            }, 500);
-        }
+        setTimeout(function() {
+            var mainbottom = $('header').height() - 70;
+            $(window).on('scroll', function() {
+                stop = Math.round($(window).scrollTop());
+                if (stop >= mainbottom) {
+                    $('.nav').addClass('past-main');
+                } else {
+                    $('.nav').removeClass('past-main');
+                }
+            });
+        }, 500);
+    }
 </script>
 
 </html>

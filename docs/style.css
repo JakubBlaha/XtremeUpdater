@@ -1,5 +1,3 @@
-@import "compass/css3";
-
 * {
     @include box-sizing(border-box);
     transition: .3s ease-in-out;
@@ -196,19 +194,19 @@ main p.main-text {
     display: inline-block;
 }
 
-.sub-main-title{
+.sub-main-title {
     font-style: italic;
     margin-top: -30px;
     margin-bottom: 30px;
 }
 
-.how-to-use-box{
+.how-to-use-box {
     max-width: 700px;
     margin: auto;
     padding: 0 50px;
 }
 
-.how-to-use-text{
+.how-to-use-text {
     text-align: left;
     font-size: 25px;
     text-shadow: #ccc 0 0 1px;
@@ -218,16 +216,16 @@ main p.main-text {
     padding-left: 10px;
 }
 
-.how-to-use-image{
+.how-to-use-image {
     box-shadow: #dbac2a 0 0 7px;
     width: 100%;
 }
 
-.download-div{
+.download-div {
     margin: 20px auto;
 }
 
-.download-button{
+.download-button {
     font-size: 35px;
     color: white;
     background-color: #dbac2a;
@@ -241,13 +239,13 @@ main p.main-text {
     overflow: hidden;
 }
 
-.download-button:hover{
+.download-button:hover {
     box-shadow: #232a3a 0 2px 7px -2px;
 }
 
 footer {
     padding: 20px;
-    height: 300px;
+    /*height: 300px;*/
     background-color: #232a3a;
     background-size: cover;
     box-shadow: inset 0 0 4px #000000;
@@ -256,18 +254,19 @@ footer {
     overflow: hidden;
 }
 
-footer ul{
-    float: left;
+footer ul {
     list-style-type: none;
     margin: 0;
+    display: inline-block;
+    vertical-align: top;
 }
 
-footer ul p{
+footer ul p {
     color: #ccc;
 
 }
 
-footer ul li{
+footer ul li {
     margin: 5px 0;
 }
 
@@ -280,27 +279,29 @@ footer a:hover {
     color: #dbac2a;
 }
 
-footer img{
+footer img {
     width: 50px;
     position: relative;
     top: 18px;
     left: -10px;
 }
 
-.footer-icon-link{
+.footer-icon-link {
     padding: 0 10px;
 }
 
-.copyright{
-    color: #ccc;
-    float: right;
-    padding: 20px;
-}
-
-.copyright ul {
+#footer-container {
     display: inline-block;
 }
 
+.copyright {
+    color: #ccc;
+    float: right;
+    display: inline-block;
+    vertical-align: top;
+
+}
+/*
 .come-in {
     transform: translateY(60px);
     animation: come-in 0.8s ease forwards;
@@ -319,17 +320,15 @@ footer img{
     to {
         transform: translateY(0);
     }
-}
+}*/
 
 
 @media only screen and (max-width: 1200px) {
     .main-text {
-        width: 70%;
+        width: 85%;
     }
 
-    .download-button {
-        width: 70%;
-    }
+
 
     #header-navbar {
         background-color: #232a3a !important;
@@ -340,11 +339,17 @@ footer img{
 @media only screen and (max-width: 782px) {
     footer .copyright {
         float: left;
+        padding: 20px;
     }
-    
+
+    #footer-container {
+        display: block;
+    }
+
+    /*
     footer {
         height: 340px;
-    }
+    }*/
 }
 
 @media only screen and (max-width: 400px) {
@@ -352,11 +357,10 @@ footer img{
         width: 89%;
     }
 
-    .download-button {
-        width: 89%;
-    }
+
 }
 
+/*
 @media only screen and (max-width: 525px) {    
     footer {
         height: 410px;
@@ -379,4 +383,4 @@ footer img{
     footer {
         height: 520px;
     }
-}
+}*/
