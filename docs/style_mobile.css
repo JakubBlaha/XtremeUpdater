@@ -1,5 +1,5 @@
 * {
-    @include box-sizing(border-box);
+    box-sizing: border-box;
     transition: .3s ease-in-out;
     scroll-behavior: smooth;
     font-family: 'Roboto', sans-serif;
