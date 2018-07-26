@@ -9,6 +9,7 @@
 #:import get_version_number get_version_number.get_version_number
 #:import RelativeLayoutHoveringBehavior hovering_behavior.RelativeLayoutHoveringBehavior
 #:import is_admin main.is_admin
+#:import open webbrowser.open
 
 RootLayout:
 <CustButton@Button>:
@@ -36,6 +37,21 @@ RootLayout:
     color: theme.prim
     markup: True
 
+<HeaderMiniLabel@Label>:
+    color: theme.bg
+    size: 40, 40
+    font_name: 'fnt/segmdl2.ttf'
+    font_size: 20
+
+    canvas.before:
+        PushMatrix
+        Rotate:
+            angle: self.rotation_angle
+            origin: self.center
+    
+    canvas.after:
+        PopMatrix
+        
 <ContentLayout@BoxLayout>:
     orientation: 'vertical'
 
@@ -62,15 +78,16 @@ RootLayout:
     background_down: self.background_normal
 
 <NavigationButton@CustButton>:
+    markup: True
     size_hint_x: None
     width: 120
     background_color: theme.dark
     bold: True
-    font_size: 18
-    border: [2, 2, 2, 2]
-    background_normal: 'img/noise_texture.png'
+    font_size: 17
 
-<IconNavigationButton@NavigationButton+IconButton>
+<IconNavigationButton@IconButton+NavigationButton>:
+    font_size: 18
+    text: self.icon
 
 <Navigation@BoxLayout>:
     size_hint_y: None
@@ -172,6 +189,7 @@ RootLayout:
     valign: 'center'
     padding: 40, 0
     on_release: app.root.load_dll_view_data(app.root.ids.content_updater_path_info.text + self.path)
+    shorten: True
 
     canvas.before:
         Color:
@@ -344,7 +362,7 @@ RootLayout:
     color: theme.sec
     font_size: 15
     size_hint_y: None
-    height: 30
+    height: 60
     text_size: self.size
     padding: 0, 2
 
@@ -503,26 +521,29 @@ RootLayout:
         NavigationButton:
             id: navCustButtonupdater
             text: 'Updater'
+            icon: '\ue78b'
             page_index: 0
 
         NavigationButton:
             id: navCustButtongames
             text: 'Games'
+            icon: '\ue7fc'
             page_index: 1
 
         NavigationButton:
             id: navCustButtonsystem
             text: 'System'
+            icon: '\ue770'
             page_index: 2
 
         Widget:
 
         IconNavigationButton:
-            text: '\ue734' 
+            icon: '\ue734' 
             page_index: 3
 
         IconNavigationButton:
-            text: '\ue713'
+            icon: '\ue713'
             page_index: 4
 
     Content:
@@ -617,23 +638,27 @@ RootLayout:
 
         ContentLayout:
             id: content_system
-            padding: 10
-            spacing: 10
-
-            LabelIconButton:
-                text: "Clear user's temp folder"
-                icon: '\ue74d'
-                command: Tweaks.clear_temps
-
-            LabelSwitch:
-                text: 'Allow GameDVR'
-                active_callback: Tweaks.switch_dvr
-                active: Tweaks.is_dvr()
-                disabled: not is_admin()
             
-            Widget:
-                size_hint_y: None
-                height: 330
+            ScrollView:
+                BoxLayout:
+                    orientation: 'vertical'
+                    padding: 10
+                    spacing: 10
+
+                    LabelIconButton:
+                        text: "Clear user's temp folder"
+                        icon: '\ue74d'
+                        command: Tweaks.clear_temps
+
+                    LabelSwitch:
+                        text: 'Allow GameDVR'
+                        active_callback: Tweaks.switch_dvr
+                        active: Tweaks.is_dvr()
+                        disabled: not is_admin()
+                    
+                    Widget:
+                        size_hint_y: None
+                        height: 330
 
         ContentLayout:
             id: content_favorite
@@ -644,42 +669,64 @@ RootLayout:
 
         ContentLayout:
             id: content_settings
-            padding: 10
-            spacing: 10
 
-            SectionLabel:
-                text: 'Game Collection'
+            ScrollView:    
+                BoxLayout:
+                    orientation: 'vertical'
+                    padding: 10
+                    spacing: 10
+                    size_hint_y: None
+                    height: self.minimum_height
 
-            LabelIconButton:
-                text: f'Reset [color={theme.PRIM}][i]Game Collection[/i][/color]'
-                icon: '\ue74d'
-                command: root.reset_custom_paths
+                    SectionLabel:
+                        text: 'Support'
 
-            LabelSwitch:
-                active: app.store['Collection']['mipmapping']
-                text: 'Enable texture mipmapping'
-                active_callback: app.mipmap_switch_callback
+                    LabelIconButton:
+                        text: 'Get a help'
+                        icon: '\ue897'
+                        command: lambda: open('https://discord.gg/Cs4rstF')
 
-            SectionLabel:
-                text: 'Cache'
+                    LabelIconButton:
+                        text: 'Request a feature'
+                        icon: '\ue943'
+                        command: lambda: open('https://discord.gg/rdwCuge')
 
-            LabelIconButton:
-                text: "Clear all cache"
-                icon: '\ue74d'
-                command: root.clear_cache
+                    LabelIconButton:
+                        text: 'Report a bug'
+                        icon: '\uebe8'
+                        command: lambda: open('https://discord.gg/sfcBuMU')
 
-            LabelIconButton:
-                text: f"Clear [color={theme.PRIM}][i]Game Collection[/i][/color] cached images"
-                icon: '\ue74d'
-                command: root.clear_images_cache
+                    SectionLabel:
+                        text: 'Game Collection'
 
-            LabelIconButton:
-                text: "Clear cached game database"
-                icon: '\ue74d'
-                command: root.clear_common_paths_cache
+                    LabelIconButton:
+                        text: f'Reset [color={theme.PRIM}][i]Game Collection[/i][/color]'
+                        icon: '\ue74d'
+                        command: root.reset_custom_paths
 
-            Widget:
-                size_hint: 0, 0
+                    LabelSwitch:
+                        active: app.store['Collection']['mipmapping']
+                        text: 'Enable texture mipmapping'
+                        active_callback: app.mipmap_switch_callback
+
+                    SectionLabel:
+                        text: 'Cache'
+
+                    LabelIconButton:
+                        text: "Clear all cache"
+                        icon: '\ue74d'
+                        command: root.clear_cache
+
+                    LabelIconButton:
+                        text: f"Clear [color={theme.PRIM}][i]Game Collection[/i][/color] cached images"
+                        icon: '\ue74d'
+                        command: root.clear_images_cache
+
+                    LabelIconButton:
+                        text: "Clear cached game database"
+                        icon: '\ue74d'
+                        command: root.clear_common_paths_cache
+
 
         ContentLayout:
             padding: 20, 0

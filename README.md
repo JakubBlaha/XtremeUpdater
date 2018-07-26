@@ -5,12 +5,22 @@ Website is located at https://xtremeware.github.io/XtremeUpdater.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
 
+## v0.5.12
+**New features**
+  - Added *Get a help* button.
+  - Added *Request a feature* button.
+  - Added *Report a bug* button.
+
+**Tweaks**
+  - Bigger spans between sections in *Settings*.
+  - Made header alot nicer
+
 ## v0.5.11
 **New features**
   - Added option to find sub-directories with available dlls.
 
 **Tweaks**
-  - Available dlls are now loaded upon app startup. This leads to faster process of dlls updating.
+  - Available dlls are now loaded upon app startup. This leads to faster process of dll updating.
   - Readded available dlls cache.
   - All slashes in *path input* now face backwards.
   - Tweaked disabled switches.

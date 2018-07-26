@@ -7,6 +7,7 @@ import kivy
 import win32api
 import shutil
 import ctypes
+from random import randint
 kivy.require('1.10.1')
 
 from kivy import Config
@@ -40,6 +41,7 @@ from kivy.properties import StringProperty, ObjectProperty, DictProperty, ListPr
 
 from dll_updater import DllUpdater
 from hovering_behavior import RelativeLayoutHoveringBehavior, HoveringBehavior
+from windowdragbehavior import WindowDragBehavior
 from get_image_url import get_image_url_from_response, TEMPLATE, HEADERS
 from theme import *
 
@@ -58,6 +60,48 @@ def new_thread(fn):
         start_new(fn, args, kwargs)
 
     return wrapper
+
+
+class HeaderLabel(Label, WindowDragBehavior):
+    current_icon = StringProperty('\ue78b')
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        Clock.schedule_once(lambda *args: Clock.schedule_once(self.setup_mini_labels))
+
+    def setup_mini_labels(self, *args):
+        for i in range(17):
+            odd = i%2
+            label = HeaderMiniLabel(text=self.current_icon, x=i*50 + 120, y=self.y - odd*10)
+            self.add_widget(label, 1)
+
+    def on_current_icon(self, *args):
+        for child in self.children:
+            if isinstance(child, HeaderMiniLabel):
+                child.text = self.current_icon
+
+
+class HeaderMiniLabel(Label, HoveringBehavior):
+    rotation_angle = NumericProperty()
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.rotation_angle = randint(0, 361)
+        Clock.schedule_once(self.rotate, randint(0, 5))
+
+    def rotate(self, *args):
+        Animation(rotation_angle=randint(0, 1000), d=.5, t='out_expo').start(self)
+        Clock.schedule_once(self.rotate, randint(5, 10))
+
+    def on_text(self, *args):
+        Animation.stop_all(self)
+        anim = Animation(rotation_angle=self.rotation_angle + 500, color=prim, d=.5, t='out_expo')
+        anim += Animation(color=bg, d=.5)
+        anim.start(self)
+
+    def on_hovering(self, *args):
+        if self.hovering:
+            self.on_text()
 
 
 class CustButton(Button, HoveringBehavior):
@@ -112,7 +156,8 @@ class LabelIconButton(BoxLayout):
             Animation(opacity=1, d=.5).start(self.ids.label)
 
         else:
-            Animation(width=self.width, d=.5, t='out_expo').start(self.ids.button)
+            Animation(
+                width=self.width, d=.5, t='out_expo').start(self.ids.button)
             self.ids.label.opacity = 0
 
 
@@ -142,6 +187,7 @@ class LabelSwitch(BoxLayout):
 
         def on_frame(*args):
             self.ids.switch.bind(active=self.active_callback)
+
         Clock.schedule_once(on_frame)
 
 
@@ -228,11 +274,11 @@ class GameCollection(ScrollView):
             is_url = data['isURL']
 
             button = GameButton(
-                    text=game,
-                    path=path,
-                    exe=launch_path,
-                    is_url=is_url,
-                    custom=True)
+                text=game,
+                path=path,
+                exe=launch_path,
+                is_url=is_url,
+                custom=True)
             self.ids.board.add_widget(button)
             button.update_image()
 
@@ -271,12 +317,15 @@ class GameCollection(ScrollView):
                     is_url=is_url,
                     custom=False)
                 self.ids.board.add_widget(button)
-                button.update_image()            
+                button.update_image()
 
         info('Game searching finished | Select your game')
 
     def remove_from_collection(self, button):
-        self.remove_popup = GameRemovePopup(game=button.text, proceed_command=lambda: self.proceed_remove_from_collection(button))
+        self.remove_popup = GameRemovePopup(
+            game=button.text,
+            proceed_command=lambda: self.proceed_remove_from_collection(button)
+        )
         self.remove_popup.open()
 
     def proceed_remove_from_collection(self, button):
@@ -296,7 +345,8 @@ class GameCollection(ScrollView):
             child.ids.image.mipmap = enabled
             child.ids.image.reload()
 
-        info('Mipmapping {}abled | Configuring done'.format('en' if enabled else 'dis'))
+        info('Mipmapping {}abled | Configuring done'.format('en' if enabled
+                                                            else 'dis'))
 
 
 class GameRemovePopup(Popup):
@@ -398,18 +448,17 @@ class GameButton(Button, RelativeLayoutHoveringBehavior):
 class NavigationButton(CustButton):
     __active = False
     page_index = NumericProperty()
+    icon = StringProperty()
 
     def highlight(self):
         self.__active = True
-        Animation.stop_all(self)
-        Animation(background_color=prim, color=fg, d=.1).start(self)
-        self.background_normal = 'img/FFFFFF-1.png'
+        Animation(
+            background_color=prim, color=fg, d=.1).start(self)
 
     def nohighghlight(self):
         self.__active = False
-        Animation.stop_all(self)
-        Animation(background_color=dark, d=.1).start(self)
-        self.background_normal = 'img/noise_texture.png'
+        Animation(
+            background_color=dark, d=.1).start(self)
 
     def on_leave(self, *args):
         if not self.__active:
@@ -423,6 +472,7 @@ class NavigationButton(CustButton):
         if not self.__active:
             super().on_release()
             self.parent.active = self.page_index
+            app().root.ids.header_label.current_icon = self.icon
 
 
 class Navigation(BoxLayout):
@@ -459,8 +509,7 @@ class Content(PageLayout):
             pass
 
         ACTIONS = {
-            1:
-            lambda: self.children[::-1][1].children[1].update_local_games()
+            1: lambda: self.children[::-1][1].children[1].update_local_games()
         }
 
         try:
@@ -482,9 +531,15 @@ class SubdirItem(Button, RelativeLayoutHoveringBehavior):
 
     def on_hovering(self, *args):
         if self.hovering:
-            Animation(highlight_height=self.width, highlight_alpha=1, d=.5, t='out_expo').start(self)
+            Animation(
+                highlight_height=self.width,
+                highlight_alpha=1,
+                d=.5,
+                t='out_expo').start(self)
         else:
-            Animation(highlight_height=0, highlight_alpha=0, d=.5, t='out_expo').start(self)
+            Animation(
+                highlight_height=0, highlight_alpha=0, d=.5,
+                t='out_expo').start(self)
 
 
 class DllViewItem(ListItemButton):
@@ -508,7 +563,8 @@ class DllViewItem(ListItemButton):
 class DllViewAdapter(ListAdapter):
     def refresh_available(self):
         self.data = [{
-            **item, 'selectable': item['text'] in DllUpdater.available_dlls
+            **item, 'selectable':
+            item['text'] in DllUpdater.available_dlls
         } for item in self.data]
 
         def on_frame(*args):
@@ -540,7 +596,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
     def __init__(self, **kw):
         super().__init__(**kw)
         self.setup_updater()
-        
+
     @new_thread
     def setup_updater(self):
         self.info('Syncing with github | Loading dll database..')
@@ -551,14 +607,13 @@ class RootLayout(BoxLayout, HoveringBehavior):
         if self.dlls_loaded:
             self.ids.refresh_button.disabled = True
             self.info('Syncing done | Successfully updated dll database')
-            OverdrawLabel(self.ids.dll_view, '\uf12b', 'First, select a directory')
+            OverdrawLabel(self.ids.dll_view, '\uf12b',
+                          'First, select a directory')
 
         else:
             self.ids.refresh_button.disabled = False
             self.info('Syncing failed | Please try again')
-            OverdrawLabel(self.ids.dll_view, '\uea6a',
-                          'Error when syncing')
-
+            OverdrawLabel(self.ids.dll_view, '\uea6a', 'Error when syncing')
 
     def on_mouse_pos(self, _, pos):
         x, y = pos
@@ -617,7 +672,10 @@ class RootLayout(BoxLayout, HoveringBehavior):
                 Clock.schedule_once(lambda *args: self.update_callback())
 
         self.info('Loading subdirs | Please wait..')
-        self.ids.subdir_view.data = [{'path': subdir} for subdir in DllUpdater.dll_subdirs(path, self.updater.available_dlls)]
+        self.ids.subdir_view.data = [{
+            'path': subdir
+        } for subdir in DllUpdater.dll_subdirs(path,
+                                               self.updater.available_dlls)]
         self.info('Subdirs loaded | Check it out!')
 
     @new_thread
@@ -699,7 +757,9 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.ids.game_add_form_dir.text = path
 
     def game_launch_path_button_callback(self):
-        path = fileopenbox(filetypes=['*.exe', '*.url'], default=self.ids.game_add_form_dir.text + '\\*.exe')
+        path = fileopenbox(
+            filetypes=['*.exe', '*.url'],
+            default=self.ids.game_add_form_dir.text + '\\*.exe')
         if not path:
             path = ''
 
@@ -743,7 +803,9 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.info('Purge finished | Deleted all customly added games')
 
         else:
-            self.info('Nothing to delete | No changes have been made to the Game Collection')
+            self.info(
+                'Nothing to delete | No changes have been made to the Game Collection'
+            )
 
     @mainthread
     def info(self, text):
@@ -781,10 +843,13 @@ class XtremeUpdaterApp(App):
         self.store.put('Collection', mipmapping=False)
 
     def mipmap_switch_callback(self, _, enabled):
-        info('{}abling mipmapping | Please wait..'.format('En' if enabled else 'Dis'))
+        info('{}abling mipmapping | Please wait..'.format('En' if enabled else
+                                                          'Dis'))
 
         self.store.put('Collection', mipmapping=enabled)
-        Clock.schedule_once(lambda *args: self.root.ids.game_collection_view.reload_mipmapping(enabled), .5)
+        Clock.schedule_once(
+            lambda *args: self.root.ids.game_collection_view.reload_mipmapping(enabled),
+            .5)
 
 
 if __name__ == '__main__':
