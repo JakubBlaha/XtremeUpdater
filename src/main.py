@@ -1,6 +1,5 @@
 from easygui import diropenbox, fileopenbox
 from _thread import start_new
-from webbrowser import open as openurl
 import yaml
 import os
 import win32api
@@ -34,7 +33,6 @@ from kivy.uix.floatlayout import FloatLayout
 from custpagelayout import PageLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivy.uix.image import AsyncImage
 from kivy.uix.listview import ListItemButton
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.popup import Popup
@@ -73,9 +71,8 @@ class HeaderLabel(Label, WindowDragBehavior):
 
     def setup_mini_labels(self, *args):
         for i in range(17):
-            odd = i % 2
             label = HeaderMiniLabel(
-                text=self.current_icon, x=i * 50 + 120, y=self.y - odd * 10)
+                text=self.current_icon, x=i * 50 + 120, y=self.y - i % 2 * 10)
             self.add_widget(label, 1)
 
     def on_current_icon(self, *args):
@@ -278,13 +275,11 @@ class GameCollection(ScrollView):
         for game, data in custom_paths.items():
             path = data['path']
             launch_path = data['launchPath']
-            is_url = data['isURL']
 
             button = GameButton(
                 text=game,
                 path=path,
                 exe=launch_path,
-                is_url=is_url,
                 custom=True)
             self.ids.board.add_widget(button)
             button.update_image()
@@ -321,7 +316,6 @@ class GameCollection(ScrollView):
                     exe=launch_path,
                     expand_user_patch=expand_patch,
                     expand_user_launch=expand_launch,
-                    is_url=is_url,
                     custom=False)
                 self.ids.board.add_widget(button)
                 button.update_image()
@@ -346,14 +340,6 @@ class GameCollection(ScrollView):
 
         else:
             info('Failed | Storage not found')
-
-    def reload_mipmapping(self, enabled):
-        for child in self.ids.board.children:
-            child.ids.image.mipmap = enabled
-            child.ids.image.reload()
-
-        info('Mipmapping {}abled | Configuring done'.format('en' if enabled
-                                                            else 'dis'))
 
 
 class GameRemovePopup(Popup):
@@ -430,7 +416,6 @@ class GameButton(Button, HoveringBehavior):
     exe = StringProperty()
     expand_user_launch = BooleanProperty(0)
     expand_user_patch = BooleanProperty(0)
-    is_url = BooleanProperty(0)
     custom = BooleanProperty(0)
 
     def launch_game(self):
@@ -438,14 +423,13 @@ class GameButton(Button, HoveringBehavior):
 
         path = self.exe
 
-        if self.is_url:
-            openurl(path)
-            return
-
         if self.expand_user_launch:
             path = os.path.expanduser(path)
 
-        os.startfile(path)
+        try:
+            os.startfile(path)
+        except FileNotFoundError:
+            info(f'Failed to launch {self.text} | File not found')
 
     def remove_from_collection(self):
         self.parent.parent.remove_from_collection(self)
@@ -465,12 +449,12 @@ class GameButton(Button, HoveringBehavior):
     def on_enter(self):
         Animation.stop_all(self)
         Animation(opacity=1, d=.1).start(self)
-        Animation(color=prim, opacity=1, d=.1).start(self.ids.label)
+        Animation(opacity=1, d=.1).start(self.ids.label)
 
     def on_leave(self):
         Animation.stop_all(self)
         Animation(opacity=.5, d=.1).start(self)
-        Animation(color=fg, opacity=.5, d=.1).start(self.ids.label)
+        Animation(opacity=0, d=.1).start(self.ids.label)
 
     def on_release(self):
         path = self.path
@@ -486,14 +470,15 @@ class NavigationButton(CustButton):
     __active = False
     page_index = NumericProperty()
     icon = StringProperty()
+    highlight_height = NumericProperty()
 
     def highlight(self):
         self.__active = True
-        Animation(background_color=prim, color=fg, d=.1).start(self)
+        Animation(highlight_height=self.height, color=fg, d=.5, t='out_expo').start(self)
 
     def nohighghlight(self):
         self.__active = False
-        Animation(background_color=dark, d=.1).start(self)
+        Animation(highlight_height=0, d=.2, t='in_expo').start(self)
 
     def on_leave(self, *args):
         if not self.__active:
@@ -521,7 +506,7 @@ class Navigation(BoxLayout):
         Clock.schedule_once(self._init_highlight)
 
     def _init_highlight(self, *args):
-        self.tabs[self.active].highlight()
+        Clock.schedule_once(lambda *args: self.tabs[self.active].highlight())
 
     def on_children(self, Navigation, children):
         self.tabs = [
@@ -830,23 +815,19 @@ class RootLayout(BoxLayout, HoveringBehavior):
         game_patch_dir = self.ids.game_add_form_dir.text
         game_launch_path = self.ids.url_input.text
 
-        if game_launch_path:
-            is_url = True
-
-        else:
+        if not game_launch_path:
             game_launch_path = self.ids.game_add_form_launch.text
-            is_url = False
 
         data = {
             'path': game_patch_dir,
             'launchPath': game_launch_path,
-            'isURL': is_url,
         }
 
         store = JsonStore(GameCollection.CUSTOM_PATHS_PATH)
         store.put(game_name, **data)
 
         self.cancel_add_game_callback()
+        self.ids.game_collection_view.update_custom_games()
 
     def cancel_add_game_callback(self):
         self.ids.game_name_input.text = ''
@@ -880,7 +861,6 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
 class XtremeUpdaterApp(App):
     icon = 'img/icon.png'
-    store = None
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -893,18 +873,10 @@ class XtremeUpdaterApp(App):
             os.makedirs('.config', exist_ok=True)
             self.store = JsonStore('.config/Config.json')
 
-            self.store.put('Collection', mipmapping=False)
             self.store.put('General', mouse_highlight=True)
 
-    def mipmap_switch_callback(self, _, enabled):
-        info('{}abling mipmapping | Please wait..'.format('En' if enabled else
-                                                          'Dis'))
 
-        self.store.put('Collection', mipmapping=enabled)
-        Clock.schedule_once(
-            lambda *args: self.root.ids.game_collection_view.reload_mipmapping(enabled),
-            .5)
-
+__version__ = '0.5.14'
 
 if __name__ == '__main__':
     xtremeupdater = XtremeUpdaterApp()

@@ -10,6 +10,7 @@
 #:import HoveringBehavior hovering_behavior.HoveringBehavior
 #:import is_admin main.is_admin
 #:import open webbrowser.open
+#:import version main.__version__
 
 RootLayout:
 <CustButton@Button>:
@@ -84,6 +85,15 @@ RootLayout:
     background_color: theme.dark
     bold: True
     font_size: 17
+    background_normal: 'img/FFFFFF-0.png'
+
+    canvas.before:
+        Color:
+            rgba: theme.prim
+
+        Rectangle:
+            pos: self.pos
+            size: self.width, self.highlight_height
 
 <IconNavigationButton@IconButton+NavigationButton>:
     font_size: 18
@@ -259,12 +269,11 @@ RootLayout:
         pos: root.pos
         size: root.width, root.height
         anim_delay: 0.1
-        mipmap: app.store['Collection']['mipmapping']
         nocache: True
 
     Label:
         id: label
-        padding: 20, 10
+        padding: 20, 5
         text: root.text
         pos: root.pos
         size: root.size
@@ -272,12 +281,13 @@ RootLayout:
         text_size: self.size
         font_name: 'fnt/Roboto-Black.ttf'
         size_hint_y: None
-        height: 40
-        opacity: .5
+        height: 30
+        opacity: 0
+        color: theme.prim
 
         canvas.before:
             Color:
-                rgba: theme.sec
+                rgba: theme.dark
             
             Rectangle:
                 pos: self.pos
@@ -740,7 +750,7 @@ RootLayout:
             ScrollView:    
                 BoxLayout:
                     orientation: 'vertical'
-                    padding: 10, 80
+                    padding: 10, 40
                     spacing: 10
                     size_hint_y: None
                     height: self.minimum_height
@@ -778,11 +788,6 @@ RootLayout:
                         text: f'Reset [color={theme.PRIM}][i]Game Collection[/i][/color]'
                         icon: '\ue74d'
                         command: root.reset_custom_paths
-
-                    LabelSwitch:
-                        active: app.store['Collection']['mipmapping']
-                        text: 'Enable texture mipmapping'
-                        active_callback: app.mipmap_switch_callback
 
                     SectionLabel:
                         text: 'Cache'
@@ -886,15 +891,24 @@ RootLayout:
                 id: subdir_view
 
 
-    Label:
-        id: info_label
+    BoxLayout:
         size_hint_y: None
         height: 30
-        text_size: self.size
-        halign: 'left'
-        font_name: 'fnt/Roboto-Medium.ttf'
-        font_size: 12
         padding: 10, 8
-        text: "Welcome to XtremeUpdater | Let's start"
-        color: theme.prim
-        markup: True
+
+        Label:
+            id: info_label
+            text_size: self.size
+            halign: 'left'
+            font_name: 'fnt/Roboto-Medium.ttf'
+            font_size: 12
+            text: "Welcome to XtremeUpdater | Let's start"
+            color: theme.prim
+
+        Label:
+            text: version
+            text_size: self.size            
+            font_name: 'fnt/Roboto-Medium.ttf'
+            font_size: 10
+            color: theme.bg
+            halign: 'right'

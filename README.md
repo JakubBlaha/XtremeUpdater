@@ -1,9 +1,21 @@
 # XtremeUpdater
-*Note: XtremeUpdater is in alpha and is not stable at all. Dll backing and restoring should work, but please backup your dlls manually before using XtremeUpdater.*
+Welcome to XtremeUpdater repo. This software's task is to improve mainly video games performance, but can be used for increasing performance of almost **any** app. XtremeUpdater also contains *Game Collection* for easy game management and ~~loads~~ (not that much actually) of system tweaks to improve your overall system performance.
 
 Website is located at https://xtremeware.github.io/XtremeUpdater.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
+
+## v0.5.14
+**Tweaks**
+  - Cleaner *Game Collection*.
+  - Added version label.
+  - Updated animations for navigation buttons.
+
+**Removed features**
+  - Mipmapping switch and image mipmapping in the *Game Collection*. Images are now antialiased with cropping.
+
+**Bugfixes**
+  - Fixed bug causing customly added game to appear only after the next app startup.
 
 ## v0.5.13
 **New features**
