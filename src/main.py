@@ -3,11 +3,12 @@ from _thread import start_new
 from webbrowser import open as openurl
 import yaml
 import os
-import kivy
 import win32api
 import shutil
 import ctypes
 from random import randint
+
+import kivy
 kivy.require('1.10.1')
 
 from kivy import Config
@@ -40,7 +41,7 @@ from kivy.uix.popup import Popup
 from kivy.properties import StringProperty, ObjectProperty, DictProperty, ListProperty, NumericProperty, BooleanProperty
 
 from dll_updater import DllUpdater
-from hovering_behavior import RelativeLayoutHoveringBehavior, HoveringBehavior
+from hovering_behavior import HoveringBehavior
 from windowdragbehavior import WindowDragBehavior
 from get_image_url import get_image_url_from_response, TEMPLATE, HEADERS
 from theme import *
@@ -67,12 +68,14 @@ class HeaderLabel(Label, WindowDragBehavior):
 
     def __init__(self, **kw):
         super().__init__(**kw)
-        Clock.schedule_once(lambda *args: Clock.schedule_once(self.setup_mini_labels))
+        Clock.schedule_once(
+            lambda *args: Clock.schedule_once(self.setup_mini_labels))
 
     def setup_mini_labels(self, *args):
         for i in range(17):
-            odd = i%2
-            label = HeaderMiniLabel(text=self.current_icon, x=i*50 + 120, y=self.y - odd*10)
+            odd = i % 2
+            label = HeaderMiniLabel(
+                text=self.current_icon, x=i * 50 + 120, y=self.y - odd * 10)
             self.add_widget(label, 1)
 
     def on_current_icon(self, *args):
@@ -85,19 +88,23 @@ class HeaderMiniLabel(Label, HoveringBehavior):
     rotation_angle = NumericProperty()
 
     def __init__(self, **kw):
+        self.text = kw['text']
         super().__init__(**kw)
         self.rotation_angle = randint(0, 361)
-        Clock.schedule_once(self.rotate, randint(0, 5))
+        Clock.schedule_once(self.rotate, randint(0, 10))
 
     def rotate(self, *args):
-        Animation(rotation_angle=randint(0, 1000), d=.5, t='out_expo').start(self)
+        Animation(
+            rotation_angle=randint(0, 1000), d=.5, t='out_expo').start(self)
         Clock.schedule_once(self.rotate, randint(5, 10))
 
     def on_text(self, *args):
         Animation.stop_all(self)
-        anim = Animation(rotation_angle=self.rotation_angle + 500, color=prim, d=.5, t='out_expo')
-        anim += Animation(color=bg, d=.5)
-        anim.start(self)
+        (Animation(
+            rotation_angle=self.rotation_angle + 500,
+            color=prim,
+            d=.5,
+            t='out_expo') + Animation(color=bg, d=.5)).start(self)
 
     def on_hovering(self, *args):
         if self.hovering:
@@ -180,7 +187,7 @@ class CustSwitch(Widget):
 class LabelSwitch(BoxLayout):
     text = StringProperty()
     active = BooleanProperty()
-    active_callback = ObjectProperty()
+    active_callback = ObjectProperty(lambda *args: None)
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -235,7 +242,7 @@ class GameCollection(ScrollView):
             self.custom_paths = JsonStore(self.CUSTOM_PATHS_PATH)
 
     def update_local_games(self):
-        info('Syncing with GitHub | Please wait..')
+        info('Syncing with GitHub | Loading game database..')
 
         self.update_custom_games()
 
@@ -252,7 +259,7 @@ class GameCollection(ScrollView):
             with open(self.COMMON_PATHS_CACHE_PATH, 'w') as stream:
                 yaml.dump(dict(self.datastore), stream)
 
-            info('Successfully synced with GitHub | Updated database')
+            info('Successfully synced with GitHub | Updated game database')
 
         def on_request_error(*args):
             info('Failed to sync with GiHub | Cached version may be available')
@@ -352,6 +359,24 @@ class GameCollection(ScrollView):
 class GameRemovePopup(Popup):
     game = StringProperty()
     proceed_command = ObjectProperty()
+    bin_height = NumericProperty(140)
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        Clock.schedule_interval(self.dance_bin, 2)
+
+    def dance_bin(self, *args):
+        (
+            Animation(bin_height=160, d=.4, t='out_expo') + Animation(bin_height=140, d=.2, t='out_expo')
+        ).start(self)
+
+    def on_open(self, *args):
+        Animation(
+            size_hint=[.5, .5], opacity=1, d=.5, t='out_expo').start(self)
+
+    def on_dismiss(self, *args):
+        Animation(
+            size_hint=[.6, .6], opacity=0, d=.1, t='out_quad').start(self)
 
 
 class ImageCacher:
@@ -362,38 +387,50 @@ class ImageCacher:
         os.makedirs(cls.CACHE_DIR, exist_ok=True)
 
     @classmethod
-    def download_image(cls, query, AstncImageInstance):
+    def download_image(cls, query, AsyncImageInstance):
         if os.path.isfile(os.path.join(cls.CACHE_DIR, query)):
             return
 
         UrlRequest(
             TEMPLATE.format(query),
-            lambda req, result: cls.on_request_success(req, result, query, AstncImageInstance),
+            lambda req, result: cls.on_request_success(req, result, query, AsyncImageInstance),
             req_headers=HEADERS)
 
     @classmethod
-    def on_request_success(cls, req, result, query, AstncImageInstance):
+    def on_request_success(cls, req, result, query, AsyncImageInstance):
         cls.create_cache_dir()
 
         def load_image(index):
+            def on_request_success(req, result):
+                from PIL import Image
+                from cropped_thumbnail import cropped_thumbnail
+                from io import BytesIO
+
+                buffer = BytesIO(result)
+                img = Image.open(buffer)
+                img = cropped_thumbnail(img, [333, 187])
+                img.save(cls.CACHE_DIR + query, 'PNG')
+
+                AsyncImageInstance.reload()
+
             UrlRequest(
                 get_image_url_from_response(result, index),
-                on_success=lambda *args: AstncImageInstance.reload(),
+                on_success=on_request_success,
                 on_failure=lambda *args: load_image(index + 1),
                 on_redirect=lambda *args: load_image(index + 1),
                 req_headers=HEADERS,
-                file_path=os.path.join(cls.CACHE_DIR, query))
-            AstncImageInstance.last_image_index = index
+                decode=False)
+            AsyncImageInstance.last_image_index = index
 
         load_image(0)
 
 
-class GameButton(Button, RelativeLayoutHoveringBehavior):
+class GameButton(Button, HoveringBehavior):
     path = StringProperty()
     exe = StringProperty()
     expand_user_launch = BooleanProperty(0)
     expand_user_patch = BooleanProperty(0)
-    is_url = BooleanProperty()
+    is_url = BooleanProperty(0)
     custom = BooleanProperty(0)
 
     def launch_game(self):
@@ -452,13 +489,11 @@ class NavigationButton(CustButton):
 
     def highlight(self):
         self.__active = True
-        Animation(
-            background_color=prim, color=fg, d=.1).start(self)
+        Animation(background_color=prim, color=fg, d=.1).start(self)
 
     def nohighghlight(self):
         self.__active = False
-        Animation(
-            background_color=dark, d=.1).start(self)
+        Animation(background_color=dark, d=.1).start(self)
 
     def on_leave(self, *args):
         if not self.__active:
@@ -508,23 +543,13 @@ class Content(PageLayout):
         except IndexError:
             pass
 
-        ACTIONS = {
-            1: lambda: self.children[::-1][1].children[1].update_local_games()
-        }
-
-        try:
-            ACTIONS[page]()
-
-        except KeyError:
-            pass
-
 
 class PlaceHolder(Label):
     message = StringProperty('Coming soon')
     icon = StringProperty('\ue946')
 
 
-class SubdirItem(Button, RelativeLayoutHoveringBehavior):
+class SubdirItem(Button, HoveringBehavior):
     path = StringProperty()
     highlight_height = NumericProperty()
     highlight_alpha = NumericProperty()
@@ -588,6 +613,21 @@ class DllViewAdapter(ListAdapter):
             lambda *args: self.select_list(self.get_selectable_views()))
 
 
+class SyncPopup(Popup):
+    icon_rotation = NumericProperty()
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        Clock.schedule_interval(self.rotate_icon, 1)
+
+    def rotate_icon(self, *args):
+        Animation(icon_rotation=self.icon_rotation - 180, d=.5, t='out_expo').start(self)
+
+    def dismiss(self):
+        Animation(opacity=0, d=.5).start(self)
+        Clock.schedule_once(lambda *args: super(Popup, self).dismiss(), 1)
+
+
 class RootLayout(BoxLayout, HoveringBehavior):
     mouse_highlight_pos = ListProperty([-120, -120])
     dlls_loaded = BooleanProperty(False)
@@ -595,11 +635,17 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
     def __init__(self, **kw):
         super().__init__(**kw)
+        
+        Clock.schedule_once(self.show_sync_popup)
         self.setup_updater()
+
+    def show_sync_popup(self, *args):
+        self.sync_popup = SyncPopup()
+        self.sync_popup.open()
 
     @new_thread
     def setup_updater(self):
-        self.info('Syncing with github | Loading dll database..')
+        self.info('Syncing with GitHub | Loading dll database..')
 
         self.updater = DllUpdater()
         self.dlls_loaded = self.updater.load_available_dlls()
@@ -615,10 +661,19 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.info('Syncing failed | Please try again')
             OverdrawLabel(self.ids.dll_view, '\uea6a', 'Error when syncing')
 
+        Clock.schedule_once(self.update_common_paths)
+
+    def update_common_paths(self, *args):
+        self.ids.game_collection_view.update_local_games()
+        self.sync_popup.dismiss()
+
     def on_mouse_pos(self, _, pos):
-        x, y = pos
-        x, y = x - 60, y - 60
-        self.mouse_highlight_pos = x, y
+        if app().store['General']['mouse_highlight']:
+            x, y = pos
+            self.mouse_highlight_pos = x - 60, y - 60
+
+        else:
+            self.mouse_highlight_pos = -120, -120
 
     def set_dll_buttons_state(self, enabled):
         self.ids.restore_button.disabled = not enabled
@@ -626,12 +681,15 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
     @new_thread
     def load_directory(self):
-        self.info('Select a directory now | Waiting..')
+        self.info('Popup created | Select a directory now')
         self.load_dll_view_data(diropenbox())
 
     @new_thread
     def load_dll_view_data(self, path, quickupdate=False):
         self.goto_updater()
+
+        if not path:
+            return
 
         path = os.path.abspath(path)
 
@@ -640,7 +698,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
             return
 
         self.last_path = path
-        self.ids.content_updater_path_info.text = path
+        self.ids.path_info.text = path
 
         if not os.path.isdir(path):
             self.info('Seems like an invalid directory | Try again')
@@ -676,7 +734,8 @@ class RootLayout(BoxLayout, HoveringBehavior):
             'path': subdir
         } for subdir in DllUpdater.dll_subdirs(path,
                                                self.updater.available_dlls)]
-        self.info('Subdirs loaded | Check it out!')
+        self.info('Subdirs loaded | Check it out!' if self.ids.subdir_view.data
+                  else 'No subdirs found | Maybe next time')
 
     @new_thread
     def update_callback(self):
@@ -687,8 +746,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         dlls = [item.text for item in self.ids.dll_view.adapter.selection]
 
         try:
-            DllUpdater.update_dlls(self.ids.content_updater_path_info.text,
-                                   dlls)
+            DllUpdater.update_dlls(self.ids.path_info.text, dlls)
 
         except:
             self.info("Couldn't download updated dll | Please try again")
@@ -702,7 +760,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.info("Restoring | Please wait..")
 
         dlls = [item.text for item in self.ids.dll_view.adapter.selection]
-        DllUpdater.restore_dlls(self.ids.content_updater_path_info.text, dlls)
+        DllUpdater.restore_dlls(self.ids.path_info.text, dlls)
 
     def clear_images_cache(self):
         try:
@@ -735,7 +793,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
             info('Done | Removed cached files')
 
     def refresh_dll_view(self):
-        self.load_dll_view_data(self.ids.content_updater_path_info.text)
+        self.load_dll_view_data(self.ids.path_info.text)
 
     def goto_updater(self):
         self.ids.content.page = 0
@@ -826,21 +884,17 @@ class XtremeUpdaterApp(App):
 
     def __init__(self, **kw):
         super().__init__(**kw)
-
-        if not os.path.isfile('.config/Config.json'):
-            self.create_config_store()
-
-        else:
-            self.load_store()
+        self.load_store()
 
     def load_store(self):
-        self.store = JsonStore('.config/Config.json')
+        if os.path.isfile('.config/Config.json'):
+            self.store = JsonStore('.config/Config.json')
+        else:
+            os.makedirs('.config', exist_ok=True)
+            self.store = JsonStore('.config/Config.json')
 
-    def create_config_store(self):
-        os.makedirs('.config', exist_ok=True)
-
-        self.load_store()
-        self.store.put('Collection', mipmapping=False)
+            self.store.put('Collection', mipmapping=False)
+            self.store.put('General', mouse_highlight=True)
 
     def mipmap_switch_callback(self, _, enabled):
         info('{}abling mipmapping | Please wait..'.format('En' if enabled else

@@ -5,6 +5,24 @@ Website is located at https://xtremeware.github.io/XtremeUpdater.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
 
+## v0.5.13
+**New features**
+ - Option to turn off *mouse highlight*.
+ - Syncing screen upon app startup.
+
+**Tweaks**
+  - All game thumbnails in the *Game Collection* now fit the button.
+  - Smaller spans between sections in *Settings* and *Game add form*.
+  - Header mini-labels now do not spin upon app startup.
+  - Game database is now loaded upon app startup.
+  - Reworked *Game remove popup*.
+
+**Bugfixes**
+  - Fixed bug buttons to sometimes behave unexpectedly.
+  - Fixed overlapping *Game add form*.
+  - No working directory will be longer loaded if you close the directory popup.
+  - Notification does not longer tell *Subdirs loaded..* when none are found.
+
 ## v0.5.12
 **New features**
   - Added *Get a help* button.
@@ -12,7 +30,7 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
   - Added *Report a bug* button.
 
 **Tweaks**
-  - Bigger spans between sections in *Settings*.
+  - Bigger spans between sections in *Settings* and *Game add form*.
   - Made header alot nicer
 
 ## v0.5.11

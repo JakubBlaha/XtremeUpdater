@@ -7,7 +7,7 @@
 #:import DllViewAdapter main.DllViewAdapter
 #:import Tweaks tweaks.Tweaks
 #:import get_version_number get_version_number.get_version_number
-#:import RelativeLayoutHoveringBehavior hovering_behavior.RelativeLayoutHoveringBehavior
+#:import HoveringBehavior hovering_behavior.HoveringBehavior
 #:import is_admin main.is_admin
 #:import open webbrowser.open
 
@@ -155,7 +155,7 @@ RootLayout:
     height: 25
 
     Label:
-        text: get_version_number(app.root.ids.content_updater_path_info.text + root.text)
+        text: get_version_number(app.root.ids.path_info.text + root.text)
         pos: root.pos
         size: root.size
         text_size: self.size
@@ -188,7 +188,7 @@ RootLayout:
     text_size: self.size
     valign: 'center'
     padding: 40, 0
-    on_release: app.root.load_dll_view_data(app.root.ids.content_updater_path_info.text + self.path)
+    on_release: app.root.load_dll_view_data(app.root.ids.path_info.text + self.path)
     shorten: True
 
     canvas.before:
@@ -240,7 +240,7 @@ RootLayout:
     padding: 0, 6
     disabled: True
 
-<GameButtonMini@IconButton+RelativeLayoutHoveringBehavior>:
+<GameButtonMini@IconButton+HoveringBehavior>:
     background_color: 0, 0, 0, 0
     background_normal: 'img/FFFFFF-0.png'
     background_hovering: self.background_normal
@@ -362,7 +362,7 @@ RootLayout:
     color: theme.sec
     font_size: 15
     size_hint_y: None
-    height: 60
+    height: 30
     text_size: self.size
     padding: 0, 2
 
@@ -388,31 +388,98 @@ RootLayout:
     padding: 11, 11
 
 
-<GameRemovePopup@Popup>:
-    title: 'Really remove ?'
-    separator_color: theme.prim
-    separator_height: 4
-    title_size: 16
-    title_font: 'fnt/Roboto-Black.ttf'
-    size_hint: .5, .5
+<SyncPopup@Popup>:
+    size_hint: 1, None
+    height: Window.height - app.root.ids.header.height
+    pos_hint: {'y': 0}
+    title: ''
+    separator_height: 0
+    background_color: 0, 0, 0, 0
 
     BoxLayout:
         orientation: 'vertical'
 
+        canvas.before:
+            Color:
+                rgba: theme.sec
+
+            Rectangle:
+                pos: root.pos
+                size: root.size
+                source: 'img/noise_texture_1000x510.png'
+
+        Widget:
+            size_hint_y: None
+            height: 140
+
         Label:
-            text: f'Do you really want to remove\n[color={theme.PRIM}][i]{root.game}[/i][/color] ?'
+            text: '\ue895'
+            font_name: 'fnt/segmdl2.ttf'
+            font_size: 72
+            color: theme.prim
+            text_size: self.size
+            halign: 'center'
+            valign: 'center'
+            size_hint_y: None
+            height: 100
+
+            canvas.before:
+                PushMatrix
+                Rotate:
+                    angle: root.icon_rotation
+                    origin: self.center
+
+            canvas.after:
+                PopMatrix
+
+        Label:
+            text: 'Syncing with GitHub'
+            font_size: 36
+            text_size: self.size
+            halign: 'center'
+            valign: 'top'
+            color: theme.prim
+
+<GameRemovePopup@Popup>:
+    size_hint: .7, .7
+    opacity: 0
+
+    FloatLayout:
+        canvas.before:
+            Color:
+                rgba: theme.sec
+
+            Rectangle:
+                pos: self.parent.parent.pos
+                size: self.parent.parent.size
+
+        Label:
+            text: f'Do you really want to remove\n[color={theme.PRIM}]{root.game}[/color] ?'
             font_size: 32
             text_size: self.size
+            valign: 'top'
             padding: 20, 0
             markup: True
+            pos: self.parent.pos
+
+        Label:
+            text: '\ue74d'
+            font_name: 'fnt/segmdl2.ttf'
+            font_size: 72
+            pos: root.pos
+            size_hint: None, None
+            size: 140, root.bin_height
+            color: theme.bg
 
         BoxLayout:
+            pos: self.parent.pos
+
             Widget
 
             IconButton:
                 text: '\ue711'
                 font_size: 24
-                color: 1, 0, 0, 1
+                color_hovering: 1, 0, 0, 1
                 background_normal: 'img/FFFFFF-0.png'
                 size_hint: None, None
                 width: 70
@@ -421,7 +488,7 @@ RootLayout:
             IconButton:
                 text: '\ue8fb'
                 font_size: 24
-                color: 0, 1, 0, 1
+                color_hovering: 0, 1, 0, 1
                 background_normal: 'img/FFFFFF-0.png'
                 size_hint: None, None
                 width: 70
@@ -558,7 +625,7 @@ RootLayout:
                 height: 40
 
                 PathInput:
-                    id: content_updater_path_info
+                    id: path_info
 
                 IconButton:
                     id: refresh_button
@@ -673,7 +740,7 @@ RootLayout:
             ScrollView:    
                 BoxLayout:
                     orientation: 'vertical'
-                    padding: 10
+                    padding: 10, 80
                     spacing: 10
                     size_hint_y: None
                     height: self.minimum_height
@@ -695,6 +762,14 @@ RootLayout:
                         text: 'Report a bug'
                         icon: '\uebe8'
                         command: lambda: open('https://discord.gg/sfcBuMU')
+
+                    SectionLabel:
+                        text: 'General'
+
+                    LabelSwitch:
+                        text: 'Enable mouse highlight'
+                        active_callback: lambda _, enabled: app.store.put('General', mouse_highlight=enabled)
+                        active: app.store['General']['mouse_highlight']
 
                     SectionLabel:
                         text: 'Game Collection'
@@ -727,80 +802,84 @@ RootLayout:
                         icon: '\ue74d'
                         command: root.clear_common_paths_cache
 
-
         ContentLayout:
-            padding: 20, 0
-            spacing: 10
+            ScrollView:
+                BoxLayout:
+                    orientation: 'vertical'
+                    padding: 20, 0
+                    spacing: 10
+                    size_hint_y: None
+                    height: self.minimum_height
 
-            SectionLabel:
-                text: 'Game name'
+                    SectionLabel:
+                        text: 'Game name'
 
-            CustTextInput:
-                id: game_name_input
-                size_hint_y: None
-                height: 40
+                    CustTextInput:
+                        id: game_name_input
+                        size_hint_y: None
+                        height: 40
 
-            SectionLabel:
-                text: 'Game dll directory'
-            
-            LabelIconButton:
-                id: game_add_form_dir
-                text: ''
-                icon: '\uf12b'
-                command: root.game_path_button_callback
-                font_size: 11
+                    SectionLabel:
+                        text: 'Game dll directory'
+                    
+                    LabelIconButton:
+                        id: game_add_form_dir
+                        text: ''
+                        icon: '\uf12b'
+                        command: root.game_path_button_callback
+                        font_size: 11
 
-            SectionLabel:
-                text: 'Game launchable file / URL'
+                    SectionLabel:
+                        text: 'Game launchable file / URL'
 
-            BoxLayout:
-                size_hint_y: None
-                height: 40
-                spacing: self.parent.padding[0]
+                    BoxLayout:
+                        size_hint_y: None
+                        height: 40
+                        spacing: self.parent.padding[0]
 
-                LabelIconButton:
-                    id: game_add_form_launch
-                    text: ''
-                    icon: '\ue7c3'
-                    disabled: bool(url_input.text)
-                    command: root.game_launch_path_button_callback
-                    font_size: 11
+                        LabelIconButton:
+                            id: game_add_form_launch
+                            text: ''
+                            icon: '\ue7c3'
+                            disabled: bool(url_input.text)
+                            command: root.game_launch_path_button_callback
+                            font_size: 11
 
-                CustTextInput:
-                    id: url_input
-            
-            Label:
-                size_hint_y: None
-                height: 30
-                text: 'Launchable is ' + ('an URL' if game_add_form_launch.disabled else 'a file')
-                color: theme.prim
-                text_size: self.size
-                padding: 2, 0
+                        CustTextInput:
+                            id: url_input
+                    
+                    Label:
+                        size_hint_y: None
+                        height: 30
+                        text: 'Launchable is ' + ('an URL' if game_add_form_launch.disabled else 'a file')
+                        color: theme.prim
+                        text_size: self.size
+                        padding: 2, 0
 
-            SectionLabel:
-                text: 'All filled ?'
+                    SectionLabel:
+                        text: 'All filled ?'
 
-            BoxLayout:
-                size_hint_y: None
-                height: 60
-                padding_y: 10
+                    BoxLayout:
+                        size_hint_y: None
+                        height: 60
+                        padding_y: 10
 
-                Widget
+                        Widget
 
-                IconButton:
-                    text: '\ue711'
-                    background_color: theme.dark
-                    color: 1, 0, 0, 1
-                    on_release: root.cancel_add_game_callback()
+                        IconButton:
+                            text: '\ue711'
+                            background_color: theme.dark
+                            color: 1, 0, 0, 1
+                            on_release: root.cancel_add_game_callback()
 
-                IconButton:
-                    text: '\ue710'
-                    background_color: theme.dark
-                    color: 0, 1, 0, 1
-                    on_release: root.add_game_callback()
-                    disabled: not (game_name_input.text and game_add_form_dir.text and (game_add_form_launch.text or url_input.text))
+                        IconButton:
+                            text: '\ue710'
+                            background_color: theme.dark
+                            color: 0, 1, 0, 1
+                            on_release: root.add_game_callback()
+                            disabled: not (game_name_input.text and game_add_form_dir.text and (game_add_form_launch.text or url_input.text))
 
-            Widget
+                    Widget
 
         ContentLayout:
             SubdirView:
