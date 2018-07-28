@@ -1,12 +1,11 @@
 from easygui import diropenbox, fileopenbox
 from _thread import start_new
 import yaml
-import os, sys
+import os
 import win32api
 import shutil
 import ctypes
 from random import randint
-from git import Git
 
 import kivy
 kivy.require('1.10.1')
@@ -78,8 +77,7 @@ class HeaderLabel(Label, WindowDragBehavior):
 
     def on_current_icon(self, *args):
         for child in self.children:
-            if isinstance(child, HeaderMiniLabel):
-                child.text = self.current_icon
+            child.text = self.current_icon
 
 
 class HeaderMiniLabel(Label, HoveringBehavior):
@@ -563,6 +561,7 @@ class DllViewItem(ListItemButton):
             self.background_color = self.deselected_color
             Animation.stop_all(self)
             Animation(background_color=self.selected_color, d=.1).start(self)
+
         else:
             super().deselect()
 
@@ -575,7 +574,7 @@ class DllViewAdapter(ListAdapter):
     def refresh_available(self):
         self.data = [{
             **item, 'selectable':
-            item['text'] in DllUpdater.available_dlls
+            item['text'] in app().root.updater.available_dlls
         } for item in self.data]
 
         def on_frame(*args):
@@ -621,31 +620,12 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
     def __init__(self, **kw):
         super().__init__(**kw)
-        
+                    
         def on_frame(*args):
             self.show_sync_popup()
-            if not '--no-update' in sys.argv:
-                self.update_app()
-
-            else:
-                self.setup_updater()
+            self.setup_updater()
 
         Clock.schedule_once(on_frame)
-
-    @new_thread
-    def update_app(self):
-        UP_TO_DATE = 'Already up to date.'
-
-        self.sync_popup.text = 'Updating XtremeUpdater..'
-
-        g = Git()
-        result = g.pull('origin', 'master')
-        if result == UP_TO_DATE:
-            self.setup_updater()
-            return
-
-        app().stop()
-        os.system(f'{__file__} -- --no-update')
 
     def show_sync_popup(self):
         self.sync_popup = SyncPopup()
@@ -696,7 +676,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
     @new_thread
     def load_dll_view_data(self, path, quickupdate=False):
-        self.goto_updater()
+        self.goto_page(0)
 
         if not path:
             return
@@ -717,7 +697,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.set_dll_buttons_state(False)
         self.ids.invert_selection_button.disabled = True
 
-        local_dlls = DllUpdater.local_dlls(path)
+        local_dlls = self.updater.local_dlls(path)
 
         if not local_dlls:
             OverdrawLabel(self.ids.dll_view, '\ue783', 'No dlls found here')
@@ -742,7 +722,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.info('Loading subdirs | Please wait..')
         self.ids.subdir_view.data = [{
             'path': subdir
-        } for subdir in DllUpdater.dll_subdirs(path,
+        } for subdir in self.updater.dll_subdirs(path,
                                                self.updater.available_dlls)]
         self.info('Subdirs loaded | Check it out!' if self.ids.subdir_view.data
                   else 'No subdirs found | Maybe next time')
@@ -756,7 +736,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         dlls = [item.text for item in self.ids.dll_view.adapter.selection]
 
         try:
-            DllUpdater.update_dlls(self.ids.path_info.text, dlls)
+            self.updater.update_dlls(self.ids.path_info.text, dlls)
 
         except:
             self.info("Couldn't download updated dll | Please try again")
@@ -770,7 +750,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.info("Restoring | Please wait..")
 
         dlls = [item.text for item in self.ids.dll_view.adapter.selection]
-        DllUpdater.restore_dlls(self.ids.path_info.text, dlls)
+        self.updater.restore_dlls(self.ids.path_info.text, dlls)
 
     def clear_images_cache(self):
         try:
@@ -805,17 +785,8 @@ class RootLayout(BoxLayout, HoveringBehavior):
     def refresh_dll_view(self):
         self.load_dll_view_data(self.ids.path_info.text)
 
-    def goto_updater(self):
-        self.ids.content.page = 0
-
-    def goto_collection(self):
-        self.ids.content.page = 1
-
-    def goto_game_add_form(self):
-        self.ids.content.page = 5
-
-    def goto_tree(self):
-        self.ids.content.page = 6
+    def goto_page(self, index):
+        self.ids.content.page = index
 
     def game_path_button_callback(self):
         path = diropenbox()
@@ -859,7 +830,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.ids.game_add_form_dir.text = ''
         self.ids.game_add_form_launch.text = ''
         self.ids.url_input.text = ''
-        self.goto_collection()
+        self.goto_page(1)
 
     def reset_custom_paths(self):
         if os.path.isfile(GameCollection.CUSTOM_PATHS_PATH):
@@ -898,10 +869,13 @@ class XtremeUpdaterApp(App):
             os.makedirs('.config', exist_ok=True)
             self.store = JsonStore('.config/Config.json')
 
-            self.store.put('General', mouse_highlight=True)            
+            self.store.put('General', mouse_highlight=True)
+
+    def open_settings(self):
+        self.root.goto_page(4)
 
 
-__version__ = '0.5.14.2'
+__version__ = '0.5.14.3'
 
 if __name__ == '__main__':
     xtremeupdater = XtremeUpdaterApp()
