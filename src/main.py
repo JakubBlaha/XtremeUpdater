@@ -876,7 +876,7 @@ class XtremeUpdaterApp(App):
             self.store.put('General', mouse_highlight=True)
 
 
-__version__ = '0.5.14.1'
+__version__ = '0.5.14.2'
 
 if __name__ == '__main__':
     xtremeupdater = XtremeUpdaterApp()
