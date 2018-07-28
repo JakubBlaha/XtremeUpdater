@@ -808,6 +808,12 @@ RootLayout:
                         icon: '\ue74d'
                         command: root.clear_common_paths_cache
 
+                    Label:
+                        text: f'Version: {version}'
+                        font_name: 'fnt/Roboto-Medium.ttf'
+                        font_size: 16
+                        color: theme.bg
+
         ContentLayout:
             ScrollView:
                 BoxLayout:
@@ -905,11 +911,3 @@ RootLayout:
             font_size: 12
             text: "Welcome to XtremeUpdater | Let's start"
             color: theme.prim
-
-        Label:
-            text: version
-            text_size: self.size            
-            font_name: 'fnt/Roboto-Medium.ttf'
-            font_size: 10
-            color: theme.bg
-            halign: 'right'

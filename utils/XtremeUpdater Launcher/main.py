@@ -1,16 +1,18 @@
-import git, os
+import os
+from examples import pull
+from pygit2 import Repository
 
 UP_TO_DATE = 'Already up to date.'
 
-g = git.Git()
 print('Fetching repo..')
 try:
-    result = g.pull('origin', 'master')
+    repo = Repository(os.path.dirname(os.getcwd()))
+    pull(repo)
 except:
     print('Failed to fetch!')
 else:
     print('Successfully fetched repo')
 
 print('Starting XtremeUpdater')
-os.system('XtremeUpdater.exe')
+os.startfile('XtremeUpdater.exe')
     
