@@ -1,11 +1,12 @@
 from easygui import diropenbox, fileopenbox
 from _thread import start_new
 import yaml
-import os
+import os, sys
 import win32api
 import shutil
 import ctypes
 from random import randint
+from git import Git
 
 import kivy
 kivy.require('1.10.1')
@@ -621,16 +622,39 @@ class RootLayout(BoxLayout, HoveringBehavior):
     def __init__(self, **kw):
         super().__init__(**kw)
         
-        Clock.schedule_once(self.show_sync_popup)
+        if not '--no-update' in sys.argv:
+            def on_frame(*args):
+                self.show_sync_popup()
+                self.update_app()
+
+            Clock.schedule_once(on_frame)
+            return
+
         self.setup_updater()
 
-    def show_sync_popup(self, *args):
+    @new_thread
+    def update_app(self):
+        UP_TO_DATE = 'Already up to date.'
+
+        self.sync_popup.text = 'Updating XtremeUpdater..'
+
+        g = Git()
+        result = g.pull('origin', 'master')
+        if result == UP_TO_DATE:
+            self.setup_updater()
+            return
+
+        app().stop()
+        os.system(f'{__file__} -- --no-update')
+
+    def show_sync_popup(self):
         self.sync_popup = SyncPopup()
         self.sync_popup.open()
 
     @new_thread
     def setup_updater(self):
         self.info('Syncing with GitHub | Loading dll database..')
+        self.sync_popup.text = 'Loading dll database..'
 
         self.updater = DllUpdater()
         self.dlls_loaded = self.updater.load_available_dlls()
@@ -649,6 +673,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         Clock.schedule_once(self.update_common_paths)
 
     def update_common_paths(self, *args):
+        self.sync_popup.text = 'Updating game database..'
         self.ids.game_collection_view.update_local_games()
         self.sync_popup.dismiss()
 
@@ -873,7 +898,7 @@ class XtremeUpdaterApp(App):
             os.makedirs('.config', exist_ok=True)
             self.store = JsonStore('.config/Config.json')
 
-            self.store.put('General', mouse_highlight=True)
+            self.store.put('General', mouse_highlight=True)            
 
 
 __version__ = '0.5.14'
