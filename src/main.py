@@ -622,15 +622,15 @@ class RootLayout(BoxLayout, HoveringBehavior):
     def __init__(self, **kw):
         super().__init__(**kw)
         
-        if not '--no-update' in sys.argv:
-            def on_frame(*args):
-                self.show_sync_popup()
+        def on_frame(*args):
+            self.show_sync_popup()
+            if not '--no-update' in sys.argv:
                 self.update_app()
 
-            Clock.schedule_once(on_frame)
-            return
+            else:
+                self.setup_updater()
 
-        self.setup_updater()
+        Clock.schedule_once(on_frame)
 
     @new_thread
     def update_app(self):
@@ -901,7 +901,7 @@ class XtremeUpdaterApp(App):
             self.store.put('General', mouse_highlight=True)            
 
 
-__version__ = '0.5.14.2'
+__version__ = '0.5.14.1'
 
 if __name__ == '__main__':
     xtremeupdater = XtremeUpdaterApp()
