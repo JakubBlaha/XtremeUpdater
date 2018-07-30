@@ -17,7 +17,7 @@ Config.set('graphics', 'height', 550)
 Config.set('graphics', 'borderless', 1)
 Config.set('graphics', 'resizable', 0)
 Config.set('input', 'mouse', 'mouse, disable_multitouch')
-Config.set('kivy', 'icon', 'img/icon.png')
+Config.set('kivy', 'window_icon', 'img/icon.png')
 
 from kivy.app import App
 from kivy.core.window import Window
