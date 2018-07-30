@@ -1,15 +1,14 @@
 import os
-from examples import pull
-from pygit2 import Repository
+from pygit2 import Repository, GIT_RESET_HARD
 
 UP_TO_DATE = 'Already up to date.'
 
 print('Fetching repo..')
 try:
     repo = Repository(os.path.dirname(os.getcwd()))
-    pull(repo)
-except:
-    print('Failed to fetch!')
+    repo.reset(repo.lookup_reference('refs/remotes/origin/master').get_object().oid, GIT_RESET_HARD)
+except Exception as e:
+    print('Failed to fetch!', e, sep='\n')
 else:
     print('Successfully fetched repo')
 
