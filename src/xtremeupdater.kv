@@ -21,15 +21,6 @@ RootLayout:
     background_disabled_down: self.background_normal
 
 <HeaderLabel@WindowDragBehavior+Label>:
-    canvas.before:
-        Color:
-            rgba: Window.clearcolor
-
-        Rectangle:
-            source: 'img/noise_texture_1000x30.png'
-            pos: self.pos
-            size: self.size
-
     text: '[color=ddd]Xtreme[/color]Updater'
     font_name: 'fnt/Roboto-Black.ttf'
     text_size: self.size
@@ -67,7 +58,7 @@ RootLayout:
 <HeaderButton@CustButton>:
     size_hint_x: None
     width: self.height
-    background_normal: 'img/noise_texture.png'
+    # background_normal: 'img/noise_texture.png'
     border: 0, 0, 0, 0
 
 <IconButton@CustButton>:
@@ -417,7 +408,7 @@ RootLayout:
             Rectangle:
                 pos: root.pos
                 size: root.size
-                source: 'img/noise_texture_1000x510.png'
+                # source: 'img/noise_texture.png'
 
         Widget:
             size_hint_y: None
@@ -748,7 +739,7 @@ RootLayout:
         ContentLayout:
             id: content_settings
 
-            ScrollView:    
+            ScrollView:
                 BoxLayout:
                     orientation: 'vertical'
                     padding: 10, 40
@@ -779,8 +770,13 @@ RootLayout:
 
                     LabelSwitch:
                         text: 'Enable mouse highlight'
-                        active_callback: lambda _, enabled: app.store.put('General', mouse_highlight=enabled)
-                        active: app.store['General']['mouse_highlight']
+                        active_callback: root.switch_mouse_highlight
+                        active: app.store['mouse_highlight']
+
+                    LabelSwitch:
+                        text: 'Decorate head'
+                        active_callback: root.switch_head_decor
+                        active: app.store['head_decor']
 
                     SectionLabel:
                         text: 'Game Collection'

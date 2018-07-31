@@ -5,6 +5,17 @@ Website is located at https://xtremeware.github.io/XtremeUpdater.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
 
+## v0.5.15
+*Note: Temporarily removed noise textures.*
+
+**Tweaks**
+  - Optimized *mouse highlight* performance.
+  - Tweaked *head* appearance and performance.
+  - Tweaked *navigation* animations.
+
+**Bugfixes**
+ - Fixed taskbar icon.
+
 ## v0.5.14
 **Tweaks**
   - Cleaner *Game Collection*.

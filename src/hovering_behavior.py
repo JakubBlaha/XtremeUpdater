@@ -9,6 +9,12 @@ class HoveringBehavior(Widget):
         super().__init__(**kw)
         Window.bind(mouse_pos=self.on_mouse_pos)
 
+    def bind_hovering(self):
+        Window.bind(mouse_pos=self.on_mouse_pos)
+
+    def unbind_hovering(self):
+        Window.unbind(mouse_pos=self.on_mouse_pos)
+
     def on_mouse_pos(self, _, pos):
         self.hovering = super().collide_point(*self.to_widget(*pos))
 
