@@ -54,19 +54,25 @@ Builder.load_string(
 import os
 from theme import *
 from _thread import start_new
+from urllib.request import urlretrieve
+from pythoncom import CoInitialize
 from pygit2 import clone_repository
 from win32com.client import Dispatch
-from pythoncom import CoInitialize
 
 REPO_URL = 'https://github.com/XtremeWare/XtremeUpdater-Distribution'
+LAUNCHER_URL = r'https://github.com/XtremeWare/XtremeUpdater/raw/master/utils/XtremeUpdater%20Launcher/launcher/launcher.exe'
 USR_PATH = os.path.expanduser('~')
 PATH = USR_PATH + '\\AppData\\Local\\XtremeUpdater\\'
-LAUNCHER_PATH = PATH + '\XtremeUpdater\launcher.exe'
+REPO_PATH = PATH + 'repo'
+LAUNCHER_PATH = PATH + 'launcher.exe'
 START_PATH = USR_PATH + '\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\'
 LNK_PATH = START_PATH + 'XtremeUpdater.lnk'
 
 def clone():
-    clone_repository(REPO_URL, PATH)
+    clone_repository(REPO_URL, REPO_PATH)
+
+def download_launcher():
+    urlretrieve(LAUNCHER_URL, LAUNCHER_PATH)
 
 def make_lnk():
     CoInitialize()
@@ -82,10 +88,13 @@ def start():
 
 def setup():
     app.info(f'Installing [color={PRIM}]XtremeUpdater[/color]')
+    os.makedirs(REPO_PATH)
     try:
         clone()
+        download_launcher()
     except:
         app.error()
+        raise
         return
     app.info('Adding shortcut')
     make_lnk()
