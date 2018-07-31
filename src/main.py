@@ -51,7 +51,7 @@ is_admin = ctypes.windll.shell32.IsUserAnAdmin
 
 
 def info(text):
-    app.root.info(text)
+    app().root.info(text)
 
 
 def new_thread(fn):
@@ -78,7 +78,7 @@ class HeaderLabel(Label, WindowDragBehavior):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        if app.store['head_decor']:
+        if app().store['head_decor']:
             Clock.schedule_once(
                 lambda *args: Clock.schedule_once(self.setup_mini_labels))
 
@@ -446,7 +446,7 @@ class GameButton(Button, HoveringBehavior):
         self.parent.parent.remove_from_collection(self)
 
     def quick_update(self):
-        app.root.load_dll_view_data(self.path, quickupdate=True)
+        app().root.load_dll_view_data(self.path, quickupdate=True)
 
     def update_image(self):
         query = self.text
@@ -473,8 +473,8 @@ class GameButton(Button, HoveringBehavior):
         if self.expand_user_patch:
             path = os.path.expanduser(path)
 
-        app.root.load_dll_view_data(path)
-        app.root.ids.content.page = 0
+        app().root.load_dll_view_data(path)
+        app().root.ids.content.page = 0
 
 
 class NavigationButton(CustButton):
@@ -505,7 +505,7 @@ class NavigationButton(CustButton):
         if not self.__active:
             super().on_release()
             self.parent.active = self.page_index
-            app.root.ids.header_label.current_icon = self.icon
+            app().root.ids.header_label.current_icon = self.icon
 
 
 class Navigation(BoxLayout):
@@ -588,7 +588,7 @@ class DllViewAdapter(ListAdapter):
     def refresh_available(self):
         self.data = [{
             **item, 'selectable':
-            item['text'] in app.root.updater.available_dlls
+            item['text'] in app().root.updater.available_dlls
         } for item in self.data]
 
         def on_frame(*args):
@@ -599,7 +599,7 @@ class DllViewAdapter(ListAdapter):
         Clock.schedule_once(on_frame)
 
     def on_selection_change(self, *args):
-        app.root.set_dll_buttons_state(self.selection)
+        app().root.set_dll_buttons_state(self.selection)
 
     def get_selectable_views(self) -> list:
         return [
@@ -637,7 +637,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        self.switch_mouse_highlight(None, app.store['mouse_highlight'])
+        self.switch_mouse_highlight(None, app().store['mouse_highlight'])
 
         def on_frame(*args):
             self.show_sync_popup()
@@ -686,7 +686,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.unbind_hovering()
             self.mouse_highlight_pos = -120, -120
 
-        app.store['mouse_highlight'] = value
+        app().store['mouse_highlight'] = value
 
     def set_dll_buttons_state(self, enabled):
         self.ids.restore_button.disabled = not enabled
@@ -867,7 +867,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
             )
 
     def switch_head_decor(self, _, value):
-        app.store['head_decor'] = value
+        app().store['head_decor'] = value
 
         if value:
             self.ids.header_label.setup_mini_labels()
@@ -920,8 +920,8 @@ class XtremeUpdaterApp(App):
         self.root.goto_page(4)
 
 
-__version__ = '0.5.15'
+__version__ = '0.5.16'
 
 if __name__ == '__main__':
-    app = XtremeUpdaterApp()
-    app.run()
+    xtremeupdater = XtremeUpdaterApp()
+    xtremeupdater.run()

@@ -5,6 +5,9 @@ Website is located at https://xtremeware.github.io/XtremeUpdater.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
 
+## v0.5.16
+*Fixed misstypings causing the app to not behave correctly.*
+
 ## v0.5.15
 *Note: Temporarily removed noise textures.*
 
