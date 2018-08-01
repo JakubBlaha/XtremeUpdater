@@ -144,14 +144,13 @@ RootLayout:
 
 <DllViewItem@ListItemButton>:
     text_size: self.size
-    is_selected: self.is_selected and self.selectable
     valign: 'center'
     padding: 40, 0
     background_normal: 'img/FFFFFF-1.png'
     background_down: self.background_normal
     selected_color: theme.prim
     deselected_color: theme.sec
-    color: theme.fg if self.selectable else theme.bg
+    color: theme.fg
     size_hint_y: None
     height: 25
 
@@ -170,13 +169,12 @@ RootLayout:
     bar_inactive_color: theme.dark
     bar_width: 10
     scroll_distance: 0
-    scroll_wheel_distance: 100
     scroll_type: ['content', 'bars']
 
     adapter:
         DllViewAdapter(
         data=[],
-        args_converter=lambda index, item: {'text': item.get('text', ''), 'selectable': item.get('selectable', False)},
+        args_converter=lambda index, item: {'text': item},
         cls='DllViewItem',
         selection_mode='multiple'
         )
@@ -638,7 +636,7 @@ RootLayout:
 
                 IconButton:
                     id: invert_selection_button
-                    disabled: True
+                    disabled: not dll_view.adapter.data
                     text: '\ue8b3'
                     background_color: theme.dark
                     on_release: root.ids.dll_view.adapter.invert_selection()

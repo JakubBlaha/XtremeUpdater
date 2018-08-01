@@ -17,7 +17,7 @@ Config.set('graphics', 'height', 550)
 Config.set('graphics', 'borderless', 1)
 Config.set('graphics', 'resizable', 0)
 Config.set('input', 'mouse', 'mouse, disable_multitouch')
-Config.set('kivy', 'window_icon', 'img/icon.png')
+Config.set('kivy', 'window_icon', 'img/icon.ico')
 
 from kivy.app import App
 from kivy.core.window import Window
@@ -25,7 +25,6 @@ from kivy.animation import Animation
 from kivy.clock import Clock, mainthread
 from kivy.network.urlrequest import UrlRequest
 from kivy.adapters.listadapter import ListAdapter
-from kivy.storage.jsonstore import JsonStore
 
 from kivy.uix.widget import Widget
 from kivy.uix.boxlayout import BoxLayout
@@ -85,9 +84,7 @@ class HeaderLabel(Label, WindowDragBehavior):
     def setup_mini_labels(self, *args):
         for i in range(17):
             label = HeaderMiniLabel(
-                text=self.current_icon,
-                x=i * 50 + 120,
-                y=self.y - i % 2 * 10)
+                text=self.current_icon, x=i * 50 + 120, y=self.y - i % 2 * 10)
             self.add_widget(label, 1)
 
     def on_current_icon(self, *args):
@@ -566,10 +563,8 @@ class SubdirItem(Button, HoveringBehavior):
 
 
 class DllViewItem(ListItemButton):
-    selectable = BooleanProperty(False)
-
     def on_is_selected(self, *args):
-        if self.is_selected and self.selectable:
+        if self.is_selected:
             super().select()
 
             self.background_color = self.deselected_color
@@ -585,31 +580,14 @@ class DllViewItem(ListItemButton):
 
 
 class DllViewAdapter(ListAdapter):
-    def refresh_available(self):
-        self.data = [{
-            **item, 'selectable':
-            item['text'] in app().root.updater.available_dlls
-        } for item in self.data]
-
-        def on_frame(*args):
-            app(
-            ).root.ids.invert_selection_button.disabled = not self.get_selectable_views(
-            )
-
-        Clock.schedule_once(on_frame)
-
     def on_selection_change(self, *args):
         app().root.set_dll_buttons_state(self.selection)
 
-    def get_selectable_views(self) -> list:
-        return [
-            self.get_view(index) for index, item in enumerate(self.data)
-            if item.get('selectable', False)
-        ]
+    def get_views(self) -> list:
+        return [self.get_view(index) for index, __ in enumerate(self.data)]
 
     def invert_selection(self):
-        Clock.schedule_once(
-            lambda *args: self.select_list(self.get_selectable_views()))
+        Clock.schedule_once(lambda *args: self.select_list(self.get_views()))
 
 
 class SyncPopup(Popup):
@@ -732,11 +710,8 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.info('We have found some dll updates | Please select dlls')
             self.ids.dll_view.overdrawer.dismiss()
 
-            self.ids.dll_view.adapter.data = [{
-                'text': item,
-                'selectable': False
-            } for item in local_dlls]
-            self.ids.dll_view.adapter.refresh_available()
+            self.ids.dll_view.adapter.data = set(local_dlls).intersection(
+                self.updater.available_dlls)
             self.ids.dll_view.adapter.invert_selection()
 
             if quickupdate:
@@ -888,8 +863,6 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
 
 class XtremeUpdaterApp(App):
-    icon = 'img/icon.png'
-    store = {}
     STORE_PATH = '.config/Config.json'
     DEFAULT_STORE = {'mouse_highlight': True, 'head_decor': True}
 
@@ -920,7 +893,7 @@ class XtremeUpdaterApp(App):
         self.root.goto_page(4)
 
 
-__version__ = '0.5.16'
+__version__ = '0.5.17'
 
 if __name__ == '__main__':
     xtremeupdater = XtremeUpdaterApp()
