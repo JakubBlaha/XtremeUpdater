@@ -12,7 +12,7 @@ except:
     print(format_exc())
 
 try:
-    os.startfile(os.path.abspath('repo/XtremeUpdater/XtremeUpdater.exe'))
+    os.startfile(os.path.abspath('repo/XtremeUpdater/Xtreme.exe'))
 except OSError:
     print(format_exc())
     
