@@ -894,7 +894,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         with open(UNINST_PATH, 'w') as stream:
             stream.write(UNINST_DATA)
 
-        os.startfile(PATH)
+        os.startfile(UNINST_PATH)
         app().stop()
 
     @mainthread
