@@ -1,11 +1,11 @@
-from easygui import diropenbox, fileopenbox
-from _thread import start_new
+import easygui
 import yaml
 import os
 import win32api
 import shutil
 import ctypes
 from random import randint
+from _thread import start_new
 
 import kivy
 kivy.require('1.10.1')
@@ -23,26 +23,28 @@ from kivy.app import App
 from kivy.core.window import Window
 from kivy.animation import Animation
 from kivy.clock import Clock, mainthread
+from kivy.storage.jsonstore import JsonStore
 from kivy.network.urlrequest import UrlRequest
 from kivy.adapters.listadapter import ListAdapter
-from kivy.storage.jsonstore import JsonStore
 
-from kivy.uix.widget import Widget
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.floatlayout import FloatLayout
-from custpagelayout import PageLayout
-from kivy.uix.button import Button
-from kivy.uix.label import Label
-from kivy.uix.listview import ListItemButton
-from kivy.uix.scrollview import ScrollView
 from kivy.uix.popup import Popup
+from kivy.uix.label import Label
+from kivy.uix.widget import Widget
+from kivy.uix.button import Button
+from kivy.uix.image import CoreImage
+from custpagelayout import PageLayout
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.scrollview import ScrollView
+from kivy.graphics import Rectangle, Color
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.listview import ListItemButton
 from kivy.properties import StringProperty, ObjectProperty, DictProperty, ListProperty, NumericProperty, BooleanProperty
 
+from theme import *
 from dll_updater import DllUpdater
 from hovering_behavior import HoveringBehavior
 from windowdragbehavior import WindowDragBehavior
 from get_image_url import get_image_url_from_response, TEMPLATE, HEADERS
-from theme import *
 
 Window.clearcolor = sec
 
@@ -61,24 +63,22 @@ def new_thread(fn):
     return wrapper
 
 
-from kivy.uix.image import CoreImage
-from kivy.graphics import Rectangle, Color
+
 class NoiseTexture(Widget):
     TEX_SIZE = 100, 100
     noise_color = ListProperty((1, 1, 1, 1))
 
     def __init__(self, **kw):
-        super().__init__(**kw)
-        def on_frame(*args):
-            tex = CoreImage('img/noise_texture.png').texture
-            tex.wrap = 'repeat'
-            tex.uvsize = self.width/self.TEX_SIZE[0], self.height/self.TEX_SIZE[1]
-            with self.canvas.before:
-                Color(rgba=self.noise_color)
-                Rectangle(pos=self.pos, size=self.size, texture=tex)
-        
-        Clock.schedule_once(lambda *args: Clock.schedule_once(on_frame))
+        super().__init__(**kw)        
+        Clock.schedule_once(lambda *args: Clock.schedule_once(self.on_noise_color))
 
+    def on_noise_color(self, *args):
+        tex = CoreImage('img/noise_texture.png').texture
+        tex.wrap = 'repeat'
+        tex.uvsize = self.width/self.TEX_SIZE[0], self.height/self.TEX_SIZE[1]
+        with self.canvas.before:
+            Color(rgba=self.noise_color)
+            Rectangle(pos=self.pos, size=self.size, texture=tex)
 
 class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
     current_icon = StringProperty('\ue78b')
@@ -507,24 +507,37 @@ class NavigationButton(CustButton):
     page_index = NumericProperty()
     icon = StringProperty()
     highlight_height = NumericProperty()
+    highlight_width = NumericProperty()
+    highlight_width_ratio = .8
+    highlight_color = ListProperty(prim)
 
     def highlight(self):
         self.__active = True
         Animation(
-            highlight_height=self.height, color=fg, d=.5,
+            highlight_height=self.height, 
+            highlight_width=self.width,
+            highlight_color=sec,
+            color=fg,
+            d=.5,
             t='out_expo').start(self)
 
     def nohighghlight(self):
         self.__active = False
-        Animation(highlight_height=0, d=.1, t='in_expo').start(self)
+        Animation(highlight_height=0,
+                  highlight_width=self.width * self.highlight_width_ratio,
+                  highlight_color=prim,
+                  d=.1,
+                  t='in_expo').start(self)
 
     def on_leave(self, *args):
         if not self.__active:
-            super().on_leave(*args)
+            super().on_leave()
+            Animation(highlight_height=0, d=.2, t='out_expo').start(self)
 
     def on_enter(self, *args):
         if not self.__active:
-            super().on_enter(*args)
+            super().on_enter()
+            Animation(highlight_height=3, d=.2, t='out_expo').start(self)
 
     def on_release(self):
         if not self.__active:
@@ -696,7 +709,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
     @new_thread
     def load_directory(self):
         self.info('Popup created | Select a directory now')
-        self.load_dll_view_data(diropenbox())
+        self.load_dll_view_data(easygui.diropenbox())
 
     @new_thread
     def load_dll_view_data(self, path, quickupdate=False):
@@ -811,14 +824,14 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.ids.content.page = index
 
     def game_path_button_callback(self):
-        path = diropenbox()
+        path = easygui.diropenbox()
         if not path:
             path = ''
 
         self.ids.game_add_form_dir.text = path
 
     def game_launch_path_button_callback(self):
-        path = fileopenbox(
+        path = easygui.fileopenbox(
             filetypes=['*.exe', '*.url'],
             default=self.ids.game_add_form_dir.text + '\\*.exe')
         if not path:

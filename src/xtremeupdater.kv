@@ -70,18 +70,20 @@ RootLayout:
     markup: True
     size_hint_x: None
     width: 120
+    highlight_width: self.width * self.highlight_width_ratio
     background_color: theme.dark
     bold: True
     font_size: 17
     background_normal: 'img/FFFFFF-0.png'
+    color_hovering: theme.prim
 
     canvas.before:
         Color:
-            rgba: theme.prim
+            rgba: root.highlight_color
 
         Rectangle:
-            pos: self.pos
-            size: self.width, self.highlight_height
+            pos: self.x + (self.width - self.highlight_width) / 2, self.y
+            size: self.highlight_width, self.highlight_height
 
 <IconNavigationButton@IconButton+NavigationButton>:
     font_size: 18
