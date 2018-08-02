@@ -877,7 +877,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.uninstall_popup.open()
 
     def uninstall(self):
-        USR_PATH = os.path.expanduser(
+        LNK_PATH = os.path.expanduser(
             '~\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\XtremeUpdater.lnk'
         )
         UNINST_PATH = 'C:\\XtremeUpdaterUninstall\\XtremeUpdater-Uninstall.bat'
