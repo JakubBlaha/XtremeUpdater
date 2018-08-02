@@ -14,8 +14,7 @@
 
 RootLayout:
 <CustButton@Button>:
-    background_color: Window.clearcolor
-    background_normal: 'img/FFFFFF-1.png'
+    background_normal: 'img/FFFFFF-0.png'
     background_disabled_normal: self.background_normal
     background_down: self.background_normal
     background_disabled_down: self.background_normal
@@ -28,6 +27,7 @@ RootLayout:
     padding: 10, 5
     color: theme.prim
     markup: True
+    noise_color: Window.clearcolor
 
 <HeaderMiniLabel@Label>:
     color: theme.bg
@@ -55,19 +55,16 @@ RootLayout:
             pos: self.pos
             size: self.size
 
-<HeaderButton@CustButton>:
+<HeaderButton@CustButton+NoiseTexture>:
     size_hint_x: None
     width: self.height
-    # background_normal: 'img/noise_texture.png'
-    border: 0, 0, 0, 0
+    noise_color: Window.clearcolor
 
 <IconButton@CustButton>:
     size_hint_x: None
     width: self.height
     font_name: 'fnt/segmdl2.ttf'
     font_size: 20
-    background_color: theme.sec
-    background_down: self.background_normal
 
 <NavigationButton@CustButton>:
     markup: True
@@ -93,14 +90,7 @@ RootLayout:
 <Navigation@BoxLayout>:
     size_hint_y: None
     height: 40
-
-    canvas.before:
-        Color:
-            rgba: theme.dark
-
-        Rectangle:
-            pos: root.pos
-            size: root.size
+    noise_color: theme.dark
 
 <PlaceHolder@Label>:
     text: '[size=72][font=fnt/segmdl2.ttf]{}[/font][/size]\n{}'.format(self.icon, self.message)
@@ -240,24 +230,19 @@ RootLayout:
     disabled: True
 
 <GameButtonMini@IconButton+HoveringBehavior>:
-    background_color: 0, 0, 0, 0
-    background_normal: 'img/FFFFFF-0.png'
-    background_hovering: self.background_normal
 
 <GameButton@Button>:
     background_normal: 'img/FFFFFF-1.png'
     background_down: self.background_normal
     color: 0, 0, 0, 0
-    background_color: theme.sec
+    background_color: 0, 0, 0, 0
     size_hint: None, None
     size: 333, 187
-    opacity: .5
 
     AsyncImage:
         id: image
         pos: root.pos
         size: root.width, root.height
-        anim_delay: 0.1
         nocache: True
 
     Label:
@@ -271,7 +256,6 @@ RootLayout:
         font_name: 'fnt/Roboto-Black.ttf'
         size_hint_y: None
         height: 30
-        opacity: 0
         color: theme.prim
 
         canvas.before:
@@ -367,7 +351,7 @@ RootLayout:
 
     canvas:
         Color:
-            rgb: theme.sec
+            rgb: root.color
 
         Line:
             points: root.x, root.y, root.x + root.width, root.y
@@ -394,19 +378,12 @@ RootLayout:
     title: ''
     separator_height: 0
     background_color: 0, 0, 0, 0
+    noise_color: theme.sec
+    background: 'img/FFFFFF-0.png'
     text: 'Syncing with GitHub..'
 
     BoxLayout:
         orientation: 'vertical'
-
-        canvas.before:
-            Color:
-                rgba: theme.sec
-
-            Rectangle:
-                pos: root.pos
-                size: root.size
-                # source: 'img/noise_texture.png'
 
         Widget:
             size_hint_y: None
@@ -440,19 +417,15 @@ RootLayout:
             valign: 'top'
             color: theme.prim
 
-<GameRemovePopup@Popup>:
+<CustPopup@Popup>:
     size_hint: .7, .7
     opacity: 0
+    background: 'img/SEC.png'
+    title: ''
+    separator_height: 0
 
+<GameRemovePopup@CustPopup>:
     FloatLayout:
-        canvas.before:
-            Color:
-                rgba: theme.sec
-
-            Rectangle:
-                pos: self.parent.parent.pos
-                size: self.parent.parent.size
-
         Label:
             text: f'Do you really want to remove\n[color={theme.PRIM}]{root.game}[/color] ?'
             font_size: 32
@@ -463,37 +436,66 @@ RootLayout:
             pos: self.parent.pos
 
         Label:
+            id: icon
             text: '\ue74d'
             font_name: 'fnt/segmdl2.ttf'
             font_size: 72
             pos: root.pos
             size_hint: None, None
-            size: 140, root.bin_height
+            size: 140, 140
             color: theme.bg
 
         BoxLayout:
-            pos: self.parent.pos
-
-            Widget
+            pos: root.x + root.width - self.width - 10, root.y + 10
+            size_hint: None, None
+            size: self.height * 2, 70
 
             IconButton:
                 text: '\ue711'
-                font_size: 24
                 color_hovering: 1, 0, 0, 1
-                background_normal: 'img/FFFFFF-0.png'
-                size_hint: None, None
-                width: 70
                 on_release: root.dismiss()
 
             IconButton:
                 text: '\ue8fb'
-                font_size: 24
                 color_hovering: 0, 1, 0, 1
-                background_normal: 'img/FFFFFF-0.png'
-                size_hint: None, None
-                width: 70
                 on_release: root.proceed_command()
 
+
+<UninstallPopup@CustPopup>:
+    FloatLayout:
+        Label:
+            text: f'Do you really want to [color=#f55]uninstall[/color] [color={theme.PRIM}]XtremeUpdater[/color] ?'
+            font_size: 32
+            text_size: self.size
+            valign: 'top'
+            padding: 20, 0
+            markup: True
+            pos: self.parent.pos
+
+        Label:
+            id: icon
+            text: '\uecc9'
+            font_name: 'fnt/segmdl2.ttf'
+            font_size: 72
+            pos: root.pos
+            size_hint: None, None
+            size: 140, 140
+            color: theme.bg
+
+        BoxLayout:
+            pos: root.x + root.width - self.width - 10, root.y + 10
+            size_hint: None, None
+            size: self.height * 2, 70
+
+            IconButton:
+                text: '\ue711'
+                color_hovering: 1, 0, 0, 1
+                on_release: root.dismiss()
+
+            IconButton:
+                text: '\ue8fb'
+                color_hovering: 0, 1, 0, 1
+                on_release: root.proceed_command()
 
 <CustSwitch>:
     size_hint: None, None
@@ -549,6 +551,18 @@ RootLayout:
         valign: 'center'
         padding: 10, 0
 
+
+<InfoLabel@Label+NoiseTexture>:
+    size_hint_y: None
+    height: 30
+    font_name: 'fnt/Roboto-Medium.ttf'
+    font_size: 12
+    padding_x: 8
+    text_size: self.size
+    halign: 'left'
+    valign: 'center'
+    color: theme.prim
+    noise_color: Window.clearcolor
 
 <RootLayout>:
     orientation: 'vertical'
@@ -743,7 +757,9 @@ RootLayout:
                     padding: 10, 40
                     spacing: 10
                     size_hint_y: None
-                    height: self.minimum_height
+                    height: self.minimum_height + 100
+
+                    Widget
 
                     SectionLabel:
                         text: 'Support'
@@ -802,11 +818,21 @@ RootLayout:
                         icon: '\ue74d'
                         command: root.clear_common_paths_cache
 
+                    SectionLabel:
+                        text: 'Danger zone'
+                        color: 1, .3, .3, 1
+
+                    LabelIconButton:
+                        text: 'Uninstall'
+                        icon: '\uecc9'
+                        command: root.uninstall_prompt
+
                     Label:
                         text: f'Version: {version}'
                         font_name: 'fnt/Roboto-Medium.ttf'
                         font_size: 16
                         color: theme.bg
+
 
         ContentLayout:
             ScrollView:
@@ -891,17 +917,6 @@ RootLayout:
             SubdirView:
                 id: subdir_view
 
-
-    BoxLayout:
-        size_hint_y: None
-        height: 30
-        padding: 10, 8
-
-        Label:
-            id: info_label
-            text_size: self.size
-            halign: 'left'
-            font_name: 'fnt/Roboto-Medium.ttf'
-            font_size: 12
-            text: "Welcome to XtremeUpdater | Let's start"
-            color: theme.prim
+    InfoLabel:
+        id: info_label
+            

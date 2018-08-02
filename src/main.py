@@ -25,6 +25,7 @@ from kivy.animation import Animation
 from kivy.clock import Clock, mainthread
 from kivy.network.urlrequest import UrlRequest
 from kivy.adapters.listadapter import ListAdapter
+from kivy.storage.jsonstore import JsonStore
 
 from kivy.uix.widget import Widget
 from kivy.uix.boxlayout import BoxLayout
@@ -60,18 +61,26 @@ def new_thread(fn):
     return wrapper
 
 
-# from kivy.uix.image import CoreImage
-# from kivy.graphics import Rectangle
-# class NoiseTexture(Widget):
-#     def __init__(self, **kw):
-#         super().__init__(**kw)
-#         with self.canvas.before:
-#             tex = CoreImage('img/noise_texture.png').texture
-#             tex.wrap = 'repeat'
-#             Rectangle(pos=self.pos, size=self.size, texture=tex)
+from kivy.uix.image import CoreImage
+from kivy.graphics import Rectangle, Color
+class NoiseTexture(Widget):
+    TEX_SIZE = 100, 100
+    noise_color = ListProperty((1, 1, 1, 1))
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        def on_frame(*args):
+            tex = CoreImage('img/noise_texture.png').texture
+            tex.wrap = 'repeat'
+            tex.uvsize = self.width/self.TEX_SIZE[0], self.height/self.TEX_SIZE[1]
+            with self.canvas.before:
+                Color(rgba=self.noise_color)
+                Rectangle(pos=self.pos, size=self.size, texture=tex)
+        
+        Clock.schedule_once(lambda *args: Clock.schedule_once(on_frame))
 
 
-class HeaderLabel(Label, WindowDragBehavior):
+class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
     current_icon = StringProperty('\ue78b')
 
     def __init__(self, **kw):
@@ -84,7 +93,7 @@ class HeaderLabel(Label, WindowDragBehavior):
     def setup_mini_labels(self, *args):
         for i in range(17):
             label = HeaderMiniLabel(
-                text=self.current_icon, x=i * 50 + 120, y=self.y - i % 2 * 10)
+                text=self.current_icon, x=i * 48 + 120, y=self.y - i % 2 * 10)
             self.add_widget(label, 1)
 
     def on_current_icon(self, *args):
@@ -351,19 +360,7 @@ class GameCollection(ScrollView):
             info('Failed | Storage not found')
 
 
-class GameRemovePopup(Popup):
-    game = StringProperty()
-    proceed_command = ObjectProperty()
-    bin_height = NumericProperty(140)
-
-    def __init__(self, **kw):
-        super().__init__(**kw)
-        Clock.schedule_interval(self.dance_bin, 2)
-
-    def dance_bin(self, *args):
-        (Animation(bin_height=160, d=.4, t='out_expo') + Animation(
-            bin_height=140, d=.2, t='out_expo')).start(self)
-
+class CustPopup(Popup):
     def on_open(self, *args):
         Animation(
             size_hint=[.5, .5], opacity=1, d=.5, t='out_expo').start(self)
@@ -371,6 +368,33 @@ class GameRemovePopup(Popup):
     def on_dismiss(self, *args):
         Animation(
             size_hint=[.6, .6], opacity=0, d=.1, t='out_quad').start(self)
+
+
+class GameRemovePopup(CustPopup):
+    game = StringProperty()
+    proceed_command = ObjectProperty()
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        Clock.schedule_interval(self.dance_icon, 2)
+
+    def dance_icon(self, *args):
+        curr_y = self.ids.icon.y
+        (Animation(y=curr_y + 10, d=.4, t='out_expo') + Animation(
+            y=curr_y, d=.2, t='out_expo')).start(self.ids.icon)
+
+
+class UninstallPopup(CustPopup):
+    proceed_command = ObjectProperty()
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        Clock.schedule_interval(self.dance_icon, 2)
+
+    def dance_icon(self, *args):
+        curr_y = self.ids.icon.y
+        (Animation(y=curr_y + 10, d=.4, t='out_expo') + Animation(
+            y=curr_y, d=.2, t='out_expo')).start(self.ids.icon)
 
 
 class ImageCacher:
@@ -426,6 +450,10 @@ class GameButton(Button, HoveringBehavior):
     expand_user_patch = BooleanProperty(0)
     custom = BooleanProperty(0)
 
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.on_leave()
+
     def launch_game(self):
         info(f'Launching {self.text} | Get ready')
 
@@ -461,7 +489,7 @@ class GameButton(Button, HoveringBehavior):
 
     def on_leave(self):
         Animation.stop_all(self)
-        Animation(opacity=.5, d=.1).start(self)
+        Animation(opacity=.7, d=.1).start(self)
         Animation(opacity=0, d=.1).start(self.ids.label)
 
     def on_release(self):
@@ -505,7 +533,7 @@ class NavigationButton(CustButton):
             app().root.ids.header_label.current_icon = self.icon
 
 
-class Navigation(BoxLayout):
+class Navigation(BoxLayout, NoiseTexture):
     active = NumericProperty()
     __last_highlight = 0
     page_layout = ObjectProperty()
@@ -590,7 +618,7 @@ class DllViewAdapter(ListAdapter):
         Clock.schedule_once(lambda *args: self.select_list(self.get_views()))
 
 
-class SyncPopup(Popup):
+class SyncPopup(Popup, NoiseTexture):
     icon_rotation = NumericProperty()
 
     def __init__(self, **kw):
@@ -629,17 +657,13 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
     @new_thread
     def setup_updater(self):
-        self.info('Syncing with GitHub | Loading dll database..')
-        self.sync_popup.text = 'Loading dll database..'
-
         self.updater = DllUpdater()
         self.dlls_loaded = self.updater.load_available_dlls()
 
         if self.dlls_loaded:
             self.ids.refresh_button.disabled = True
             self.info('Syncing done | Successfully updated dll database')
-            OverdrawLabel(self.ids.dll_view, '\uf12b',
-                          'First, select a directory')
+            OverdrawLabel(self.ids.dll_view, '\uf12b', 'Select a directory')
 
         else:
             self.ids.refresh_button.disabled = False
@@ -649,7 +673,6 @@ class RootLayout(BoxLayout, HoveringBehavior):
         Clock.schedule_once(self.update_common_paths)
 
     def update_common_paths(self, *args):
-        self.sync_popup.text = 'Updating game database..'
         self.ids.game_collection_view.update_local_games()
         self.sync_popup.dismiss()
 
@@ -849,6 +872,31 @@ class RootLayout(BoxLayout, HoveringBehavior):
         else:
             self.ids.header_label.clear_widgets()
 
+    def uninstall_prompt(self):
+        self.uninstall_popup = UninstallPopup(proceed_command=self.uninstall)
+        self.uninstall_popup.open()
+
+    def uninstall(self):
+        USR_PATH = os.path.expanduser(
+            '~\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\XtremeUpdater.lnk'
+        )
+        UNINST_PATH = 'C:\\XtremeUpdaterUninstall\\XtremeUpdater-Uninstall.bat'
+        UNINST_DATA = ('@timeout /t 5 /nobreak\n'
+                       '@rmdir /q /s %localappdata%\\XtremeUpdater\n'
+                       '(goto) 2>nul & del "%~f0"')
+
+        try:
+            os.remove(LNK_PATH)
+        except FileNotFoundError:
+            pass
+
+        os.makedirs(os.path.dirname(UNINST_PATH), exist_ok=True)
+        with open(UNINST_PATH, 'w') as stream:
+            stream.write(UNINST_DATA)
+
+        os.startfile(PATH)
+        app().stop()
+
     @mainthread
     def info(self, text):
         Animation.cancel_all(self.ids.info_label)
@@ -893,7 +941,7 @@ class XtremeUpdaterApp(App):
         self.root.goto_page(4)
 
 
-__version__ = '0.5.17'
+__version__ = '0.5.18'
 
 if __name__ == '__main__':
     xtremeupdater = XtremeUpdaterApp()

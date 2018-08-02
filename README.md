@@ -5,6 +5,17 @@ Website is located at https://xtremeware.github.io/XtremeUpdater.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
 
+## v0.5.18
+**Features**
+  - Added *uninstall* option.
+
+**Tweaks**
+  - Readded *noise textures*.
+
+**Bugfixes**
+  - Fixed incorrect widget positioning in *Settings*.
+  - Fixed bug causing app to crash when adding a custom game.
+
 ## v0.5.17
 **Tweaks**
   - Unavailable dlls now do not display.
