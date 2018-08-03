@@ -23,7 +23,7 @@ body::-webkit-scrollbar-thumb {
     background-color: #dbac2a;
     -webkit-border-radius: 0.1em;
     -moz-border-radius: 0.1em;
-    border-radius: 0.1em;
+    border-radius: 0;
 }
 
 a {
@@ -43,6 +43,10 @@ header {
     overflow: hidden;
     opacity: 100%;
     transition: none;
+    background-image: url('xtremeupdater_cover.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 header:before {
@@ -64,10 +68,14 @@ header:before {
     z-index: 10 !important;
 }
 
+.nav {
+    background-color: #10131ab4;
+}
+
 /*header-navbar point of scroll*/
 
 .nav.past-main {
-    background-color: #232a3a !important;
+    background-color: #10131a !important;
     box-shadow: 0px 0px 5px #000 !important;
 }
 
@@ -111,25 +119,6 @@ header:before {
 .header-nav-link-active {
     color: #dbac2a;
     font-weight: bold;
-}
-
-#header-title {
-    text-shadow: 0px 2px 4px #000;
-    display: inline-block;
-    vertical-align: middle;
-    width: 100%;
-    font-weight: bold;
-    text-align: center;
-    font-size: 80px;
-    white-space: nowrap;
-
-    /*justify-content: center;
-    align-items: center;
-    transform: translateZ(-1px) scale(2);
-    display: flex;
-    flex: 1 0 auto;
-    position: relative;
-    z-index: 0;*/
 }
 
 main {
@@ -234,8 +223,6 @@ main p.main-text {
     margin: 50px auto;
     display: block;
     width: 50vw;
-    max-width: 300px;
-    min-width: 215px;
     overflow: hidden;
 }
 
@@ -245,7 +232,6 @@ main p.main-text {
 
 footer {
     padding: 20px;
-    /*height: 300px;*/
     background-color: #232a3a;
     background-size: cover;
     box-shadow: inset 0 0 4px #000000;
@@ -273,6 +259,12 @@ footer ul li {
 footer a {
     text-decoration: none;
     color: white;
+    height: 100%;
+}
+
+.icon-link {
+    position: relative;
+    top: -8px;
 }
 
 footer a:hover {
@@ -280,14 +272,9 @@ footer a:hover {
 }
 
 footer img {
-    width: 50px;
+    width:30px;
     position: relative;
-    top: 18px;
-    left: -10px;
-}
-
-.footer-icon-link {
-    padding: 0 10px;
+    margin-right: 10px;
 }
 
 #footer-container {
@@ -301,6 +288,7 @@ footer img {
     vertical-align: top;
 
 }
+
 /*
 .come-in {
     transform: translateY(60px);
@@ -324,11 +312,10 @@ footer img {
 
 
 @media only screen and (max-width: 1200px) {
-    .main-text {
+    .main-text,
+    .download-button {
         width: 85%;
     }
-
-
 
     #header-navbar {
         background-color: #232a3a !important;
@@ -353,11 +340,10 @@ footer img {
 }
 
 @media only screen and (max-width: 400px) {
-    .main-text {
+    .main-text,
+    .download-button {
         width: 89%;
     }
-
-
 }
 
 /*
