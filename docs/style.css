@@ -28,7 +28,8 @@ body::-webkit-scrollbar-thumb {
 
 a {
     text-decoration: none;
-    color: auto;
+    color: #dbac2a;
+    font-weight: 400;
 }
 
 header {
@@ -145,7 +146,12 @@ main p.main-text {
     width: 50vw;
     vertical-align: top;
     text-align: justify;
-    text-justify: inter-word
+    text-justify: inter-word;
+    font-weight: 300;
+}
+
+strong {
+    font-weight: 400;
 }
 
 #main-circle {
@@ -174,8 +180,7 @@ main p.main-text {
 }
 
 .main-title {
-    margin: 5vh auto;
-    margin-bottom: 50px;
+    margin: 70px auto 50px auto;
     text-align: center;
     font-size: 35px;
     border-bottom: 10px solid #dbac2a;
