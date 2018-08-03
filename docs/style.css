@@ -34,8 +34,7 @@ a {
 header {
     width: 100% !important;
     height: 80vh !important;
-    color: #dbac2a;
-    background-color: #232a3a;
+    background-color: #10131a;
     margin: auto;
     transition: .3s ease-in-out;
     cursor: default;
@@ -47,6 +46,7 @@ header {
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
+    background-size: 80%;
 }
 
 header:before {
