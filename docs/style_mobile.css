@@ -288,11 +288,15 @@ footer a:hover {
     color: #dbac2a;
 }
 
-footer img {
-    width: 50px;
+.icon-link {
     position: relative;
-    top: 18px;
-    left: -10px;
+    top: -8px;
+}
+
+footer img {
+    width:30px;
+    position: relative;
+    margin-right: 10px;
 }
 
 .footer-icon-link {
