@@ -69,10 +69,6 @@ header:before {
     z-index: 10 !important;
 }
 
-.nav {
-    background-color: #10131ab4;
-}
-
 /*header-navbar point of scroll*/
 
 .nav.past-main {
@@ -323,8 +319,8 @@ footer img {
     }
 
     #header-navbar {
-        background-color: #232a3a !important;
-        box-shadow: 0px 15px 25px #232a3a;
+        background-color: #10131a !important;
+        box-shadow: 0px 15px 25px #10131a;
     }
 }
 
