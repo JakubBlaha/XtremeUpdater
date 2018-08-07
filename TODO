@@ -1,4 +1,3 @@
 Dll versioning
 Try to combine PlaceHolder and OverdrawLabel together
-fix installer: resizing, noise texture, icon
 Add *Launch game* button when dll updating is complete

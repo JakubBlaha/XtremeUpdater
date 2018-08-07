@@ -6,10 +6,13 @@ from kivy.animation import Animation
 from kivy.lang.builder import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import NumericProperty
+from resource_path import resource_path
 
 Config.set('graphics', 'width', 300)
 Config.set('graphics', 'height', 400)
 Config.set('graphics', 'borderless', 1)
+Config.set('graphics', 'resizable', 0)
+Config.set('graphics', 'window_icon', 'icon_no_bg.ico')
 
 from kivy.core.window import Window
 
@@ -28,6 +31,7 @@ Builder.load_string(
         Rectangle:
             pos: self.pos
             size: self.size
+            source: resource_path('noise.png')
 
     Image:
         canvas.before:
@@ -42,7 +46,6 @@ Builder.load_string(
         source: resource_path('icon_no_bg.png')
     Label:
         id: info
-        text: 'Welcome to XtremeUpdater setup'
         size_hint_y: None
         height: 100
         markup: True
@@ -88,7 +91,7 @@ def start():
 
 def setup():
     app.info(f'Installing [color={PRIM}]XtremeUpdater[/color]')
-    os.makedirs(REPO_PATH)
+    os.makedirs(REPO_PATH, exist_ok=True)
     try:
         clone()
         download_launcher()
@@ -144,9 +147,8 @@ class SetupApp(App):
         start_new(setup, ())
 
     def close(self):
-        anim = Animation(size=[300, 1], d=.5, t='out_expo')
-        anim.bind(on_complete=self.stop)
-        anim.start(Window)
+        Animation(size=[300, 1], d=.5, t='out_expo').start(Window)
+        Clock.schedule_once(self.stop, .5)
 
 if __name__ == '__main__':
     app = SetupApp()
