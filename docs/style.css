@@ -1,8 +1,8 @@
 * {
     box-sizing: border-box;
     transition: .3s ease-in-out;
-    scroll-behavior: smooth;
     font-family: 'Roboto', sans-serif;
+    scroll-behavior: smooth;
 }
 
 body {
@@ -36,9 +36,7 @@ header {
     width: 100% !important;
     height: 80vh !important;
     background-color: #10131a;
-    margin: auto;
     transition: .3s ease-in-out;
-    cursor: default;
     box-shadow: 0px 0px 5px #000;
     overflow: hidden;
     opacity: 100%;
@@ -47,88 +45,29 @@ header {
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-    background-size: 80%;
+    background-size: 70%;
 }
 
-header:before {
-    content: '';
-    display: inline-block;
-    height: 100%;
-    vertical-align: middle;
-    margin-right: -0.25em;
-}
-
-#header-navbar {
+.head-fade-effect {
     position: fixed;
-    top: 0;
+    top: 0px;
     left: 0;
     width: 100%;
     margin: auto;
-    height: 50px;
+    height: 100px;
     transition: none;
-    z-index: 10 !important;
-    background-color: #10131a !important;
-    box-shadow: 0px 15px 25px #10131a;
+    background: -webkit-linear-gradient(#10131a, #00000000);
 }
 
-/*header-navbar point of scroll*/
-
-.nav.past-main {
-    background-color: #10131a !important;
-    box-shadow: 0px 0px 5px #000 !important;
-}
-
-/*end*/
-
-#header-logo {
-    height: 35px;
-    position: fixed;
-    top: 8px;
-    left: 20px;
-    transition: .3s ease-in-out;
-}
-
-#header-nav {
-    position: fixed;
-    display: inline-block;
-    top: 10px;
-    font-size: 24px;
-    right: 25px;
-    color: #dbac2a;
-    overflow: hidden;
-    white-space: nowrap;
-    transition: .3s ease-in-out;
-    z-index: 20;
-    opacity: 100 !important;
-    z-index: 10 !important;
-}
-
-.header-nav-link,
-.header-nav-link-active,
-.header-nav-link:hover {
-    display: inline-block;
-    white-space: normal;
-    color: white;
-    cursor: pointer;
-    transition: .1s ease-in-out;
-    font-size: 20px;
-}
-
-.header-nav-link:hover,
-.header-nav-link-active {
-    color: #dbac2a;
-    font-weight: bold;
+.head-fade-effect.past-main {
+    height: 0;
 }
 
 main {
-    width: 100%;
-    padding: 5vh 0px;
+    width: 50vw;
+    margin: auto;
+    padding: 5vh 0;
     text-align: center;
-    box-shadow: 0px 0px 5px #000;
-    overflow: hidden;
-}
-
-main p {
     overflow: hidden;
 }
 
@@ -141,15 +80,10 @@ main p.main-text {
     margin: 10 auto;
     float: middle;
     overflow: hidden;
-    width: 50vw;
     vertical-align: top;
     text-align: justify;
     text-justify: inter-word;
     font-weight: 300;
-}
-
-strong {
-    font-weight: 400;
 }
 
 #main-circle {
@@ -169,6 +103,11 @@ strong {
     z-index: -2;
 }
 
+.profile-images-div {
+    margin: auto;
+    width: max-content;
+}
+
 .about-profile-img {
     width: 10vh;
     height: 10vh;
@@ -177,7 +116,7 @@ strong {
     border-radius: 5vh;
     object-fit: cover;
     box-shadow: 0 0 7px -2px #000000;
-    float: top;
+    float: right;
 }
 
 .main-title {
@@ -196,29 +135,19 @@ strong {
     font-size: 14px;
 }
 
-.how-to-use-box {
-    max-width: 700px;
-    margin: auto;
-    padding: 0 50px;
-}
-
 .how-to-use-text {
     text-align: left;
-    font-size: 25px;
+    font-size: 20px;
     text-shadow: #ccc 0 0 1px;
-    margin-top: 50px;
-    margin-bottom: 14px;
+    margin: 50px auto 14px auto;
     border-left: 10px solid #dbac2a;
     padding-left: 10px;
+    font-weight: 300;
 }
 
 .how-to-use-image {
     box-shadow: #dbac2a 0 0 7px;
     width: 100%;
-}
-
-.download-div {
-    margin: 20px auto;
 }
 
 .download-button {
@@ -227,9 +156,8 @@ strong {
     background-color: #dbac2a;
     border-radius: 3px;
     padding: 10px 0;
-    margin: 50px auto;
+    margin: 20px auto;
     display: block;
-    width: 50vw;
     overflow: hidden;
 }
 
@@ -239,6 +167,7 @@ strong {
 
 footer {
     padding: 20px;
+    margin-top: 100px;
     background-color: #232a3a;
     background-size: cover;
     box-shadow: inset 0 0 4px #000000;
@@ -249,33 +178,29 @@ footer {
 
 footer ul {
     list-style-type: none;
-    margin: 0;
     display: inline-block;
     vertical-align: top;
-}
-
-footer ul p {
     color: #ccc;
-
 }
 
-footer ul li {
+footer li {
     margin: 5px 0;
+    position: relative;
+    top: 5px;
 }
 
 footer a {
     text-decoration: none;
     color: white;
-    height: 100%;
+}
+
+footer a:hover {
+    color: #dbac2a;
 }
 
 .icon-link {
     position: relative;
     top: -8px;
-}
-
-footer a:hover {
-    color: #dbac2a;
 }
 
 footer img {
@@ -291,9 +216,11 @@ footer img {
 .copyright {
     color: #ccc;
     float: right;
-    display: inline-block;
     vertical-align: top;
+}
 
+strong {
+    font-weight: 400;
 }
 
 /*
