@@ -110,6 +110,14 @@ RootLayout:
                 pos: self.pos
                 size: self.size
 
+            PushMatrix
+            Rotate:
+                angle: root.angle
+                origin: self.center
+
+        canvas.after:
+            PopMatrix
+
         pos: root.widget.pos
         size_hint: None, None
         size: root.widget.size

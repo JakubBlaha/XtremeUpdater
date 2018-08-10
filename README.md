@@ -13,6 +13,7 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
 **Tweaks**
   - More noise textures!
+  - New fancy animations for icon messages and navigation.
 
 ## v0.5.18
 **Features**

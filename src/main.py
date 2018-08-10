@@ -236,6 +236,8 @@ class OverdrawLabel(FloatLayout):
     text = StringProperty()
     widget = ObjectProperty()
     TEMPLATE = '[size=72][font=fnt/segmdl2.ttf]{}[/font][/size]\n{}'
+    angle = NumericProperty(0)
+    __MAX_TILT = 2
 
     @mainthread
     def __init__(self, **kw):
@@ -250,13 +252,20 @@ class OverdrawLabel(FloatLayout):
 
         Animation.stop_all(self)
         Animation(opacity=1, d=.2).start(self)
+        Clock.schedule_interval(self.animate, 4)
 
-    @mainthread
     def dismiss(self, *args):
         Animation.stop_all(self)
         anim = Animation(opacity=0, d=.2)
         anim.bind(on_complete=lambda *args: self.widget.remove_widget(self))
         anim.start(self)
+
+    def animate(self, *args):
+        (
+            Animation(angle=self.__MAX_TILT * -1, d=.3, t='out_expo') +
+            Animation(angle=self.__MAX_TILT, d=.3, t='out_expo') + 
+            Animation(angle=0, d=.5, t='out_bounce')
+        ).start(self)
 
 
 class GameCollection(ScrollView):
@@ -677,7 +686,9 @@ class LaunchNowButton(CustButton):
         app().root.launch_updated()
 
         Animation(height=0, d=1, t='out_expo').start(self)
-        Clock.schedule_once(lambda *args: app().root.ids.content_updater.remove_widget(self), 1)
+        Clock.schedule_once(
+            lambda *args: app().root.ids.content_updater.remove_widget(self),
+            1)
 
 
 class RootLayout(BoxLayout, HoveringBehavior):
