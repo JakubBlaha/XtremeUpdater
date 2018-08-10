@@ -1013,7 +1013,7 @@ class XtremeUpdaterApp(App):
         self.root.goto_page(4)
 
 
-__version__ = '0.5.18'
+__version__ = '0.5.19'
 
 if __name__ == '__main__':
     xtremeupdater = XtremeUpdaterApp()
