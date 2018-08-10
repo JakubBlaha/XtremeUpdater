@@ -63,22 +63,34 @@ def new_thread(fn):
     return wrapper
 
 
-
 class NoiseTexture(Widget):
-    TEX_SIZE = 100, 100
-    noise_color = ListProperty((1, 1, 1, 1))
+    noise_color = ListProperty()
 
     def __init__(self, **kw):
-        super().__init__(**kw)        
-        Clock.schedule_once(lambda *args: Clock.schedule_once(self.on_noise_color))
+        super().__init__(**kw)
+        Clock.schedule_once(
+            lambda *args: Clock.schedule_once(self.update_texture))
 
-    def on_noise_color(self, *args):
+    def update_texture(self, *args):
         tex = CoreImage('img/noise_texture.png').texture
         tex.wrap = 'repeat'
-        tex.uvsize = self.width/self.TEX_SIZE[0], self.height/self.TEX_SIZE[1]
+        tex.uvsize = self.width / tex.width, self.height / tex.height
+
+        self.canvas.before.clear()
         with self.canvas.before:
-            Color(rgba=self.noise_color)
+            if self.noise_color:
+                Color(rgba=self.noise_color)
             Rectangle(pos=self.pos, size=self.size, texture=tex)
+
+    def on_pos(self, *args):
+        self.update_texture()
+
+    def on_size(self, *args):
+        self.update_texture()
+
+    def on_noise_color(self, *args):
+        self.update_texture()
+
 
 class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
     current_icon = StringProperty('\ue78b')
@@ -131,7 +143,7 @@ class HeaderMiniLabel(Label, HoveringBehavior):
 
 class CustButton(Button, HoveringBehavior):
     color_hovering = ListProperty(prim)
-    background_color_hovering = ListProperty(sec)
+    background_color_hovering = ListProperty([0, 0, 0, 0])
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -166,6 +178,9 @@ class CustButton(Button, HoveringBehavior):
 
 
 class LabelIconButton(BoxLayout):
+    text = StringProperty()
+    icon = StringProperty()
+
     def __init__(self, **kw):
         super().__init__(**kw)
 
@@ -219,23 +234,19 @@ class LabelSwitch(BoxLayout):
 class OverdrawLabel(FloatLayout):
     icon = StringProperty()
     text = StringProperty()
-    wg = ObjectProperty()
+    widget = ObjectProperty()
     TEMPLATE = '[size=72][font=fnt/segmdl2.ttf]{}[/font][/size]\n{}'
 
     @mainthread
-    def __init__(self, wg, icon, text, **kw):
-        self.wg = wg
-        self.icon = icon
-        self.text = text
-
+    def __init__(self, **kw):
         super().__init__(**kw)
 
-        for child in wg.children:
+        for child in self.widget.children:
             if isinstance(child, OverdrawLabel):
                 child.dismiss()
 
-        wg.overdrawer = self
-        wg.add_widget(self)
+        self.widget.overdrawer = self
+        self.widget.add_widget(self)
 
         Animation.stop_all(self)
         Animation(opacity=1, d=.2).start(self)
@@ -244,7 +255,7 @@ class OverdrawLabel(FloatLayout):
     def dismiss(self, *args):
         Animation.stop_all(self)
         anim = Animation(opacity=0, d=.2)
-        anim.bind(on_complete=lambda *args: self.wg.remove_widget(self))
+        anim.bind(on_complete=lambda *args: self.widget.remove_widget(self))
         anim.start(self)
 
 
@@ -499,7 +510,7 @@ class GameButton(Button, HoveringBehavior):
             path = os.path.expanduser(path)
 
         app().root.load_dll_view_data(path)
-        app().root.ids.content.page = 0
+        app().root.launch_path = self.exe
 
 
 class NavigationButton(CustButton):
@@ -513,8 +524,9 @@ class NavigationButton(CustButton):
 
     def highlight(self):
         self.__active = True
+        Animation.stop_all(self)
         Animation(
-            highlight_height=self.height, 
+            highlight_height=self.height,
             highlight_width=self.width,
             highlight_color=sec,
             color=fg,
@@ -523,20 +535,22 @@ class NavigationButton(CustButton):
 
     def nohighghlight(self):
         self.__active = False
-        Animation(highlight_height=0,
-                  highlight_width=self.width * self.highlight_width_ratio,
-                  highlight_color=prim,
-                  d=.1,
-                  t='in_expo').start(self)
+        Animation.stop_all(self)
+        Animation(
+            highlight_height=0,
+            highlight_width=self.width * self.highlight_width_ratio,
+            highlight_color=prim,
+            d=.1,
+            t='in_expo').start(self)
 
-    def on_leave(self, *args):
-        if not self.__active:
-            super().on_leave()
+    def on_leave(self, *args, **kw):
+        if not self.__active and not self.disabled:
+            super().on_leave(*args, **kw)
             Animation(highlight_height=0, d=.2, t='out_expo').start(self)
 
-    def on_enter(self, *args):
-        if not self.__active:
-            super().on_enter()
+    def on_enter(self, *args, **kw):
+        if not self.__active and not self.disabled:
+            super().on_enter(*args, **kw)
             Animation(highlight_height=3, d=.2, t='out_expo').start(self)
 
     def on_release(self):
@@ -648,6 +662,24 @@ class SyncPopup(Popup, NoiseTexture):
         Clock.schedule_once(lambda *args: super(Popup, self).dismiss(), 1)
 
 
+class LaunchNowButton(CustButton):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        Clock.schedule_interval(self.animate, 2)
+
+    def animate(self, *args):
+        Animation(padding_y=5, d=.2).start(self)
+        Clock.schedule_once(
+            lambda *ars: Animation(padding_y=0, d=.2, t='out_bounce').start(self),
+            1)
+
+    def on_release(self):
+        app().root.launch_updated()
+
+        Animation(height=0, d=1, t='out_expo').start(self)
+        Clock.schedule_once(lambda *args: app().root.ids.content_updater.remove_widget(self), 1)
+
+
 class RootLayout(BoxLayout, HoveringBehavior):
     mouse_highlight_pos = ListProperty([-120, -120])
     dlls_loaded = BooleanProperty(False)
@@ -676,12 +708,18 @@ class RootLayout(BoxLayout, HoveringBehavior):
         if self.dlls_loaded:
             self.ids.refresh_button.disabled = True
             self.info('Syncing done | Successfully updated dll database')
-            OverdrawLabel(self.ids.dll_view, '\uf12b', 'Select a directory')
+            OverdrawLabel(
+                widget=self.ids.dll_view,
+                icon='\uf12b',
+                text='Select a directory')
 
         else:
             self.ids.refresh_button.disabled = False
             self.info('Syncing failed | Please try again')
-            OverdrawLabel(self.ids.dll_view, '\uea6a', 'Error when syncing')
+            OverdrawLabel(
+                widget=self.ids.dll_view,
+                icon='\uea6a',
+                text='Error when syncing')
 
         Clock.schedule_once(self.update_common_paths)
 
@@ -711,8 +749,8 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.info('Popup created | Select a directory now')
         self.load_dll_view_data(easygui.diropenbox())
 
-    @new_thread
     def load_dll_view_data(self, path, quickupdate=False):
+        self.launch_path = None
         self.goto_page(0)
 
         if not path:
@@ -737,7 +775,10 @@ class RootLayout(BoxLayout, HoveringBehavior):
         local_dlls = self.updater.local_dlls(path)
 
         if not local_dlls:
-            OverdrawLabel(self.ids.dll_view, '\ue783', 'No dlls found here')
+            OverdrawLabel(
+                widget=self.ids.dll_view,
+                icon='\ue783',
+                text='No dlls found here')
             self.info(
                 'We have not found any dlls in this directory | Try selecting another one'
             )
@@ -753,12 +794,18 @@ class RootLayout(BoxLayout, HoveringBehavior):
             if quickupdate:
                 Clock.schedule_once(lambda *args: self.update_callback())
 
+        self.load_subdirs(path)
+
+    @new_thread
+    def load_subdirs(self, path):
         self.info('Loading subdirs | Please wait..')
+
         self.ids.subdir_view.data = [{
             'path': subdir
         }
                                      for subdir in self.updater.dll_subdirs(
                                          path, self.updater.available_dlls)]
+
         self.info('Subdirs loaded | Check it out!' if self.ids.subdir_view.data
                   else 'No subdirs found | Maybe next time')
 
@@ -766,7 +813,8 @@ class RootLayout(BoxLayout, HoveringBehavior):
     def update_callback(self):
         self.set_dll_buttons_state(False)
         self.ids.invert_selection_button.disabled = True
-        OverdrawLabel(self.ids.dll_view, '\ue896', 'Updating dlls..')
+        OverdrawLabel(
+            widget=self.ids.dll_view, icon='\ue896', text='Updating dlls..')
 
         dlls = [item.text for item in self.ids.dll_view.adapter.selection]
 
@@ -775,11 +823,21 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
         except:
             self.info("Couldn't download updated dll | Please try again")
-            OverdrawLabel(self.ids.dll_view, '\uea39', 'Update failed')
+            OverdrawLabel(
+                widget=self.ids.dll_view, icon='\uea39', text='Update failed')
 
         else:
             self.info("We are done | Let's speed up your system now")
-            OverdrawLabel(self.ids.dll_view, '\ue930', 'Completed')
+            OverdrawLabel(
+                widget=self.ids.dll_view, icon='\ue930', text='Completed')
+
+            if self.launch_path:
+                self.ids.content_updater.add_widget(LaunchNowButton(), index=1)
+
+        self.ids.dll_view.adapter.data = []
+
+    def launch_updated(self):
+        os.startfile(self.launch_path)
 
     def restore_callback(self):
         self.info("Restoring | Please wait..")
@@ -806,16 +864,6 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
         else:
             info('Done | Removed cached game database')
-
-    def clear_cache(self):
-        try:
-            shutil.rmtree(os.path.join(os.getcwd(), '.cache'))
-
-        except FileNotFoundError:
-            info('No cached files | Nothing was removed')
-
-        else:
-            info('Done | Removed cached files')
 
     def refresh_dll_view(self):
         self.load_dll_view_data(self.ids.path_info.text)

@@ -7,6 +7,13 @@ Welcome to XtremeUpdater repo. This software's task is to improve mainly video g
 Website is located at https://xtremeware.github.io/XtremeUpdater.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
+## v0.5.19 - *Not released*
+**Features**
+  - Added *Launch now* button after updating dlls of a game. The game needs to be selected from the game collection.
+
+**Tweaks**
+  - More noise textures!
+
 ## v0.5.18
 **Features**
   - Added *uninstall* option.

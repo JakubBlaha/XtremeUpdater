@@ -1,25 +1,24 @@
 #:kivy 1.10.1
 
 #:import theme theme
-#:import WindowDragBehavior windowdragbehavior.WindowDragBehavior
 #:import Window kivy.core.window.Window
-#:import ListItemButton kivy.uix.listview.ListItemButton
 #:import DllViewAdapter main.DllViewAdapter
 #:import Tweaks tweaks.Tweaks
 #:import get_version_number get_version_number.get_version_number
 #:import HoveringBehavior hovering_behavior.HoveringBehavior
 #:import is_admin main.is_admin
-#:import open webbrowser.open
+#:import startfile os.startfile
 #:import version main.__version__
 
 RootLayout:
-<CustButton@Button>:
-    background_normal: 'img/FFFFFF-0.png'
+<CustButton>:
+    background_normal: 'img/FFFFFF-1.png'
     background_disabled_normal: self.background_normal
     background_down: self.background_normal
     background_disabled_down: self.background_normal
+    background_color: 0, 0, 0, 0
 
-<HeaderLabel@WindowDragBehavior+Label>:
+<HeaderLabel>:
     text: '[color=ddd]Xtreme[/color]Updater'
     font_name: 'fnt/Roboto-Black.ttf'
     text_size: self.size
@@ -29,7 +28,7 @@ RootLayout:
     markup: True
     noise_color: Window.clearcolor
 
-<HeaderMiniLabel@Label>:
+<HeaderMiniLabel>:
     color: theme.bg
     size: 40, 40
     font_name: 'fnt/segmdl2.ttf'
@@ -44,8 +43,9 @@ RootLayout:
     canvas.after:
         PopMatrix
         
-<ContentLayout@BoxLayout>:
+<ContentLayout@BoxLayout+NoiseTexture>:
     orientation: 'vertical'
+    noise_color: theme.dark
 
     canvas.before:
         Color:
@@ -66,7 +66,7 @@ RootLayout:
     font_name: 'fnt/segmdl2.ttf'
     font_size: 20
 
-<NavigationButton@CustButton>:
+<NavigationButton>:
     markup: True
     size_hint_x: None
     width: 120
@@ -87,23 +87,14 @@ RootLayout:
 
 <IconNavigationButton@IconButton+NavigationButton>:
     font_size: 18
-    text: self.icon
+    icon: self.text
 
-<Navigation@BoxLayout>:
+<Navigation>:
     size_hint_y: None
     height: 40
     noise_color: theme.dark
 
-<PlaceHolder@Label>:
-    text: '[size=72][font=fnt/segmdl2.ttf]{}[/font][/size]\n{}'.format(self.icon, self.message)
-    markup: True
-    color: theme.prim
-    font_size: 36
-    text_size: self.size
-    halign: 'center'
-    valign: 'center'
-
-<OverdrawLabel@FloatLayout>:
+<OverdrawLabel>:
     size_hint: None, None
     size: 0, 0
     opacity: 0
@@ -119,9 +110,9 @@ RootLayout:
                 pos: self.pos
                 size: self.size
 
-        pos: root.wg.pos
+        pos: root.widget.pos
         size_hint: None, None
-        size: root.wg.size
+        size: root.widget.size
         color: theme.prim
         markup: True
         font_size: 36
@@ -134,7 +125,7 @@ RootLayout:
 <Content@PageLayout>:
     border: 0
 
-<DllViewItem@ListItemButton>:
+<DllViewItem>:
     text_size: self.size
     valign: 'center'
     padding: 40, 0
@@ -171,7 +162,7 @@ RootLayout:
         selection_mode='multiple'
         )
 
-<SubdirItem@Button>:
+<SubdirItem>:
     text: '...' + self.path
     background_normal: 'img/FFFFFF-0.png'
     background_down: 'img/FFFFFF-0.png'
@@ -191,7 +182,6 @@ RootLayout:
             pos: self.pos
             size: self.highlight_height, self.height
 
-
 <SubdirView@RecycleView>:
     bar_color: theme.prim
     bar_inactive_color: theme.dark
@@ -209,19 +199,6 @@ RootLayout:
         height: self.minimum_height
         orientation: 'vertical'
 
-<PathInput@TextInput>:
-    size_hint_y: None
-    height: 36
-    background_color: theme.dark
-    cursor_color: theme.prim
-    cursor_width: 2
-    font_size: 18
-    foreground_color: theme.sec
-    multiline: False
-    selection_color: theme.prim
-    on_text_validate: app.root.load_dll_view_data(self.text)
-    background_normal: 'img/FFFFFF-0.png'
-
 <DllActionButton@CustButton>:
     size_hint_x: None
     bold: True
@@ -231,9 +208,7 @@ RootLayout:
     padding: 0, 6
     disabled: True
 
-<GameButtonMini@IconButton+HoveringBehavior>:
-
-<GameButton@Button>:
+<GameButton>:
     background_normal: 'img/FFFFFF-1.png'
     background_down: self.background_normal
     color: 0, 0, 0, 0
@@ -268,7 +243,7 @@ RootLayout:
                 pos: self.pos
                 size: self.size
 
-    GameButtonMini:
+    IconButton:
         text: '\ue768'
         x: root.x + root.width - self.width
         y: root.y + root.height - self.height
@@ -277,7 +252,7 @@ RootLayout:
         disabled: not root.exe 
         on_release: root.launch_game()
 
-    GameButtonMini:
+    IconButton:
         text: '\ue78b'
         x: root.x + root.width - self.width * 2
         y: root.y + root.height - self.height
@@ -285,7 +260,7 @@ RootLayout:
         opacity: float(root.hovering)
         on_release: root.quick_update()
 
-    GameButtonMini:
+    IconButton:
         text: '\ue74d'
         x: root.x + root.width - self.width * 3
         y: root.y + root.height - self.height
@@ -294,8 +269,7 @@ RootLayout:
         disabled: not root.custom
         on_release: root.remove_from_collection()
 
-
-<GameCollection@ScrollView>:
+<GameCollection>:
     padding: 40, 0
     size: self.parent.size
     effect_cls: 'OpacityScrollEffect'
@@ -310,10 +284,7 @@ RootLayout:
         size_hint_y: None
         height: self.minimum_height
 
-
-<LabelIconButton@BoxLayout>:
-    text: ''
-    icon: ''
+<LabelIconButton>:
     command: lambda: None
     font_size: 16
 
@@ -342,7 +313,6 @@ RootLayout:
         valign: 'center'
         font_size: root.font_size
 
-
 <SectionLabel@Label>:
     color: theme.sec
     font_size: 15
@@ -358,9 +328,7 @@ RootLayout:
         Line:
             points: root.x, root.y, root.x + root.width, root.y
 
-
 <CustTextInput@TextInput>:
-    id: url_input
     size_hint_x: None
     width: 340
     multiline: False
@@ -368,12 +336,18 @@ RootLayout:
     background_normal: 'img/FFFFFF-0'
     background_active: 'img/FFFFFF-0'
     cursor_color: theme.prim
+    selection_color: theme.prim[:-1] + [.2]
     font_size: 15
     foreground_color: theme.fg
     padding: 11, 11
 
+<PathInput@CustTextInput>:
+    size_hint_x: 1
+    background_color: theme.dark
+    foreground_color: theme.sec
+    on_text_validate: app.root.load_dll_view_data(self.text)
 
-<SyncPopup@Popup>:
+<SyncPopup>:
     size_hint: 1, None
     height: Window.height - app.root.ids.header.height
     pos_hint: {'y': 0}
@@ -426,7 +400,7 @@ RootLayout:
     title: ''
     separator_height: 0
 
-<GameRemovePopup@CustPopup>:
+<GameRemovePopup>:
     FloatLayout:
         Label:
             text: f'Do you really want to remove\n[color={theme.PRIM}]{root.game}[/color] ?'
@@ -462,8 +436,7 @@ RootLayout:
                 color_hovering: 0, 1, 0, 1
                 on_release: root.proceed_command()
 
-
-<UninstallPopup@CustPopup>:
+<UninstallPopup>:
     FloatLayout:
         Label:
             text: f'Do you really want to [color=#f55]uninstall[/color] [color={theme.PRIM}]XtremeUpdater[/color] ?'
@@ -528,8 +501,7 @@ RootLayout:
         color: theme.bg
         font_size: 16
 
-
-<LabelSwitch@BoxLayout>:
+<LabelSwitch>:
     size_hint: 0, 0
     size: 340, 40
 
@@ -553,8 +525,7 @@ RootLayout:
         valign: 'center'
         padding: 10, 0
 
-
-<InfoLabel@Label+NoiseTexture>:
+<InfoLabel@Label>:
     size_hint_y: None
     height: 30
     font_name: 'fnt/Roboto-Medium.ttf'
@@ -564,7 +535,21 @@ RootLayout:
     halign: 'left'
     valign: 'center'
     color: theme.prim
-    noise_color: Window.clearcolor
+    # noise_color: Window.clearcolor
+
+<LaunchNowButton>:
+    text: 'Play now'
+    font_name: 'fnt/Roboto-Black.ttf'
+    font_size: 24
+    markup: True
+    size_hint: 1, None
+    height: 40
+    text_size: self.size
+    halign: 'center'
+    background_color: theme.sec
+    background_color_hovering: theme.sec
+    underline: True
+    color: [i + .2 for i in theme.sec[:-1]] + [1]
 
 <RootLayout>:
     orientation: 'vertical'
@@ -622,11 +607,12 @@ RootLayout:
         Widget:
 
         IconNavigationButton:
-            icon: '\ue734' 
+            text: '\ue734'
             page_index: 3
+            disabled: True
 
         IconNavigationButton:
-            icon: '\ue713'
+            text: '\ue713'
             page_index: 4
 
     Content:
@@ -672,9 +658,7 @@ RootLayout:
             DllView:
                 id: dll_view
 
-
             BoxLayout:
-                id: update_and_restore_layout
                 size_hint_y: None
                 height: 40
                 padding: 10, 0
@@ -684,10 +668,10 @@ RootLayout:
                         rgba: theme.sec
 
                     Rectangle:
-                        pos: update_and_restore_layout.pos
-                        size: update_and_restore_layout.size
+                        pos: self.pos
+                        size: self.size
 
-                Widget:
+                Widget
 
                 DllActionButton:
                     id: restore_button
@@ -746,10 +730,6 @@ RootLayout:
         ContentLayout:
             id: content_favorite
 
-            PlaceHolder:
-                icon: '\ue734'
-                message: 'Favorite games coming soon'
-
         ContentLayout:
             id: content_settings
 
@@ -769,20 +749,20 @@ RootLayout:
                     LabelIconButton:
                         text: 'Get a help'
                         icon: '\ue897'
-                        command: lambda: open('https://discord.gg/Cs4rstF')
+                        command: lambda: startfile('https://discord.gg/Cs4rstF')
 
                     LabelIconButton:
                         text: 'Request a feature'
                         icon: '\ue943'
-                        command: lambda: open('https://discord.gg/rdwCuge')
+                        command: lambda: startfile('https://discord.gg/rdwCuge')
 
                     LabelIconButton:
                         text: 'Report a bug'
                         icon: '\uebe8'
-                        command: lambda: open('https://discord.gg/sfcBuMU')
+                        command: lambda: startfile('https://discord.gg/sfcBuMU')
 
                     SectionLabel:
-                        text: 'General'
+                        text: 'GUI'
 
                     LabelSwitch:
                         text: 'Enable mouse highlight'
@@ -795,34 +775,26 @@ RootLayout:
                         active: app.store['head_decor']
 
                     SectionLabel:
-                        text: 'Game Collection'
-
-                    LabelIconButton:
-                        text: f'Reset [color={theme.PRIM}][i]Game Collection[/i][/color]'
-                        icon: '\ue74d'
-                        command: root.reset_custom_paths
-
-                    SectionLabel:
                         text: 'Cache'
 
                     LabelIconButton:
-                        text: "Clear all cache"
-                        icon: '\ue74d'
-                        command: root.clear_cache
-
-                    LabelIconButton:
-                        text: f"Clear [color={theme.PRIM}][i]Game Collection[/i][/color] cached images"
-                        icon: '\ue74d'
+                        text: f"Clear cached images"
+                        icon: '\ueb9f'
                         command: root.clear_images_cache
 
                     LabelIconButton:
                         text: "Clear cached game database"
-                        icon: '\ue74d'
+                        icon: '\ueda2'
                         command: root.clear_common_paths_cache
 
                     SectionLabel:
                         text: 'Danger zone'
                         color: 1, .3, .3, 1
+
+                    LabelIconButton:
+                        text: f'Reset [color={theme.PRIM}][i]Game Collection[/i][/color]'
+                        icon: '\ue777'
+                        command: root.reset_custom_paths
 
                     LabelIconButton:
                         text: 'Uninstall'
@@ -834,7 +806,6 @@ RootLayout:
                         font_name: 'fnt/Roboto-Medium.ttf'
                         font_size: 16
                         color: theme.bg
-
 
         ContentLayout:
             ScrollView:
