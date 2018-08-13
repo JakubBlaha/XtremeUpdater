@@ -10,10 +10,19 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
 ## v0.5.19 - *Not released*
 **Features**
   - Added *Launch now* button after updating dlls of a game. The game needs to be selected from the game collection.
+  - Added option to disable animations.
+  - Added *progress bar*.
+  - Added error popups.
+  - Removed info.
 
 **Tweaks**
   - More noise textures!
   - New fancy animations for icon messages and navigation.
+
+**Bugfixes**
+  - The config file is now `Config.yaml` instead of `Config.json` as it is a *YAML* format.
+  - Fixed bug causing configured options to not be saved if app exited unexpectedly.
+  - Fixed bug causing *mouse highlight* to appear only after the mouse has moved after switching it's state to *enabled*.
 
 ## v0.5.18
 **Features**

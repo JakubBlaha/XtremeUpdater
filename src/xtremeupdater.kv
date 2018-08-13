@@ -480,6 +480,29 @@ RootLayout:
                 color_hovering: 0, 1, 0, 1
                 on_release: root.proceed_command()
 
+<ErrorPopup>:
+    FloatLayout:
+        Label:
+            text: root.text
+            font_size: 32
+            text_size: self.size
+            valign: 'top'
+            padding: 20, 0
+            markup: True
+            pos: self.parent.pos
+            color: 1, .3, .3, 1
+
+        Label:
+            id: icon
+            text: '\ue783'
+            font_name: 'fnt/segmdl2.ttf'
+            font_size: 72
+            pos: root.pos
+            size_hint: None, None
+            size: 140, 140
+            color: theme.bg
+
+
 <CustSwitch>:
     size_hint: None, None
     size: 40, 40
@@ -533,17 +556,16 @@ RootLayout:
         valign: 'center'
         padding: 10, 0
 
-<InfoLabel@Label>:
-    size_hint_y: None
-    height: 30
-    font_name: 'fnt/Roboto-Medium.ttf'
-    font_size: 12
-    padding_x: 8
-    text_size: self.size
-    halign: 'left'
-    valign: 'center'
-    color: theme.prim
-    # noise_color: Window.clearcolor
+<WorkingBar>:
+    canvas:
+        Color:
+            rgba: root.color
+
+        Line:
+            points: [self._x1, self.y + 1, self._x2, self.y + 1]
+            width: 1.2
+            cap: 'none'
+
 
 <LaunchNowButton>:
     text: 'Play now'
@@ -625,7 +647,7 @@ RootLayout:
 
     Content:
         id: content
-        anim_kwargs: {'t': 'out_expo', 'd': .5}
+        anim_kwargs: {'t': 'out_expo', 'd': .5 * app.conf.animations}
 
         ContentLayout:
             id: content_updater
@@ -668,8 +690,8 @@ RootLayout:
 
             BoxLayout:
                 size_hint_y: None
-                height: 40
-                padding: 10, 0
+                height: 60
+                padding: 10, 10
 
                 canvas.before:
                     Color:
@@ -773,14 +795,19 @@ RootLayout:
                         text: 'GUI'
 
                     LabelSwitch:
+                        text: 'Enable animations'
+                        active_callback: root.switch_animations_enabled
+                        active: app.conf.animations
+
+                    LabelSwitch:
                         text: 'Enable mouse highlight'
                         active_callback: root.switch_mouse_highlight
-                        active: app.store['mouse_highlight']
+                        active: app.conf.mouse_highlight
 
                     LabelSwitch:
                         text: 'Decorate head'
                         active_callback: root.switch_head_decor
-                        active: app.store['head_decor']
+                        active: app.conf.head_decor
 
                     SectionLabel:
                         text: 'Cache'
@@ -898,6 +925,11 @@ RootLayout:
             SubdirView:
                 id: subdir_view
 
-    InfoLabel:
-        id: info_label
-            
+    BoxLayout:
+        size_hint_y: None
+        height: 0
+
+        WorkingBar:
+            id: bar
+            value: 50
+            color: theme.prim            

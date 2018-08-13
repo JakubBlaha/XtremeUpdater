@@ -6,7 +6,7 @@ from kivy.app import App
 from winreg import *
 
 
-app = App.get_running_app()
+APP = App.get_running_app()
 
 def get_size(path):
     total_size = 0
@@ -30,7 +30,7 @@ class Tweaks:
         final_size_str = size(init_size - finish_size)
         final_size_str += '' if final_size_str.endswith('B') else 'B'
 
-        app.root.info(f'Deleted temp directory | Freed up {final_size_str}')
+        APP.root.bar.ping()
 
     @staticmethod
     def is_dvr():
@@ -58,4 +58,4 @@ class Tweaks:
         key = OpenKey(reg, r'SOFTWARE\Policies\Microsoft\Windows\GameDVR', 0, KEY_SET_VALUE)
         SetValueEx(key, 'AllowGameDVR', None, REG_DWORD, enabled)
 
-        app.root.info('{} GameDVR | You may need to restart PC'.format('Enabled' if enabled else 'Disabled'))
+        APP.root.bar.ping()

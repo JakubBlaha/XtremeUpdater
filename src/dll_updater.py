@@ -4,8 +4,8 @@ from bs4 import BeautifulSoup
 from shutil import copy
 import os
 
-info = lambda text: App.get_running_app().root.info(text)
-get_data = lambda url: urlopen(url).read()
+def get_data(url):
+    return urlopen(url).read()
 
 class DllUpdater:
     URL = "https://github.com/XtremeWare/XtremeUpdater/tree/master/dll/"
@@ -56,12 +56,10 @@ class DllUpdater:
             f.write(data)
 
     def update_dlls(self, path, dlls):
-        dll_num = len(dlls)
+        dll_count = len(dlls)
 
         for index, dll in enumerate(dlls):
-            info(
-                f"Downloading {dll} ({index + 1} of {dll_num}) | Please wait.."
-            )
+            App.get_running_app().root.bar.set_value(1 / dll_count * index)
             data = self._download_dll(dll)
 
             local_dll_path = os.path.join(path, dll)
@@ -73,6 +71,8 @@ class DllUpdater:
 
             self._backup_dll(path, dll)
             self._overwrite_dll(local_dll_path, data)
+
+        App.get_running_app().root.bar.ping()
 
     def restore_dlls(self, path, dlls):
         dll_num = len(dlls)
@@ -91,8 +91,6 @@ class DllUpdater:
                 pass
             else:
                 restored += 1
-
-        info(f"Done | Restored {restored} of {dll_num} dlls")
 
     def available_restore(self, path):
         bck_path = os.path.abspath(os.path.join(self.BACKUP_DIR, path))
