@@ -41,11 +41,10 @@ header {
     overflow: hidden;
     opacity: 100%;
     transition: none;
-    background-image: url('xtremeupdater_cover.png');
-    background-size: cover;
-    background-repeat: no-repeat;
+    background-image: url('xtremeupdater_cover_1.png'), url('noise_texture.png');
+    background-repeat: no-repeat, repeat;
     background-position: center;
-    background-size: 70%;
+    background-size: 50%, auto;
 }
 
 .head-fade-effect {
