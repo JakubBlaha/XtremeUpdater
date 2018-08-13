@@ -737,7 +737,7 @@ class WorkingBar(Widget):
             Animation(_x1=0, _x2=0, d=.5, t='out_expo').start(self)
 
     def animate(self, *args):
-        states = ((0, .1), (0, 1), (.9, 1), (.1, 1))
+        states = ((0, .1), (0, 1), (.9, 1), (0, 1))
 
         Animation(
             _x1=states[self.__animation_state][0] * self.width,
