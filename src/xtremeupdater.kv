@@ -769,9 +769,7 @@ RootLayout:
                     padding: 10, 40
                     spacing: 10
                     size_hint_y: None
-                    height: self.minimum_height + 100
-
-                    Widget
+                    height: sum([child.height for child in self.children]) + self.spacing * len(self.children) + self.padding[1]
 
                     SectionLabel:
                         text: 'Support'
@@ -841,6 +839,7 @@ RootLayout:
                         font_name: 'fnt/Roboto-Medium.ttf'
                         font_size: 16
                         color: theme.bg
+                        size_hint_y: None
 
         ContentLayout:
             ScrollView:
