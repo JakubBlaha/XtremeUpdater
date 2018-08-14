@@ -48,6 +48,11 @@ from windowdragbehavior import WindowDragBehavior
 from get_image_url import get_image_url_from_response, TEMPLATE, HEADERS
 
 
+def read_file(path):
+    with open(path) as f:
+        return f.read()
+
+
 def is_admin():
     return ctypes.windll.shell32.IsUserAnAdmin()
 
@@ -125,9 +130,7 @@ class HeaderMiniLabel(Label, HoveringBehavior):
             Clock.schedule_once(self.rotate, randint(0, 10))
         else:
             self.unbind_hovering()
-        Clock.schedule_once(self.init_rotation)
-
-    def init_rotation(self, *args):
+        
         self.rotation_angle = randint(0, 361)
 
     def rotate(self, *args):
@@ -385,6 +388,7 @@ class GameCollection(ScrollView):
 
 class CustPopup(Popup):
     icon = StringProperty()
+    final_size_hint = ListProperty([.9, .9])
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -411,11 +415,11 @@ class CustPopup(Popup):
 
     def on_open(self, *args):
         Animation(
-            size_hint=[.5, .5], opacity=1, d=.5, t='out_expo').start(self)
+            size_hint=self.final_size_hint, opacity=1, d=.5, t='out_expo').start(self)
 
     def on_dismiss(self, *args):
         Animation(
-            size_hint=[.6, .6], opacity=0, d=.1, t='out_quad').start(self)
+            size_hint=[i + .1 for i in self.size_hint], opacity=0, d=.1, t='out_quad').start(self)
 
 
 class GameRemovePopup(CustPopup):

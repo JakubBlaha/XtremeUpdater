@@ -9,6 +9,7 @@
 #:import is_admin main.is_admin
 #:import startfile os.startfile
 #:import version main.__version__
+#:import read_file main.read_file
 
 RootLayout:
 <CustButton>:
@@ -446,12 +447,13 @@ RootLayout:
     title_color: 1, 1, 0, 1
     separator_color: 1, 1, 0, 1
     icon: '\ue7ba'
+    size_hint: .9, .9
 
     BoxLayout:
         orientation: 'vertical'
 
         Label:
-            text: 'We do not claim a response for any damage caused by updating dlls (e. g. bannig in online games). This software is absolutely without any warranty!'
+            text: read_file('LICENSE')
             text_size: self.size
             padding: 10, 20
 
