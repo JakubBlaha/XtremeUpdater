@@ -835,6 +835,11 @@ class RootLayout(BoxLayout, HoveringBehavior):
         if not os.path.isdir(path):
             return
 
+        try:
+            self.ids.content_updater.remove_widget(self.launch_now_btn)
+        except:
+            pass
+
         self.set_dll_buttons_state(False)
         self.ids.invert_selection_button.disabled = True
 
@@ -894,7 +899,8 @@ class RootLayout(BoxLayout, HoveringBehavior):
                 widget=self.ids.dll_view, icon='\ue930', text='Completed')
 
             if self.launch_path:
-                self.ids.content_updater.add_widget(LaunchNowButton(), index=1)
+                self.launch_now_btn = LaunchNowButton()
+                self.ids.content_updater.add_widget(self.launch_now_btn, index=1)
 
         self.ids.dll_view.adapter.data = []
 
@@ -1071,4 +1077,4 @@ if __name__ == '__main__':
     app = XtremeUpdaterApp()
     app.run()
 
-__version__ = '0.5.19'
+__version__ = '0.5.20'

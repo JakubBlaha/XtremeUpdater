@@ -100,7 +100,7 @@ class DllUpdater:
     @staticmethod
     def dll_subdirs(path, available_dlls):
         dll_dirs = []
-        for dirpath, dirnames, filenames in os.walk(path):
+        for dirpath, __, filenames in os.walk(path):
             for f in filenames:
                 if f.endswith('.dll') and f in available_dlls:
                     dll_dirs.append(dirpath.replace(path, ''))

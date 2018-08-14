@@ -7,7 +7,15 @@ Welcome to XtremeUpdater repo. This software's task is to improve mainly video g
 Website is located at https://xtremeupdater.com.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
-## v0.5.19 - *Not released*
+## v0.5.20
+**Tweaks**
+  - Added a disclaimer.
+  - Updated popups.
+
+**Bugfixes**
+ - Fixed bug causing *Launch now* button to stay when not pressed.
+
+## v0.5.19
 **Features**
   - Added *Launch now* button after updating dlls of a game. The game needs to be selected from the game collection.
   - Added option to disable animations.
