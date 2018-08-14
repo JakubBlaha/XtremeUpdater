@@ -9,7 +9,9 @@
 #:import is_admin main.is_admin
 #:import startfile os.startfile
 #:import version main.__version__
+#:import __file__ main.__file__
 #:import read_file main.read_file
+#:import dirname os.path.dirname
 
 RootLayout:
 <CustButton>:
@@ -453,7 +455,7 @@ RootLayout:
         orientation: 'vertical'
 
         Label:
-            text: read_file('LICENSE')
+            text: read_file(dirname(__file__) + '\\LICENSE')
             text_size: self.size
             padding: 10, 20
 
