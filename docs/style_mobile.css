@@ -124,10 +124,11 @@ main p.main-text {
 }
 
 .about-profile-img {
-    width: 10vh;
-    height: 10vh;
+    width: 8vh;
+    height: 8vh;
     margin: 15px auto;
     margin-left: -2vh;
+    margin-bottom: 40px;
     border-radius: 5vh;
     object-fit: cover;
     box-shadow: 0 0 7px -2px #000000;
