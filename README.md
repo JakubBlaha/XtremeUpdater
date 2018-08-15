@@ -7,7 +7,7 @@ Welcome to XtremeUpdater repo. This software's task is to improve mainly video g
 Website is located at https://xtremeupdater.com.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
-##v0.5.21
+## v0.5.21
 **Bugfixes**
   - Fixed missconfigured popups' sizes.
 
