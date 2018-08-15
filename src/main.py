@@ -427,14 +427,6 @@ class GameRemovePopup(CustPopup):
     proceed_command = ObjectProperty()
 
 
-class UninstallPopup(CustPopup):
-    pass
-
-
-class ErrorPopup(CustPopup):
-    pass
-
-
 class ImageCacher:
     CACHE_DIR = '.cache/img/'
 
@@ -850,7 +842,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         local_dlls = self.updater.local_dlls(path)
 
         if not local_dlls:
-            ErrorPopup(title='No dlls found here!').open()
+            Factory.ErrorPopup(title='No dlls found here!').open()
             self.bar.error_ping()
 
         else:
@@ -893,7 +885,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.updater.update_dlls(self.ids.path_info.text, dlls)
 
         except:
-            ErrorPopup(title='Failed to update dlls!').open()
+            Factory.ErrorPopup(title='Failed to update dlls!').open()
             self.bar.error_ping()
             OverdrawLabel(
                 widget=self.ids.dll_view, icon='\uea39', text='Update failed')
@@ -1006,7 +998,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.ids.header_label.clear_widgets()
 
     def uninstall_prompt(self):
-        self.uninstall_popup = UninstallPopup()
+        self.uninstall_popup = Factory.UninstallPopup()
         self.uninstall_popup.open()
 
     def uninstall(self):
@@ -1081,4 +1073,4 @@ if __name__ == '__main__':
     app = XtremeUpdaterApp()
     app.run()
 
-__version__ = '0.5.20'
+__version__ = '0.5.21'
