@@ -1,4 +1,4 @@
-![XtremeUpdater](docs/xtremeupdater_cover.png)
+![XtremeUpdater](docs/img/xtremeupdater_cover.png)
 
 # XtremeUpdater
 

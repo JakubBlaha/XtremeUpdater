@@ -40,12 +40,26 @@ header {
     transition: .3s ease-in-out;
     box-shadow: 0px 0px 5px #000;
     overflow: hidden;
-    opacity: 100%;
+    opacity: 1;
     transition: none;
-    background-image: url('xtremeupdater_cover_1.png'), url('noise_texture.png');
+    background-image: url('img/xtremeupdater_cover_1.png'), url('img/noise_texture.png');
     background-repeat: no-repeat, repeat;
     background-position: center;
     background-size: 60%;
+    animation-name: come-in;
+    animation-duration: 1s;
+}
+
+@keyframes come-in{
+    from {
+        background-position-y: 40%, center;
+        opacity: 0;
+    }
+
+    to {
+        background-position-y: center;
+        opacity: 1;
+    }
 }
 
 .head-fade-effect {
@@ -93,7 +107,7 @@ main p.main-text {
     margin: 15px auto 10px auto;
     text-align: center;
     border-radius: 5vh;
-    background-image: url("icon.png");
+    background-image: url("img/icon.png");
     background-size: 75%;
     background-position: center;
     background-repeat: no-repeat;
@@ -124,9 +138,10 @@ main p.main-text {
     margin: 5vh auto 50px auto;
     text-align: center;
     font-size: 22px;
-    border-bottom: 10px solid #dbac2a;
+    border-bottom: 6px solid #dbac2a;
     padding-bottom: 10px;
     display: inline-block;
+    font-weight: 300;
 }
 
 .sub-main-title {
@@ -134,6 +149,8 @@ main p.main-text {
     margin-top: -30px;
     margin-bottom: 30px;
     font-size: 12px;
+    font-weight: 300;
+    color: #aaa;
 }
 
 .how-to-use-text {
@@ -143,14 +160,14 @@ main p.main-text {
     margin-top: 50px;
     margin-bottom: 14px;
     margin: 50px auto 14px auto;
-    border-left: 10px solid #dbac2a;
+    border-left: 6px solid #dbac2a;
     padding-left: 10px;
     font-weight: 300;
     width: 90%;
 }
 
 .how-to-use-image {
-    box-shadow: #dbac2a 0 0 7px;
+    box-shadow: #ccc 0 1px 5px;
     width: 90%;
     margin: auto;
 }
