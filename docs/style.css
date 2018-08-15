@@ -128,6 +128,7 @@ main p.main-text {
     max-height: 70px;
     margin: 15px auto;
     margin-left: -1.6vh;
+    margin-bottom: 40px;
     border-radius: 5vh;
     object-fit: cover;
     box-shadow: 0 0 7px -2px #000000;
