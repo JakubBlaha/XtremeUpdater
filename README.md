@@ -7,9 +7,21 @@ Welcome to XtremeUpdater repo. This software's task is to improve mainly video g
 Website is located at https://xtremeupdater.com.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
-##v0.5.21
+##v0.5.21 - Not released
+**Features**
+  - Added *tweak* to clear *FTH*.
+  - *XtremeUpdater* now remembers which dlls you updated the last time.
+
+**Tweaks**
+  - *System* tab is now calld *Tweaks*.
+  - Tweaked *progressbar*.
+  - Added more description to *error popups*.
+  - Reworked *popups*.. again.
+  - Tweaked animations.
+
 **Bugfixes**
-  - Fixed missconfigured popups' sizes.
+  - Fixed bug causing sometimes to display empty dll list instead of an error.
+  - Fixed bug causing flickering of background of *Add Custom Game* button on hovering.
 
 ## v0.5.20
 **Tweaks**

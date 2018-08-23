@@ -1,12 +1,19 @@
-import shutil
 import os
+import shutil
+import platform
 from tempfile import gettempdir
 from hurry.filesize import size
 from kivy.app import App
 from winreg import *
+from main import IS_ADMIN
 
 
 APP = App.get_running_app()
+
+if platform.architecture()[0] == '32bit':
+    VIEW_FLAG = KEY_WOW64_64KEY
+else:
+    VIEW_FLAG = KEY_WOW64_32KEY
 
 def get_size(path):
     total_size = 0
@@ -49,6 +56,7 @@ class Tweaks:
 
         return GameDVR_enabled or AllowGameDVR
 
+    @staticmethod
     def switch_dvr(_, enabled):
         reg = ConnectRegistry(None, HKEY_CURRENT_USER)
         key = OpenKey(reg, r'System\GameConfigStore', 0, KEY_SET_VALUE)
@@ -59,3 +67,23 @@ class Tweaks:
         SetValueEx(key, 'AllowGameDVR', None, REG_DWORD, enabled)
 
         APP.root.bar.ping()
+
+    @staticmethod
+    def fth_value():
+        reg = ConnectRegistry(None, HKEY_LOCAL_MACHINE)
+        key = OpenKey(reg, r'SOFTWARE\Microsoft\FTH\State', access=KEY_READ | VIEW_FLAG)
+
+        return QueryValue(key, None)
+
+    @classmethod
+    def clear_fth(cls):
+        try:
+            reg = ConnectRegistry(None, HKEY_LOCAL_MACHINE)
+            key = OpenKey(reg, r'SOFTWARE\Microsoft\FTH\State', access=KEY_WRITE | VIEW_FLAG)
+            DeleteValue(key, None)
+        except OSError:
+            APP.root.bar.error_ping()
+        else:
+            APP.root.bar.ping()
+
+        APP.root.ids.clear_fth_btn.disabled = not (cls.fth_value() and IS_ADMIN)
