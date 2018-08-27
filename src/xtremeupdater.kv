@@ -75,10 +75,8 @@ RootLayout:
     size_hint_x: None
     width: 120
     highlight_width: self.width * self.highlight_width_ratio
-    background_color: theme.dark
     bold: True
     font_size: 17
-    background_normal: 'img/FFFFFF-0.png'
     color_hovering: theme.prim
 
     canvas.before:
@@ -181,7 +179,6 @@ RootLayout:
     text: '...' + self.path
     background_normal: 'img/FFFFFF-0.png'
     background_down: 'img/FFFFFF-0.png'
-    background_color: theme.sec
     text_size: self.size
     valign: 'center'
     padding: 40, 0
@@ -665,25 +662,21 @@ RootLayout:
                     id: refresh_button
                     disabled: True
                     text: '\ue72c'
-                    background_color: theme.dark
                     on_release: app.root.setup_updater()
 
                 IconButton:
                     id: invert_selection_button
                     disabled: not dll_view.adapter.data
                     text: '\ue8b3'
-                    background_color: theme.dark
                     on_release: root.ids.dll_view.adapter.invert_selection()
 
                 IconButton:
                     text: '\ue8a4'
                     disabled: not subdir_view.data
-                    background_color: theme.dark
                     on_release: root.goto_page(6)
 
                 IconButton:
                     text: '\uf12b'
-                    background_color: theme.dark
                     on_release: root.load_directory()
                     disabled: not root.dlls_loaded
 
@@ -928,14 +921,12 @@ RootLayout:
 
                         IconButton:
                             text: '\ue711'
-                            background_color: theme.dark
-                            color: 1, 0, 0, 1
+                            color: 1, .3, .3, 1
                             on_release: root.cancel_add_game_callback()
 
                         IconButton:
                             text: '\ue710'
-                            background_color: theme.dark
-                            color: 0, 1, 0, 1
+                            color: .3, 1, .3, 1
                             on_release: root.add_game_callback()
                             disabled: not (game_name_input.text and game_add_form_dir.text and (game_add_form_launch.text or url_input.text))
 

@@ -948,7 +948,6 @@ class RootLayout(BoxLayout, HoveringBehavior):
         ConfLastDlls.set_list(self.ids.path_info.text, dlls)
 
         try:
-            raise Exception
             self.updater.update_dlls(self.ids.path_info.text, dlls)
 
         except Exception:

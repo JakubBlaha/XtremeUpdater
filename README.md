@@ -23,7 +23,7 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
 **Bugfixes**
   - Fixed bug causing sometimes to display empty dll list instead of an error.
-  - Fixed bug causing flickering of background of *Add Custom Game* button on hovering.
+  - Fixed bug causing flickering of background of some buttons.
   - Fixed potencial compatibility issues.
 
 ## v0.5.20
