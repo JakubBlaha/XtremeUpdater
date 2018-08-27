@@ -64,6 +64,17 @@ def new_thread(fn):
 
     return wrapper
 
+def silent_exc(fn):
+    def wrapper(*args, **kw):
+        try:
+            fn(*args, **kw)
+        except Exception:
+            app.root.bar.error_ping()
+        else:
+            app.root.bar.ping()
+
+    return wrapper
+
 
 class Animation(Animation):
     def __init__(self, **kw):
@@ -1082,6 +1093,13 @@ class RootLayout(BoxLayout, HoveringBehavior):
         os.startfile(UNINST_PATH)
         app.stop()
 
+    @silent_exc
+    def export_logs(self):
+        OUTPUT = os.path.expanduser('~\\Desktop\\XtremeUpdater_Logs.zip')
+        SOURCE = os.path.expanduser('~\\.kivy\\logs')
+
+        shutil.make_archive(OUTPUT, 'zip', SOURCE)
+
 
 class ConfLastDlls:
     PATH = '.config/LastDlls.yaml'
@@ -1183,4 +1201,4 @@ if __name__ == '__main__':
     app = XtremeUpdaterApp()
     app.run()
 
-__version__ = '0.5.21'
+__version__ = '0.5.22'

@@ -7,10 +7,11 @@ Welcome to XtremeUpdater repo. This software's task is to improve mainly video g
 Website is located at https://xtremeupdater.com.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
-##v0.5.21 - Not released
+##v0.5.22 - Not released
 **Features**
   - Added *tweak* to clear *FTH*.
   - *XtremeUpdater* now remembers which dlls you updated the last time.
+  - Added *Export logs* option to options.
 
 **Tweaks**
   - *System* tab is now calld *Tweaks*.
