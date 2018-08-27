@@ -983,25 +983,13 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
         self.bar.ping()
 
+    @silent_exc
     def clear_images_cache(self):
-        try:
-            shutil.rmtree(os.path.join(os.getcwd(), ImageCacher.CACHE_DIR))
+        shutil.rmtree(os.path.join(os.getcwd(), ImageCacher.CACHE_DIR))
 
-        except FileNotFoundError:
-            self.bar.error_ping()
-
-        else:
-            self.bar.ping()
-
+    @silent_exc
     def clear_common_paths_cache(self):
-        try:
-            os.remove(GameCollection.COMMON_PATHS_CACHE_PATH)
-
-        except FileNotFoundError:
-            self.bar.error_ping()
-
-        else:
-            self.bar.ping()
+        os.remove(GameCollection.COMMON_PATHS_CACHE_PATH)
 
     def goto_page(self, index):
         self.ids.content.page = index
@@ -1050,15 +1038,9 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.ids.url_input.text = ''
         self.goto_page(1)
 
+    @silent_exc
     def reset_custom_paths(self):
-        try:
-            os.remove(GameCollection.CUSTOM_PATHS_PATH)
-
-        except FileNotFoundError:
-            self.bar.error_ping()
-
-        else:
-            self.bar.ping()
+        os.remove(GameCollection.CUSTOM_PATHS_PATH)
 
     def switch_head_decor(self, _, value):
         app.conf.head_decor = value
