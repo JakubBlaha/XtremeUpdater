@@ -1,0 +1,16 @@
+default:
+  # Color palette:
+  # http://www.color-hex.com/color-palette/46219
+
+  prim: '#dbac2a'
+  sec: '#232a3a'
+  bg: '#131a2a'
+  fg: '#ffffff'
+  dark: '#10131a'
+
+high_contrast:
+  prim: '#ffff00'
+  sec: '#0000aa'
+  bg: '#000000'
+  fg: '#ffffff'
+  dark: '#000000'

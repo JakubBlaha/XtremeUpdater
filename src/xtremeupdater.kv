@@ -1,7 +1,7 @@
 #:kivy 1.10.1
 
 #:import main main
-#:import theme theme
+#:import theme theme.theme
 #:import Window kivy.core.window.Window
 #:import DllViewAdapter main.DllViewAdapter
 #:import Tweaks tweaks.Tweaks
@@ -504,12 +504,18 @@ RootLayout:
     size: 40, 40
     canvas:
         Color:
-            rgb: 1, 1, 1
+            rgba: theme.prim
 
         Rectangle:
-            source: 'img/switch-background.png'
-            size: self.size
+            size: self.width / 2, self.height
             pos: self.pos
+
+        Color:
+            rgba: theme.sec
+
+        Rectangle:
+            size: self.width / 2, self.height
+            pos: self.x + self.width / 2, self.y
 
         Color:
             rgba: theme.sec

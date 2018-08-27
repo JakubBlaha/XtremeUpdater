@@ -44,7 +44,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.listview import ListItemButton
 from kivy.properties import StringProperty, ObjectProperty, DictProperty, ListProperty, NumericProperty, BooleanProperty
 
-import theme
+from theme import theme
 from dll_updater import DllUpdater
 from hovering_behavior import HoveringBehavior
 from windowdragbehavior import WindowDragBehavior
@@ -1162,7 +1162,8 @@ class XtremeUpdaterApp(App):
         'mouse_highlight': 1,
         'head_decor': 1,
         'animations': 1,
-        'show_disclaimer': 1
+        'show_disclaimer': 1,
+        'theme': 'default'
     }
 
     def __init__(self, **kw):

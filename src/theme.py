@@ -1,16 +1,34 @@
-# Color palette:
-# http://www.color-hex.com/color-palette/46219
-
+from yaml import safe_load
 from kivy.utils import get_color_from_hex
 
-BG = "#131a2a"
-FG = "#ffffff"
-PRIM = "#dbac2a"
-SEC = "#232a3a"
-DARK = "#10131a"
+class Theme:
+    DEFAULT_VALUES = {
+        'prim': "#dbac2a",
+        'sec': "#232a3a",
+        'bg': "#131a2a",
+        'fg': "#ffffff",
+        'dark': "#10131a"
+    }
 
-bg = get_color_from_hex(BG)
-fg = get_color_from_hex(FG)
-prim = get_color_from_hex(PRIM)
-sec = get_color_from_hex(SEC)
-dark = get_color_from_hex(DARK)
+    def __init__(self, values: dict):
+        for key, value in {**self.DEFAULT_VALUES, **values}.items():
+            setattr(self, key, get_color_from_hex(value))
+            setattr(self, key.upper(), value)
+
+
+try:
+    with open('.config/Config.yaml') as f:
+        conf = safe_load(f)
+except FileNotFoundError:
+    NAME = 'default'
+else:
+    NAME = conf.get('theme', 'default')
+
+with open('theme.yaml') as f:
+    themes = safe_load(f)
+
+VALUES = themes.get(NAME, None)
+if VALUES == None:
+    VALUES = {}
+
+theme = Theme(VALUES)
