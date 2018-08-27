@@ -5,7 +5,7 @@ from tempfile import gettempdir
 from hurry.filesize import size
 from kivy.app import App
 from winreg import *
-from main import IS_ADMIN
+from main import IS_ADMIN, silent_exc
 
 
 APP = App.get_running_app()
@@ -41,20 +41,23 @@ class Tweaks:
 
     @staticmethod
     def is_dvr():
+        if platform.release() != '10':
+            return False
+
         key = OpenKeyEx(HKEY_CURRENT_USER, r'System\GameConfigStore')
         GameDVR_enabled = QueryValueEx(key, 'GameDVR_enabled')[0]
 
-        key = OpenKeyEx(HKEY_LOCAL_MACHINE, r'SOFTWARE\Policies\Microsoft\Windows')
+        key = OpenKeyEx(HKEY_LOCAL_MACHINE, r'SOFTWARE\Policies\Microsoft\Windows\GameDVR')
         try:
-            key = CreateKey(key, 'GameDVR')
             AllowGameDVR = QueryValueEx(key, 'AllowGameDVR')[0]
 
-        except:
+        except OSError:
             AllowGameDVR = 1
 
         return GameDVR_enabled or AllowGameDVR
 
     @staticmethod
+    @silent_exc
     def switch_dvr(_, enabled):
         key = OpenKeyEx(HKEY_CURRENT_USER, r'System\GameConfigStore', 0, KEY_SET_VALUE)
         SetValueEx(key, 'GameDVR_enabled', None, REG_DWORD, enabled)
@@ -62,22 +65,19 @@ class Tweaks:
         key = OpenKeyEx(HKEY_LOCAL_MACHINE, r'SOFTWARE\Policies\Microsoft\Windows\GameDVR', 0, KEY_SET_VALUE)
         SetValueEx(key, 'AllowGameDVR', None, REG_DWORD, enabled)
 
-        APP.root.bar.ping()
-
     @staticmethod
     def fth_value():
-        key = OpenKey(HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\FTH\State', access=KEY_READ | VIEW_FLAG)
-
-        return QueryValue(key, None)
+        try:
+            key = OpenKey(HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\FTH\State', access=KEY_READ | VIEW_FLAG)
+        except OSError:
+            return ''
+        else:
+            return QueryValue(key, None)
 
     @classmethod
+    @silent_exc
     def clear_fth(cls):
-        try:
-            key = OpenKey(HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\FTH\State', access=KEY_WRITE | VIEW_FLAG)
-            DeleteValue(key, None)
-        except OSError:
-            APP.root.bar.error_ping()
-        else:
-            APP.root.bar.ping()
+        APP.root.ids.clear_fth_btn.disabled = True
 
-        APP.root.ids.clear_fth_btn.disabled = not (cls.fth_value() and IS_ADMIN)
+        key = OpenKey(HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\FTH\State', access=KEY_WRITE | VIEW_FLAG)
+        DeleteValue(key, None)

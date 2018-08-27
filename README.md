@@ -11,7 +11,8 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
 **Features**
   - Added *tweak* to clear *FTH*.
   - *XtremeUpdater* now remembers which dlls you updated the last time.
-  - Added *Export logs* option to options.
+  - Added *Export logs* option to the options.
+  - Added *Show license* button to the options.
 
 **Tweaks**
   - *System* tab is now calld *Tweaks*.
@@ -23,6 +24,7 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
 **Bugfixes**
   - Fixed bug causing sometimes to display empty dll list instead of an error.
   - Fixed bug causing flickering of background of *Add Custom Game* button on hovering.
+  - Fixed potencial compatibility issues.
 
 ## v0.5.20
 **Tweaks**

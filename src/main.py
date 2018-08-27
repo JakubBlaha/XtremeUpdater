@@ -53,11 +53,6 @@ from get_image_url import get_image_url_from_response, TEMPLATE, HEADERS
 IS_ADMIN = ctypes.windll.shell32.IsUserAnAdmin()
 
 
-def read_file(path):
-    with open(path) as f:
-        return f.read()
-
-
 def new_thread(fn):
     def wrapper(*args, **kwargs):
         start_new(fn, args, kwargs)
@@ -66,6 +61,8 @@ def new_thread(fn):
 
 def silent_exc(fn):
     def wrapper(*args, **kw):
+        app = App.get_running_app()
+
         try:
             fn(*args, **kw)
         except Exception:

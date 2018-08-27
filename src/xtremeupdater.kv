@@ -10,8 +10,9 @@
 #:import startfile os.startfile
 #:import version main.__version__
 #:import __file__ main.__file__
-#:import read_file main.read_file
 #:import dirname os.path.dirname
+#:import Factory kivy.factory.Factory
+#:import platform platform
 
 RootLayout:
 <CustButton>:
@@ -479,9 +480,11 @@ RootLayout:
         orientation: 'vertical'
 
         Label:
-            text: read_file(dirname(__file__) + '\\LICENSE')
+            text: open(dirname(__file__) + '\\LICENSE').read()
             text_size: self.size
             padding: 10, 0
+            size_hint_x: None
+            width: 800
 
         BoxLayout:
             padding: 10
@@ -511,7 +514,7 @@ RootLayout:
             pos: self.pos
 
         Color:
-            rgba: theme.sec
+            rgba: theme.bg
 
         Rectangle:
             size: self.width / 2, self.height
@@ -749,7 +752,7 @@ RootLayout:
                         text: 'Allow GameDVR'
                         active_callback: Tweaks.switch_dvr
                         active: Tweaks.is_dvr()
-                        disabled: not main.IS_ADMIN
+                        disabled: not main.IS_ADMIN or platform.release() != '10'
 
                     LabelIconButton:
                         id: clear_fth_btn
@@ -829,6 +832,14 @@ RootLayout:
                         text: "Clear cached game database"
                         icon: '\ueda2'
                         command: root.clear_common_paths_cache
+
+                    SectionLabel:
+                        text: 'License'
+                    
+                    LabelIconButton:
+                        text: 'Show license'
+                        icon: '\ue785'
+                        command: Factory.DisclaimerPopup().open
 
                     SectionLabel:
                         text: 'Danger zone'
