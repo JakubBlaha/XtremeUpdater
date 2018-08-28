@@ -59,6 +59,7 @@ def new_thread(fn):
 
     return wrapper
 
+
 def silent_exc(fn):
     def wrapper(*args, **kw):
         app = App.get_running_app()
@@ -269,23 +270,19 @@ class OverdrawLabel(FloatLayout):
         Animation(opacity=1, d=.2).start(self)
         if app.conf.animations:
             anim = (
-            Animation(angle=self.__MAX_TILT, d=.3, t='in_out_expo') +
-            Animation(angle=0, d=1, t='out_elastic') +
-            Animation(d=1) +
-            Animation(angle=self.__MAX_TILT * -1, d=.3, t='in_out_expo') +
-            Animation(angle=0, d=1, t='out_elastic') +
-            Animation(d=1)
-            )
+                Animation(angle=self.__MAX_TILT, d=.3, t='in_out_expo') +
+                Animation(angle=0, d=1, t='out_elastic') + Animation(d=2) +
+                Animation(angle=self.__MAX_TILT * -1, d=.3, t='in_out_expo') +
+                Animation(angle=0, d=1, t='out_elastic') + Animation(d=2))
             anim.repeat = True
             anim.start(self)
-
 
     def dismiss(self, *args):
         Animation.stop_all(self)
         anim = Animation(opacity=0, d=.2)
         anim.bind(on_complete=lambda *args: self.widget.remove_widget(self))
         anim.start(self)
-        
+
 
 class GameCollection(ScrollView):
     COMMON_PATHS_URL = 'https://raw.githubusercontent.com/XtremeWare/XtremeUpdater/master/res/CommonPaths.yaml'
@@ -443,11 +440,7 @@ class CustPopup(Popup):
             t='out_expo').start(self)
 
     def on_dismiss(self, *args):
-        Animation(
-            size_hint=[1, 1],
-            opacity=0,
-            d=.1,
-            t='in_expo').start(self)
+        Animation(size_hint=[1, 1], opacity=0, d=.1, t='in_expo').start(self)
 
 
 class GameRemovePopup(CustPopup):
@@ -458,8 +451,10 @@ class GameRemovePopup(CustPopup):
 class ErrorPopup(CustPopup):
     message = StringProperty()
 
-    def on_touch_down(self, *args):
-        self.dismiss()
+
+class RestorePopup(ErrorPopup):
+    restored = ListProperty()
+    not_restored = ListProperty()
 
 
 class ImageCacher:
@@ -536,9 +531,6 @@ class GameButton(Button, HoveringBehavior):
     def remove_from_collection(self):
         self.parent.parent.remove_from_collection(self)
 
-    def quick_update(self):
-        app.root.load_dll_view_data(self.path, quickupdate=True)
-
     def update_image(self):
         query = self.text
         query += ' logo wallpaper'
@@ -580,33 +572,24 @@ class NavigationButton(CustButton):
     def highlight(self):
         self.__active = True
         Animation.stop_all(self)
-        (
-            Animation(
+        (Animation(
             highlight_width=self.width,
             highlight_color=theme.sec,
             color=theme.fg,
             d=.5,
-            t='out_expo') &
-            Animation(
-            highlight_height=self.height,
-            d=.3,
-            t='in_out_quint')
-        ).start(self)
+            t='out_expo') & Animation(
+                highlight_height=self.height, d=.3,
+                t='in_out_quint')).start(self)
 
     def nohighghlight(self):
         self.__active = False
         Animation.stop_all(self)
-        (
-            Animation(
+        (Animation(
             highlight_width=self.width * self.highlight_width_ratio,
             highlight_color=theme.prim,
             d=.1,
-            t='in_expo') &
-            Animation(
-            highlight_height=0,
-            d=.1,
-            t='in_out_quint')
-        ).start(self)
+            t='in_expo') & Animation(
+                highlight_height=0, d=.1, t='in_out_quint')).start(self)
 
     def on_leave(self, *args, **kw):
         if not self.__active and not self.disabled:
@@ -657,31 +640,6 @@ class Content(PageLayout):
             self.parent.ids.navigation.active = page
         except IndexError:
             pass
-
-
-class PlaceHolder(Label):
-    message = StringProperty('Coming soon')
-    icon = StringProperty('\ue946')
-
-
-class SubdirItem(Button, HoveringBehavior):
-    path = StringProperty()
-    highlight_width = NumericProperty()
-    highlight_alpha = NumericProperty()
-
-    def on_hovering(self, *args):
-        if self.hovering:
-            Animation(
-                highlight_width=self.width,
-                highlight_alpha=1,
-                d=.3,
-                t='out_expo').start(self)
-        else:
-            Animation(
-                highlight_width=self.width * .95,
-                highlight_alpha=0,
-                d=.3,
-                t='out_expo').start(self)
 
 
 class DllViewItem(ListItemButton):
@@ -740,16 +698,18 @@ class SyncPopup(Popup, NoiseTexture):
 class LaunchNowButton(CustButton):
     def __init__(self, **kw):
         super().__init__(**kw)
-        Clock.schedule_interval(self.animate, 2)
 
-    def animate(self, *args):
-        (Animation(padding_y=5, d=.2, t='out_expo') + Animation(
-            padding_y=0, d=.2, t='out_bounce')).start(self)
+        anim = (Animation(padding_y=self.padding_y + 5, d=.2, t='out_expo') +
+                Animation(padding_y=self.padding_y, d=.2,
+                          t='out_bounce') + Animation(d=2))
+        anim.repeat = True
+        anim.start(self)
 
     def on_release(self):
         app.root.launch_updated()
 
-        Animation(height=0, d=1, t='out_expo').start(self)
+        (Animation(opacity=0, d=.5, t='out_expo') + Animation(
+            height=0, d=.5, t='out_expo')).start(self)
         Clock.schedule_once(
             lambda *args: app.root.ids.content_updater.remove_widget(self), 1)
 
@@ -868,7 +828,8 @@ class RootLayout(BoxLayout, HoveringBehavior):
     def load_directory(self):
         self.load_dll_view_data(easygui.diropenbox())
 
-    def load_dll_view_data(self, path, quickupdate=False):
+    @new_thread
+    def load_dll_view_data(self, path):
         if not path:
             return
 
@@ -878,6 +839,8 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.launch_path = None
         self.path = path
         self.ids.path_info.text = path
+        self.ids.selective_update_btn.disabled = True
+        self.ids.update_all_btn.disabled = True
 
         if not os.path.isdir(path):
             return
@@ -886,12 +849,16 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.ids.content_updater.remove_widget(self.launch_now_btn)
         except AttributeError:
             pass
+        
+        self.ids.quickupdate_content.overdrawer.dismiss()
+        self.bar.work()
 
-        local_dlls = self.updater.local_dlls(path)
-        available_dlls = set(local_dlls).intersection(
-            self.updater.available_dlls)
+        self.listed_dlls = []
+        for relative_path in self.updater.local_dlls(path):
+            if os.path.basename(relative_path) in self.updater.available_dlls:
+                self.listed_dlls.append(relative_path)
 
-        if not available_dlls:
+        if not self.listed_dlls:
             ErrorPopup(
                 title='No dlls found here!',
                 message=
@@ -899,18 +866,20 @@ class RootLayout(BoxLayout, HoveringBehavior):
             ).open()
 
         else:
-            self.ids.quickupdate_content.overdrawer.dismiss()
-
-            self.listed_dlls = available_dlls
+            self.ids.selective_update_btn.disabled = False
+            self.ids.update_all_btn.disabled = False
 
             if app.conf.show_disclaimer:
                 Factory.DisclaimerPopup().open()
                 app.conf.show_disclaimer = False
-            
-        self.load_subdirs(path)
 
+        self.bar.unwork()
+
+    @new_thread
     def load_selective(self):
-        self.ids.content.page = 7
+        self.bar.work()
+
+        self.ids.content.page = 6
 
         self.ids.dll_view.adapter.data = self.listed_dlls
 
@@ -921,16 +890,6 @@ class RootLayout(BoxLayout, HoveringBehavior):
         else:
             self.ids.dll_view.adapter.invert_selection()
 
-    @new_thread
-    def load_subdirs(self, path):
-        self.bar.work()
-
-        self.ids.subdir_view.data = [{
-            'path': subdir
-        }
-                                     for subdir in self.updater.dll_subdirs(
-                                         path, self.updater.available_dlls)]
-
         self.bar.unwork()
 
     @new_thread
@@ -938,7 +897,9 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.goto_page(0)
         self.ids.invert_selection_button.disabled = True
         OverdrawLabel(
-            widget=self.ids.quickupdate_content, icon='\ue896', text='Updating dlls..')
+            widget=self.ids.quickupdate_content,
+            icon='\ue896',
+            text='Updating dlls..')
 
         if from_selection:
             dlls = [item.text for item in self.ids.dll_view.adapter.selection]
@@ -956,11 +917,15 @@ class RootLayout(BoxLayout, HoveringBehavior):
                 f'Something happened and we are not sure what it was. Please contact our support from the settings.\n\n[color=f55]{format_exc()}[/color]'
             ).open()
             OverdrawLabel(
-                widget=self.ids.quickupdate_content, icon='\uea39', text='Update failed')
+                widget=self.ids.quickupdate_content,
+                icon='\uea39',
+                text='Update failed')
 
         else:
             OverdrawLabel(
-                widget=self.ids.quickupdate_content, icon='\ue930', text='Completed')
+                widget=self.ids.quickupdate_content,
+                icon='\ue930',
+                text='Completed')
 
             if self.launch_path:
                 self.launch_now_btn = LaunchNowButton()
@@ -974,9 +939,9 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
     def restore_callback(self):
         dlls = [item.text for item in self.ids.dll_view.adapter.selection]
-        self.updater.restore_dlls(self.ids.path_info.text, dlls)
+        restored, not_restored = self.updater.restore_dlls(self.path, dlls)
 
-        self.bar.ping()
+        Factory.RestorePopup(restored=restored, not_restored=not_restored).open()
 
     @silent_exc
     def clear_images_cache(self):
@@ -1182,4 +1147,4 @@ if __name__ == '__main__':
     app = XtremeUpdaterApp()
     app.run()
 
-__version__ = '0.5.22'
+__version__ = '0.6.0'

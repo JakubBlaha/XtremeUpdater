@@ -1,7 +1,7 @@
 from kivy.app import App
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
-from shutil import copy
+from shutil import copy, rmtree
 import os
 
 def get_data(url):
@@ -11,14 +11,15 @@ class DllUpdater:
     URL = "https://github.com/XtremeWare/XtremeUpdater/tree/master/dll/"
     RAW_URL = "https://github.com/XtremeWare/XtremeUpdater/raw/master/dll/"
     BACKUP_DIR = ".backup/"
+    CACHE_DIR = '.cache/dlls/'
     available_dlls = []
 
     @staticmethod
     def local_dlls(path):
-        return [
-            item for item in os.listdir(path)
-            if os.path.splitext(item)[1] == '.dll'
-        ]
+        for dirpath, __, filenames in os.walk(path):
+            for f in filenames:
+                if f.endswith('.dll'):
+                    yield dirpath.replace(path, '') + f'\\{f}'
 
     def load_available_dlls(self):
         try:
@@ -34,77 +35,69 @@ class DllUpdater:
         else:
             return True                       
 
-    def _download_dll(self, dllname):
-        _adress = os.path.join(self.RAW_URL, dllname)
+    @classmethod
+    def _download_dll(cls, dllname):
+        os.makedirs(cls.CACHE_DIR, exist_ok=True)
+
+        _adress = cls.RAW_URL + dllname
         _data = get_data(_adress)
+
+        with open(cls.CACHE_DIR + dllname, 'wb') as f:
+            f.write(_data)
 
         return _data
 
-    def _backup_dll(self, path, dll):
-        dst = os.path.realpath(
-            os.path.join(self.BACKUP_DIR,
-                         os.path.splitdrive(path)[1][1:]))
+    @classmethod
+    def _backup_dll(cls, path, dll):
+        dst = cls.BACKUP_DIR + os.path.splitdrive(path)[1] + dll
 
-        if not os.path.exists(dst):
-            os.makedirs(dst)
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
 
-        copy(os.path.join(path, dll), dst)
+        copy(path + dll, dst)
 
-    @staticmethod
-    def _overwrite_dll(path, data):
-        print(path, flush=True)
-        with open(path, 'wb') as f:
-            f.write(data)
+    @classmethod
+    def update_dlls(cls, path, dlls):
+        rmtree(cls.CACHE_DIR)
 
-    def update_dlls(self, path, dlls):
         dll_count = len(dlls)
-
         for index, dll in enumerate(dlls):
-            App.get_running_app().root.bar.set_value(1 / dll_count * index)
-            data = self._download_dll(dll)
+            dll_name = os.path.basename(dll)
+            local_dll_path = path + dll
 
-            local_dll_path = os.path.join(path, dll)
+            try:
+                with open(cls.CACHE_DIR + dll_name, 'rb') as f:
+                    data = f.read()
+            except FileNotFoundError:
+                data = cls._download_dll(dll_name)
+                
             with open(local_dll_path, 'rb') as f:
                 local_dll_data = f.read()
 
-            if data == local_dll_data:
-                continue
+            # if data != local_dll_data:
+            if 1:
+                cls._backup_dll(path, dll)
+                copy(cls.CACHE_DIR + dll_name, path + dll)
 
-            self._backup_dll(path, dll)
-            self._overwrite_dll(local_dll_path, data)
+            App.get_running_app().root.bar.set_value(1 / dll_count * (index + 1))
 
         App.get_running_app().root.bar.ping()
 
-    def restore_dlls(self, path, dlls):
-        dll_num = len(dlls)
-        bck_path = os.path.abspath(
-            os.path.join(self.BACKUP_DIR,
-                         os.path.splitdrive(path)[1][1:]))
-
-        restored = 0
-        for index, dll in enumerate(dlls):
-            i = index + 1
-
-            backed_dll_path = os.path.join(bck_path, dll)
+    def restore_dlls(self, path: str, dlls: list) -> tuple:
+        '''Returns ([restored], [not restored])'''
+        restored = []
+        for dll in dlls:
+            src = os.path.abspath(self.BACKUP_DIR + os.path.splitdrive(path)[1] + dll)
+            dst = os.path.abspath(path + dll)
             try:
-                copy(backed_dll_path, path)
-            except:
-                pass
+                copy(src, dst)
+            except OSError:
+                raise
             else:
-                restored += 1
+                restored.append(dll)
+        
+        return (restored, set(dlls) - set(restored))
 
     def available_restore(self, path):
         bck_path = os.path.abspath(os.path.join(self.BACKUP_DIR, path))
 
         return os.listdir(bck_path)
-
-    @staticmethod
-    def dll_subdirs(path, available_dlls):
-        dll_dirs = []
-        for dirpath, __, filenames in os.walk(path):
-            for f in filenames:
-                if f.endswith('.dll') and f in available_dlls:
-                    dll_dirs.append(dirpath.replace(path, ''))
-                    break
-
-        return dll_dirs[1:]

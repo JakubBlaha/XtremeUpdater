@@ -7,7 +7,7 @@ Welcome to XtremeUpdater repo. This software's task is to improve mainly video g
 Website is located at https://xtremeupdater.com.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
-## v0.5.22 - Not released
+## v0.6.0 - Not released
 *We have changed the default way of updating dlls. Selective update is now secondary feature.*
 
 **Features**
@@ -16,6 +16,7 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
   - Added *Export logs* option to the options.
   - Added *Show license* button to the options.
   - Removed *Quickupdate* button from the *Game Collection* as it is now the default way of updating dlls.
+  - Removed *Subdir view* and features connected with it as *XtremeUpdater* now includes subdirs defaultly.
 
 **Tweaks**
   - *System* tab is now calld *Tweaks*.
@@ -23,6 +24,7 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
   - Added more description to *error popups*.
   - Reworked *popups*.. again.
   - Tweaked animations.
+  - Dll backing is now more reliable.
 
 **Bugfixes**
   - Fixed bug causing sometimes to display empty dll list instead of an error.

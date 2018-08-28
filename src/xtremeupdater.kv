@@ -180,37 +180,6 @@ RootLayout:
         selection_mode='multiple'
         )
 
-<SubdirItem>:
-    text: '...' + self.path
-    background_normal: 'img/FFFFFF-0.png'
-    background_down: 'img/FFFFFF-0.png'
-    text_size: self.size
-    valign: 'center'
-    padding: 40, 0
-    on_release: app.root.load_dll_view_data(app.root.path + self.path)
-    shorten: True
-
-    canvas.before:
-        Color:
-            rgba: theme.prim
-            a: root.highlight_alpha
-        
-        Rectangle:
-            pos: self.pos
-            size: self.highlight_width, self.height
-
-<SubdirView@RecycleView>:
-    bar_color: theme.prim
-
-    viewclass: 'SubdirItem'
-
-    RecycleBoxLayout:
-        default_size: None, 25
-        default_size_hint: 1, None
-        size_hint_y: None
-        height: self.minimum_height
-        orientation: 'vertical'
-
 <DllActionButton@CustButton>:
     size_hint_x: None
     bold: True
@@ -427,6 +396,13 @@ RootLayout:
         Widget:
             size_hint_y: .4
 
+<RestorePopup>:
+    title_color: 1, 1, 1, 1
+    icon: '\ue777'
+
+    title: f'Restored [color={theme.PRIM}]{len(root.restored)}[/color] of [color={theme.PRIM}]{len(root.restored + root.not_restored)}[/color] dlls'
+    message: f'[color=5f5]Restored:[/color]\n{chr(10).join(root.restored)}\n\n[color=f55]Not restored:[/color]\n{chr(10).join(root.not_restored)}'
+
 <AcceptDecliene@BoxLayout>:
     size_hint_y: None
     height: 70
@@ -569,14 +545,14 @@ RootLayout:
     font_size: 24
     markup: True
     size_hint: 1, None
-    height: 60
+    height: 100
     text_size: self.size
     halign: 'center'
     background_color: theme.sec
     background_color_hovering: theme.sec
     underline: True
     color: [i + .2 for i in theme.sec[:-1]] + [1]
-    padding: 0, 10
+    padding_y: 40
 
 <RootLayout>:
     orientation: 'vertical'
@@ -668,11 +644,6 @@ RootLayout:
                     on_release: app.root.setup_updater()
 
                 IconButton:
-                    text: '\ue8a4'
-                    disabled: not subdir_view.data
-                    on_release: root.goto_page(6)
-
-                IconButton:
                     text: '\uf12b'
                     on_release: root.load_directory()
                     disabled: not root.dlls_loaded
@@ -682,9 +653,13 @@ RootLayout:
                 orientation: 'vertical'
 
                 Label:
-                    text: '{} dll updates available'.format(len(root.listed_dlls))
+                    text: '[size=72]{}[/size]\ndll updates are available'.format(len(root.listed_dlls))
                     font_size: 36
                     color: theme.prim
+                    markup: True
+                    text_size: self.size
+                    valign: 'center'
+                    padding_x: 260
 
                 BoxLayout:
                     padding: 0, 40
@@ -695,10 +670,12 @@ RootLayout:
                     Widget:
 
                     BackgroundedButton:
+                        id: selective_update_btn
                         text: 'Selective update'
                         on_release: root.load_selective()
 
                     BackgroundedButton:
+                        id: update_all_btn
                         text: 'Update all'
                         on_release: root.update_callback()
 
@@ -923,10 +900,6 @@ RootLayout:
                             color: .3, 1, .3, 1
                             on_release: root.add_game_callback()
                             disabled: not (game_name_input.text and game_add_form_dir.text and (game_add_form_launch.text or url_input.text))
-
-        ContentLayout:
-            SubdirView:
-                id: subdir_view
 
         ContentLayout:
             BoxLayout:
