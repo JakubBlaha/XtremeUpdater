@@ -842,6 +842,7 @@ RootLayout:
                         id: game_name_input
                         size_hint_y: None
                         height: 40
+                        on_text_validate: root.add_game_callback()
 
                     SectionLabel:
                         text: 'Game dll directory'
@@ -871,6 +872,7 @@ RootLayout:
 
                         CustTextInput:
                             id: url_input
+                            on_text_validate: root.add_game_callback()
                     
                     Label:
                         size_hint_y: None
@@ -881,7 +883,7 @@ RootLayout:
                         padding: 2, 0
 
                     SectionLabel:
-                        text: 'All filled ?'
+                        text: 'All filled in ?'
 
                     BoxLayout:
                         size_hint_y: None

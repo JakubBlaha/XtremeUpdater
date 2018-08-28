@@ -971,11 +971,14 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.ids.game_add_form_launch.text = path
 
     def add_game_callback(self):
-        os.makedirs('.config', exist_ok=True)
-
         game_name = self.ids.game_name_input.text
         game_patch_dir = self.ids.game_add_form_dir.text
         game_launch_path = self.ids.url_input.text
+
+        if not(game_name and game_patch_dir and game_launch_path):
+            return
+
+        os.makedirs('.config', exist_ok=True)
 
         if not game_launch_path:
             game_launch_path = self.ids.game_add_form_launch.text
