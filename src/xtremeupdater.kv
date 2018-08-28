@@ -22,6 +22,11 @@ RootLayout:
     background_disabled_down: self.background_normal
     background_color: 0, 0, 0, 0
 
+<BackgroundedButton@CustButton>:
+    background_color: theme.bg
+    background_color_hovering: theme.dark
+    font_size: 24
+
 <HeaderLabel>:
     text: '[color=ddd]Xtreme[/color]Updater'
     font_name: 'fnt/Roboto-Black.ttf'
@@ -148,7 +153,7 @@ RootLayout:
     height: 25
 
     Label:
-        text: get_version_number(app.root.ids.path_info.text + root.text)
+        text: get_version_number(app.root.path + root.text)
         pos: root.pos
         size: root.size
         text_size: self.size
@@ -182,7 +187,7 @@ RootLayout:
     text_size: self.size
     valign: 'center'
     padding: 40, 0
-    on_release: app.root.load_dll_view_data(app.root.ids.path_info.text + self.path)
+    on_release: app.root.load_dll_view_data(app.root.path + self.path)
     shorten: True
 
     canvas.before:
@@ -260,16 +265,8 @@ RootLayout:
         on_release: root.launch_game()
 
     IconButton:
-        text: '\ue78b'
-        x: root.x + root.width - self.width * 2
-        y: root.y + root.height - self.height
-        size: 40, 40
-        opacity: float(root.hovering)
-        on_release: root.quick_update()
-
-    IconButton:
         text: '\ue74d'
-        x: root.x + root.width - self.width * 3
+        x: root.x + root.width - self.width * 2
         y: root.y + root.height - self.height
         size: 40, 40
         opacity: float(root.hovering and root.custom)
@@ -488,12 +485,9 @@ RootLayout:
 
             Widget
 
-            CustButton:
+            BackgroundedButton:
                 text: 'I understand'
                 on_release: root.dismiss()
-                background_color: theme.bg
-                background_color_hovering: theme.dark
-                font_size: 24
                 size_hint: None, None
                 size: 200, 40
 
@@ -575,13 +569,14 @@ RootLayout:
     font_size: 24
     markup: True
     size_hint: 1, None
-    height: 40
+    height: 60
     text_size: self.size
     halign: 'center'
     background_color: theme.sec
     background_color_hovering: theme.sec
     underline: True
     color: [i + .2 for i in theme.sec[:-1]] + [1]
+    padding: 0, 10
 
 <RootLayout>:
     orientation: 'vertical'
@@ -650,10 +645,18 @@ RootLayout:
 
         ContentLayout:
             id: content_updater
+            noise_color: theme.sec
 
             BoxLayout:
                 size_hint_y: None
                 height: 40
+
+                canvas.before:
+                    Color:
+                        rgb: theme.dark
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
 
                 PathInput:
                     id: path_info
@@ -665,12 +668,6 @@ RootLayout:
                     on_release: app.root.setup_updater()
 
                 IconButton:
-                    id: invert_selection_button
-                    disabled: not dll_view.adapter.data
-                    text: '\ue8b3'
-                    on_release: root.ids.dll_view.adapter.invert_selection()
-
-                IconButton:
                     text: '\ue8a4'
                     disabled: not subdir_view.data
                     on_release: root.goto_page(6)
@@ -679,37 +676,34 @@ RootLayout:
                     text: '\uf12b'
                     on_release: root.load_directory()
                     disabled: not root.dlls_loaded
-
-            DllView:
-                id: dll_view
-
+            
             BoxLayout:
-                size_hint_y: None
-                height: 60
-                padding: 10, 10
+                id: quickupdate_content
+                orientation: 'vertical'
 
-                canvas.before:
-                    Color:
-                        rgba: theme.sec
+                Label:
+                    text: '{} dll updates available'.format(len(root.listed_dlls))
+                    font_size: 36
+                    color: theme.prim
 
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
+                BoxLayout:
+                    padding: 0, 40
+                    spacing: 10
+                    size_hint_y: None
+                    height: 140
 
-                Widget
+                    Widget:
 
-                DllActionButton:
-                    id: restore_button
-                    text: 'Restore'
-                    font_size: 18
-                    on_release: root.restore_callback()
+                    BackgroundedButton:
+                        text: 'Selective update'
+                        on_release: root.load_selective()
 
-                DllActionButton:
-                    id: update_button
-                    text: 'Update'
-                    font_size: 24
-                    on_release: root.update_callback()
+                    BackgroundedButton:
+                        text: 'Update all'
+                        on_release: root.update_callback()
 
+                    Widget:
+                
         ContentLayout:
             id: content_games
 
@@ -933,6 +927,54 @@ RootLayout:
         ContentLayout:
             SubdirView:
                 id: subdir_view
+
+        ContentLayout:
+            BoxLayout:
+                size_hint_y: None
+                height: 40
+
+                Widget:
+
+                IconButton:
+                    id: invert_selection_button
+                    disabled: not dll_view.adapter.data
+                    text: '\ue8b3'
+                    on_release: root.ids.dll_view.adapter.invert_selection()
+
+            DllView:
+                id: dll_view
+
+            BoxLayout:
+                size_hint_y: None
+                height: 60
+                padding: 10, 10
+                spacing: 10
+
+                canvas.before:
+                    Color:
+                        rgba: theme.sec
+
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+
+                Widget
+
+                BackgroundedButton:
+                    id: restore_button
+                    font_size: 18
+                    text: 'Restore'
+                    size_hint_x: .5
+                    disabled: not dll_view.adapter.selection
+                    on_release: root.restore_callback()
+
+                BackgroundedButton:
+                    id: update_button
+                    text: 'Update'
+                    size_hint_x: .5
+                    disabled: not dll_view.adapter.selection
+                    on_release: root.update_callback(from_selection=True)
+
 
     BoxLayout:
         size_hint_y: None

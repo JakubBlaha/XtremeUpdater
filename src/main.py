@@ -707,9 +707,6 @@ class DllViewAdapter(ListAdapter):
         self.data.sort()
         self.bind(data=self.on_data)
 
-    def on_selection_change(self, *args):
-        App.get_running_app().root.set_dll_buttons_state(self.selection)
-
     def get_views(self) -> list:
         return [self.get_view(index) for index, __ in enumerate(self.data)]
 
@@ -805,6 +802,8 @@ class WorkingBar(Widget):
 class RootLayout(BoxLayout, HoveringBehavior):
     mouse_highlight_pos = ListProperty([-120, -120])
     dlls_loaded = BooleanProperty(False)
+    listed_dlls = ListProperty()
+    path = StringProperty()
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -830,14 +829,14 @@ class RootLayout(BoxLayout, HoveringBehavior):
         if self.dlls_loaded:
             self.ids.refresh_button.disabled = True
             OverdrawLabel(
-                widget=self.ids.dll_view,
+                widget=self.ids.quickupdate_content,
                 icon='\uf12b',
                 text='Select a directory')
 
         else:
             self.ids.refresh_button.disabled = False
             OverdrawLabel(
-                widget=self.ids.dll_view,
+                widget=self.ids.quickupdate_content,
                 icon='\uea6a',
                 text='Error when syncing')
 
@@ -865,23 +864,19 @@ class RootLayout(BoxLayout, HoveringBehavior):
         app.conf.animations = value
         self.ids.content.anim_kwargs['d'] = .5 * value
 
-    def set_dll_buttons_state(self, enabled):
-        self.ids.restore_button.disabled = not enabled
-        self.ids.update_button.disabled = not enabled
-
     @new_thread
     def load_directory(self):
         self.load_dll_view_data(easygui.diropenbox())
 
     def load_dll_view_data(self, path, quickupdate=False):
-        self.launch_path = None
-        self.goto_page(0)
-
         if not path:
             return
 
         path = os.path.abspath(path)
 
+        self.goto_page(0)
+        self.launch_path = None
+        self.path = path
         self.ids.path_info.text = path
 
         if not os.path.isdir(path):
@@ -891,9 +886,6 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.ids.content_updater.remove_widget(self.launch_now_btn)
         except AttributeError:
             pass
-
-        self.set_dll_buttons_state(False)
-        self.ids.invert_selection_button.disabled = True
 
         local_dlls = self.updater.local_dlls(path)
         available_dlls = set(local_dlls).intersection(
@@ -907,23 +899,27 @@ class RootLayout(BoxLayout, HoveringBehavior):
             ).open()
 
         else:
-            self.ids.dll_view.overdrawer.dismiss()
+            self.ids.quickupdate_content.overdrawer.dismiss()
 
-            self.ids.dll_view.adapter.data = available_dlls
-            last_selected = ConfLastDlls.get_list(path)
-            if last_selected:
-                self.ids.dll_view.adapter.select_by_text(last_selected)
-            else:
-                self.ids.dll_view.adapter.invert_selection()
-
-            if quickupdate:
-                Clock.schedule_once(lambda *args: self.update_callback())
+            self.listed_dlls = available_dlls
 
             if app.conf.show_disclaimer:
                 Factory.DisclaimerPopup().open()
                 app.conf.show_disclaimer = False
-
+            
         self.load_subdirs(path)
+
+    def load_selective(self):
+        self.ids.content.page = 7
+
+        self.ids.dll_view.adapter.data = self.listed_dlls
+
+        last_selected = ConfLastDlls.get_list(self.path)
+
+        if last_selected:
+            self.ids.dll_view.adapter.select_by_text(last_selected)
+        else:
+            self.ids.dll_view.adapter.invert_selection()
 
     @new_thread
     def load_subdirs(self, path):
@@ -938,35 +934,38 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.bar.unwork()
 
     @new_thread
-    def update_callback(self):
-        self.set_dll_buttons_state(False)
+    def update_callback(self, from_selection=False):
+        self.goto_page(0)
         self.ids.invert_selection_button.disabled = True
         OverdrawLabel(
-            widget=self.ids.dll_view, icon='\ue896', text='Updating dlls..')
+            widget=self.ids.quickupdate_content, icon='\ue896', text='Updating dlls..')
 
-        dlls = [item.text for item in self.ids.dll_view.adapter.selection]
-        ConfLastDlls.set_list(self.ids.path_info.text, dlls)
+        if from_selection:
+            dlls = [item.text for item in self.ids.dll_view.adapter.selection]
+            ConfLastDlls.set_list(self.path, dlls)
+        else:
+            dlls = self.listed_dlls
 
         try:
-            self.updater.update_dlls(self.ids.path_info.text, dlls)
+            self.updater.update_dlls(self.path, dlls)
 
         except Exception:
             ErrorPopup(
                 title='Failed to update dlls!',
                 message=
-                f'Something happened and we are not sure what it is. Please contact our support from the settings.\n\n[color=f55]{format_exc()}[/color]'
+                f'Something happened and we are not sure what it was. Please contact our support from the settings.\n\n[color=f55]{format_exc()}[/color]'
             ).open()
             OverdrawLabel(
-                widget=self.ids.dll_view, icon='\uea39', text='Update failed')
+                widget=self.ids.quickupdate_content, icon='\uea39', text='Update failed')
 
         else:
             OverdrawLabel(
-                widget=self.ids.dll_view, icon='\ue930', text='Completed')
+                widget=self.ids.quickupdate_content, icon='\ue930', text='Completed')
 
             if self.launch_path:
                 self.launch_now_btn = LaunchNowButton()
                 self.ids.content_updater.add_widget(
-                    self.launch_now_btn, index=1)
+                    self.launch_now_btn, index=0)
 
         self.ids.dll_view.adapter.data = []
 
@@ -1109,6 +1108,8 @@ class ConfLastDlls:
 
     @classmethod
     def set_list(cls, path: str, dlls: list):
+        path = os.path.abspath(path)
+
         store = cls.__lasts()
         store[path] = dlls
 
@@ -1117,9 +1118,11 @@ class ConfLastDlls:
 
     @classmethod
     def get_list(cls, path):
+        path = os.path.abspath(path)
+
         try:
             return cls.__lasts()[path]
-        except KeyError:
+        except IndexError:
             return False
 
 

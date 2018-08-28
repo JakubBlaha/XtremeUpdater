@@ -52,6 +52,7 @@ class DllUpdater:
 
     @staticmethod
     def _overwrite_dll(path, data):
+        print(path, flush=True)
         with open(path, 'wb') as f:
             f.write(data)
 

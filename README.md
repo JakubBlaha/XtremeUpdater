@@ -7,12 +7,15 @@ Welcome to XtremeUpdater repo. This software's task is to improve mainly video g
 Website is located at https://xtremeupdater.com.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
-##v0.5.22 - Not released
+## v0.5.22 - Not released
+*We have changed the default way of updating dlls. Selective update is now secondary feature.*
+
 **Features**
   - Added *tweak* to clear *FTH*.
   - *XtremeUpdater* now remembers which dlls you updated the last time.
   - Added *Export logs* option to the options.
   - Added *Show license* button to the options.
+  - Removed *Quickupdate* button from the *Game Collection* as it is now the default way of updating dlls.
 
 **Tweaks**
   - *System* tab is now calld *Tweaks*.
