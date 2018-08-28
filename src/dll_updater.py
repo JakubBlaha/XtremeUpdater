@@ -73,8 +73,7 @@ class DllUpdater:
             with open(local_dll_path, 'rb') as f:
                 local_dll_data = f.read()
 
-            # if data != local_dll_data:
-            if 1:
+            if data != local_dll_data:
                 cls._backup_dll(path, dll)
                 copy(cls.CACHE_DIR + dll_name, path + dll)
 
