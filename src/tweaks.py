@@ -1,12 +1,12 @@
 import os
 import shutil
 import platform
-from tempfile import gettempdir
-from hurry.filesize import size
 from kivy.app import App
+from kivy.factory import Factory
+from tempfile import gettempdir
+from humanize import naturalsize
 from winreg import *
 from main import IS_ADMIN, silent_exc
-
 
 APP = App.get_running_app()
 
@@ -15,13 +15,14 @@ if platform.architecture()[0] == '32bit':
 else:
     VIEW_FLAG = KEY_WOW64_32KEY
 
+
 def get_size(path):
     total_size = 0
     for dirpath, dirnames, filenames in os.walk(path):
         for f in filenames:
             path = os.path.join(dirpath, f)
             total_size += os.path.getsize(path)
-    
+
     return total_size
 
 
@@ -34,10 +35,14 @@ class Tweaks:
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
         finish_size = get_size(tmp_dir)
-        final_size_str = size(init_size - finish_size)
-        final_size_str += '' if final_size_str.endswith('B') else 'B'
+        freed_size = init_size - finish_size
 
         APP.root.bar.ping()
+        Factory.Notification(
+            title_=f'Freed up [color=5f5]{naturalsize(freed_size)}[/color]',
+            message=
+            f'Before: {naturalsize(init_size)}    After: {naturalsize(finish_size)}'
+        ).open()
 
     @staticmethod
     def is_dvr():
@@ -47,7 +52,8 @@ class Tweaks:
         key = OpenKeyEx(HKEY_CURRENT_USER, r'System\GameConfigStore')
         GameDVR_enabled = QueryValueEx(key, 'GameDVR_enabled')[0]
 
-        key = OpenKeyEx(HKEY_LOCAL_MACHINE, r'SOFTWARE\Policies\Microsoft\Windows\GameDVR')
+        key = OpenKeyEx(HKEY_LOCAL_MACHINE,
+                        r'SOFTWARE\Policies\Microsoft\Windows\GameDVR')
         try:
             AllowGameDVR = QueryValueEx(key, 'AllowGameDVR')[0]
 
@@ -59,16 +65,22 @@ class Tweaks:
     @staticmethod
     @silent_exc
     def switch_dvr(_, enabled):
-        key = OpenKeyEx(HKEY_CURRENT_USER, r'System\GameConfigStore', 0, KEY_SET_VALUE)
+        key = OpenKeyEx(HKEY_CURRENT_USER, r'System\GameConfigStore', 0,
+                        KEY_SET_VALUE)
         SetValueEx(key, 'GameDVR_enabled', None, REG_DWORD, enabled)
 
-        key = OpenKeyEx(HKEY_LOCAL_MACHINE, r'SOFTWARE\Policies\Microsoft\Windows\GameDVR', 0, KEY_SET_VALUE)
+        key = OpenKeyEx(HKEY_LOCAL_MACHINE,
+                        r'SOFTWARE\Policies\Microsoft\Windows\GameDVR', 0,
+                        KEY_SET_VALUE)
         SetValueEx(key, 'AllowGameDVR', None, REG_DWORD, enabled)
 
     @staticmethod
     def fth_value():
         try:
-            key = OpenKey(HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\FTH\State', access=KEY_READ | VIEW_FLAG)
+            key = OpenKey(
+                HKEY_LOCAL_MACHINE,
+                r'SOFTWARE\Microsoft\FTH\State',
+                access=KEY_READ | VIEW_FLAG)
         except OSError:
             return False
 
@@ -84,7 +96,10 @@ class Tweaks:
     def clear_fth():
         APP.root.ids.clear_fth_btn.disabled = True
 
-        key = OpenKey(HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\FTH\State', access=KEY_WRITE | KEY_READ | VIEW_FLAG)
+        key = OpenKey(
+            HKEY_LOCAL_MACHINE,
+            r'SOFTWARE\Microsoft\FTH\State',
+            access=KEY_WRITE | KEY_READ | VIEW_FLAG)
         while True:
             try:
                 name = EnumValue(key, 0)[0]
@@ -96,7 +111,10 @@ class Tweaks:
     @staticmethod
     def is_fth():
         try:
-            key = OpenKey(HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\FTH', access=KEY_READ | VIEW_FLAG)
+            key = OpenKey(
+                HKEY_LOCAL_MACHINE,
+                r'SOFTWARE\Microsoft\FTH',
+                access=KEY_READ | VIEW_FLAG)
         except Exception:
             return False
         else:
@@ -105,5 +123,8 @@ class Tweaks:
     @staticmethod
     @silent_exc
     def switch_fth(__, enabled):
-        key = OpenKey(HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\FTH', access=KEY_WRITE | VIEW_FLAG)
+        key = OpenKey(
+            HKEY_LOCAL_MACHINE,
+            r'SOFTWARE\Microsoft\FTH',
+            access=KEY_WRITE | VIEW_FLAG)
         SetValueEx(key, 'Enabled', None, REG_DWORD, enabled)

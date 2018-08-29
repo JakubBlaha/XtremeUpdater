@@ -777,11 +777,12 @@ class Notification(Popup):
 
         self.children[0].children[2].markup = True
 
-        (
-            Animation(opacity=0, d=0) +
-            Animation(_decor_size=[self._decor_size[0], 0], d=0) +
-            Animation(opacity=self.opacity, _bg_offset=0, _decor_size=self._decor_size, d=.5, t='out_expo')
-        ).start(self)
+        (Animation(_decor_size=[self._decor_size[0], 0], d=0) + Animation(
+            opacity=1,
+            _bg_offset=0,
+            _decor_size=self._decor_size,
+            d=.5,
+            t='out_expo')).start(self)
 
         Clock.schedule_once(self.dismiss, 3)
 
@@ -789,9 +790,12 @@ class Notification(Popup):
         pass
 
     def dismiss(self, *args):
-        anim = Animation(opacity=0, _bg_offset=200, _decor_size=[0, 0], d=.5, t='out_expo')
-        anim.bind(on_complete=lambda *args: super(Notification, self).dismiss())
+        anim = Animation(
+            opacity=0, _bg_offset=200, _decor_size=[0, 0], d=.5, t='out_expo')
+        anim.bind(
+            on_complete=lambda *args: super(Notification, self).dismiss())
         anim.start(self)
+
 
 class IsAdminNotif(Notification):
     title_template = '{} as admin'
@@ -800,8 +804,12 @@ class IsAdminNotif(Notification):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        self.title_ = self.title_template.format('[color=5f5]Running[/color]' if IS_ADMIN else '[color=f55]Not running[/color]')
-        self.message = self.message_template.format('[color=5f5]All[/color]' if IS_ADMIN else '[color=f55]Only some[/color]')
+        self.title_ = self.title_template.format(
+            '[color=5f5]Running[/color]'
+            if IS_ADMIN else '[color=f55]Not running[/color]')
+        self.message = self.message_template.format(
+            '[color=5f5]All[/color]'
+            if IS_ADMIN else '[color=f55]Only some[/color]')
 
 
 class RootLayout(BoxLayout, HoveringBehavior):
@@ -894,7 +902,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.ids.content_updater.remove_widget(self.launch_now_btn)
         except AttributeError:
             pass
-        
+
         self.ids.quickupdate_content.overdrawer.dismiss()
         self.bar.work()
 
@@ -986,7 +994,8 @@ class RootLayout(BoxLayout, HoveringBehavior):
         dlls = [item.text for item in self.ids.dll_view.adapter.selection]
         restored, not_restored = self.updater.restore_dlls(self.path, dlls)
 
-        Factory.RestorePopup(restored=restored, not_restored=not_restored).open()
+        Factory.RestorePopup(
+            restored=restored, not_restored=not_restored).open()
 
     @silent_exc
     def clear_images_cache(self):
@@ -1020,7 +1029,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         game_patch_dir = self.ids.game_add_form_dir.text
         game_launch_path = self.ids.url_input.text
 
-        if not(game_name and game_patch_dir and game_launch_path):
+        if not (game_name and game_patch_dir and game_launch_path):
             return
 
         os.makedirs('.config', exist_ok=True)
