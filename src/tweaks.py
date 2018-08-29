@@ -70,14 +70,40 @@ class Tweaks:
         try:
             key = OpenKey(HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\FTH\State', access=KEY_READ | VIEW_FLAG)
         except OSError:
-            return ''
-        else:
-            return QueryValue(key, None)
+            return False
 
-    @classmethod
+        try:
+            EnumValue(key, 0)
+        except OSError:
+            return False
+        else:
+            return True
+
+    @staticmethod
     @silent_exc
-    def clear_fth(cls):
+    def clear_fth():
         APP.root.ids.clear_fth_btn.disabled = True
 
-        key = OpenKey(HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\FTH\State', access=KEY_WRITE | VIEW_FLAG)
-        DeleteValue(key, None)
+        key = OpenKey(HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\FTH\State', access=KEY_WRITE | KEY_READ | VIEW_FLAG)
+        while True:
+            try:
+                name = EnumValue(key, 0)[0]
+            except OSError:
+                break
+            else:
+                DeleteValue(key, name)
+
+    @staticmethod
+    def is_fth():
+        try:
+            key = OpenKey(HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\FTH', access=KEY_READ | VIEW_FLAG)
+        except Exception:
+            return False
+        else:
+            return QueryValueEx(key, 'Enabled')[0]
+
+    @staticmethod
+    @silent_exc
+    def switch_fth(__, enabled):
+        key = OpenKey(HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\FTH', access=KEY_WRITE | VIEW_FLAG)
+        SetValueEx(key, 'Enabled', None, REG_DWORD, enabled)

@@ -296,6 +296,11 @@ RootLayout:
         Line:
             points: root.x, root.y, root.x + root.width, root.y
 
+<SectionBox@BoxLayout>:
+    spacing: 10
+    size_hint_y: None
+    height: self.minimum_height
+
 <CustTextInput@TextInput>:
     size_hint_x: None
     width: 340
@@ -704,13 +709,21 @@ RootLayout:
             ScrollView:
                 BoxLayout:
                     orientation: 'vertical'
-                    padding: 10
+                    padding: 10, 40
                     spacing: 10
+                    size_hint_y: None
+                    height: self.minimum_height
+
+                    SectionLabel:
+                        text: 'Temp files'
 
                     LabelIconButton:
                         text: "Clear user's temp folder"
                         icon: '\ue74d'
                         command: Tweaks.clear_temps
+
+                    SectionLabel:
+                        text: 'Xbox GameDVR'
 
                     LabelSwitch:
                         text: 'Allow GameDVR'
@@ -718,16 +731,22 @@ RootLayout:
                         active: Tweaks.is_dvr()
                         disabled: not main.IS_ADMIN or platform.release() != '10'
 
-                    LabelIconButton:
-                        id: clear_fth_btn
-                        text: 'Clear FTH'
-                        icon: '\ue74c'
-                        disabled: not (Tweaks.fth_value() and main.IS_ADMIN)
-                        command: Tweaks.clear_fth
+                    SectionLabel:
+                        text: 'Fault Tolerant Heap'
                     
-                    Widget:
-                        size_hint_y: None
-                        height: 300
+                    SectionBox:
+                        LabelSwitch:
+                            text: 'Enable FTH'
+                            active_callback: Tweaks.switch_fth
+                            active: Tweaks.is_fth()
+                            disabled: not main.IS_ADMIN
+
+                        LabelIconButton:
+                            id: clear_fth_btn
+                            text: 'Clear FTH'
+                            icon: '\ue74c'
+                            disabled: not (Tweaks.fth_value() and main.IS_ADMIN)
+                            command: Tweaks.clear_fth
 
         ContentLayout:
             id: content_favorite
