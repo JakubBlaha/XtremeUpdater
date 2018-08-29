@@ -57,7 +57,7 @@ class DllUpdater:
 
     @classmethod
     def update_dlls(cls, path, dlls):
-        rmtree(cls.CACHE_DIR)
+        rmtree(cls.CACHE_DIR, ignore_errors=True)
 
         dll_count = len(dlls)
         for index, dll in enumerate(dlls):
