@@ -785,6 +785,9 @@ class Notification(Popup):
 
         Clock.schedule_once(self.dismiss, 3)
 
+    def on_touch_down(self, *args):
+        pass
+
     def dismiss(self, *args):
         anim = Animation(opacity=0, _bg_offset=200, _decor_size=[0, 0], d=.5, t='out_expo')
         anim.bind(on_complete=lambda *args: super(Notification, self).dismiss())
