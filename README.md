@@ -11,7 +11,8 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
 *We have changed the default way of updating dlls. Selective update is now secondary feature.*
 
 **Features**
-  - Added *tweak* to clear *FTH*.
+  - Added a *tweak* to clear *FTH*.
+  - Added a *tweak* to disable *FTH*.
   - *XtremeUpdater* now remembers which dlls you updated the last time.
   - Added *Export logs* option to the options.
   - Added *Show license* button to the options.
