@@ -27,6 +27,7 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
   - Tweaked animations.
   - Dll backing is now more reliable.
   - You can now proceed custom game adding with the *Enter* key in the *Game Collection*.
+  - Added *Is running as admin* notification when entering the *Tweaks* tab.
 
 **Bugfixes**
   - Fixed bug causing sometimes to display empty dll list instead of an error.

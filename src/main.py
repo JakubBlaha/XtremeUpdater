@@ -635,10 +635,17 @@ class Navigation(BoxLayout, NoiseTexture):
 
 
 class Content(PageLayout):
+    commands = DictProperty()
+
     def on_page(self, _, page):
         try:
             self.parent.ids.navigation.active = page
         except IndexError:
+            pass
+
+        try:
+            self.commands[page]()
+        except KeyError:
             pass
 
 
@@ -757,6 +764,41 @@ class WorkingBar(Widget):
         self.unwork()
         Animation.stop_all(self)
         Animation(_x1=0, _x2=value, d=.5, t='out_expo').start(self)
+
+
+class Notification(Popup):
+    title_ = StringProperty('Notification')
+    message = StringProperty('Example message')
+    _decor_size = ListProperty([6, 20])
+    _bg_offset = NumericProperty(-200)
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+        self.children[0].children[2].markup = True
+
+        (
+            Animation(opacity=0, d=0) +
+            Animation(_decor_size=[self._decor_size[0], 0], d=0) +
+            Animation(opacity=self.opacity, _bg_offset=0, _decor_size=self._decor_size, d=.5, t='out_expo')
+        ).start(self)
+
+        Clock.schedule_once(self.dismiss, 3)
+
+    def dismiss(self, *args):
+        anim = Animation(opacity=0, _bg_offset=200, _decor_size=[0, 0], d=.5, t='out_expo')
+        anim.bind(on_complete=lambda *args: super(Notification, self).dismiss())
+        anim.start(self)
+
+class IsAdminNotif(Notification):
+    title_template = '{} as admin'
+    message_template = '{} tweaks are available.'
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+        self.title_ = self.title_template.format('[color=5f5]Running[/color]' if IS_ADMIN else '[color=f55]Not running[/color]')
+        self.message = self.message_template.format('[color=5f5]All[/color]' if IS_ADMIN else '[color=f55]Only some[/color]')
 
 
 class RootLayout(BoxLayout, HoveringBehavior):

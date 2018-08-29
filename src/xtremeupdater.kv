@@ -464,7 +464,7 @@ RootLayout:
         BoxLayout:
             padding: 10
 
-            Widget
+            Widget:
 
             BackgroundedButton:
                 text: 'I understand'
@@ -472,7 +472,37 @@ RootLayout:
                 size_hint: None, None
                 size: 200, 40
 
-            Widget
+            Widget:
+
+<Notification>:
+    title: '   ' + self.title_
+    title_size: 22
+    title_color: theme.prim
+    title_padding: 10, 0
+    separator_height: 0
+    size_hint: .3, .2
+    pos_hint: {'top': .85, 'right': .99}
+    background: 'img/FFFFFF-0.png'
+    background_color: 0, 0, 0, 0
+
+    canvas.before:
+        Color:
+            rgba: theme.bg
+        Rectangle:
+            pos: self.pos[0] + self._bg_offset, self.pos[1]
+            size: self.size
+        Color:
+            rgba: theme.prim
+        Rectangle:
+            pos: self.x + 20, self.y + self.height - 44
+            size: self._decor_size
+
+    Label:
+        text: root.message
+        text_size: self.size
+        valign: 'top'
+        padding: 8, 0
+        markup: True
 
 <CustSwitch>:
     size_hint: None, None
@@ -623,6 +653,7 @@ RootLayout:
     Content:
         id: content
         anim_kwargs: {'t': 'out_expo', 'd': .5 * app.conf.animations}
+        commands: {2: lambda: Factory.IsAdminNotif().open()}
 
         ContentLayout:
             id: content_updater
@@ -715,7 +746,7 @@ RootLayout:
                     height: self.minimum_height
 
                     SectionLabel:
-                        text: 'Temp files'
+                        text: 'Temporary files'
 
                     LabelIconButton:
                         text: "Clear user's temp folder"
