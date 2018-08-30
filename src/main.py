@@ -191,8 +191,8 @@ class CustButton(Button, HoveringBehavior):
     def on_leave(self, force=False):
         if not self.disabled or force:
             Animation(
-                color=self.orig_color,
-                background_color=self.orig_background_color,
+                color=getattr(self, 'orig_color', self.color),
+                background_color=getattr(self, 'orig_background_color', self.background_color),
                 d=.1).start(self)
 
     def on_disabled(self, *args):
@@ -203,6 +203,8 @@ class CustButton(Button, HoveringBehavior):
 
         else:
             Animation(opacity=1, d=.1).start(self)
+            if self.hovering:
+                self.on_enter()
 
 
 class LabelIconButton(BoxLayout):
@@ -942,9 +944,10 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
     @new_thread
     def load_selective(self):
-        self.bar.work()
-
         self.ids.content.page = 6
+
+        if self.ids.dll_view.adapter.data == self.listed_dlls.sort():
+            return
 
         self.ids.dll_view.adapter.data = self.listed_dlls
 
@@ -952,10 +955,10 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
         if last_selected:
             self.ids.dll_view.adapter.select_by_text(last_selected)
-        else:
+        elif not self.ids.dll_view.adapter.selection:
             self.ids.dll_view.adapter.invert_selection()
 
-        self.bar.unwork()
+        self.bar.ping()
 
     @new_thread
     def update_callback(self, from_selection=False):
@@ -1163,7 +1166,7 @@ class ConfLastDlls:
 
         try:
             return cls.__lasts()[path]
-        except IndexError:
+        except KeyError:
             return False
 
 
