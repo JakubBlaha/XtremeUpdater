@@ -692,7 +692,7 @@ RootLayout:
                 orientation: 'vertical'
 
                 Label:
-                    text: '[size=72]{}[/size]\ndll updates are available'.format(len(root.listed_dlls))
+                    text: '[size=72]{}[/size]\ndll {} available'.format(len(root.listed_dlls), 'update is' if len(root.listed_dlls) == 1 else 'updates are')
                     font_size: 36
                     color: theme.prim
                     markup: True
