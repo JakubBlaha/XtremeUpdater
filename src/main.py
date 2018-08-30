@@ -74,6 +74,18 @@ def silent_exc(fn):
     return wrapper
 
 
+def notify_restart(fn):
+    def wrapper(*args, **kw):
+        fn(*args, **kw)
+        Factory.Notification(
+            title_='Restart system',
+            message=
+            f'This [color={theme.PRIM}]tweak[/color] may not work until the system is [color={theme.PRIM}]restarted[/color].'
+        ).open()
+
+    return wrapper
+
+
 class Animation(Animation):
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -1098,6 +1110,13 @@ class RootLayout(BoxLayout, HoveringBehavior):
         SOURCE = os.path.expanduser('~\\.kivy\\logs')
 
         shutil.make_archive(OUTPUT, 'zip', SOURCE)
+
+        Notification(
+            title_='Logs exported',
+            message=
+            f'[color={theme.PRIM}]Logs[/color] were exported to [color={theme.PRIM}]{OUTPUT}[/color]',
+            height=160
+        ).open()
 
 
 class ConfLastDlls:

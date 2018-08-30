@@ -480,7 +480,8 @@ RootLayout:
     title_color: theme.prim
     title_padding: 10, 0
     separator_height: 0
-    size_hint: .3, .2
+    size_hint: .3, None
+    height: 120
     pos_hint: {'top': .85, 'right': .99}
     background: 'img/FFFFFF-0.png'
     background_color: 0, 0, 0, 0
@@ -491,7 +492,7 @@ RootLayout:
             rgba: theme.bg
         Rectangle:
             pos: self.pos[0] + self._bg_offset, self.pos[1]
-            size: self.size
+            size: self.width, self.height
         Color:
             rgba: theme.prim
         Rectangle:
@@ -499,6 +500,7 @@ RootLayout:
             size: self._decor_size
 
     Label:
+        id: label
         text: root.message
         text_size: self.size
         valign: 'top'

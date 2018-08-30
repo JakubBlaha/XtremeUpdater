@@ -6,7 +6,7 @@ from kivy.factory import Factory
 from tempfile import gettempdir
 from humanize import naturalsize
 from winreg import *
-from main import IS_ADMIN, silent_exc
+from main import IS_ADMIN, silent_exc, notify_restart
 
 APP = App.get_running_app()
 
@@ -64,6 +64,7 @@ class Tweaks:
 
     @staticmethod
     @silent_exc
+    @notify_restart
     def switch_dvr(_, enabled):
         key = OpenKeyEx(HKEY_CURRENT_USER, r'System\GameConfigStore', 0,
                         KEY_SET_VALUE)
@@ -93,6 +94,7 @@ class Tweaks:
 
     @staticmethod
     @silent_exc
+    @notify_restart
     def clear_fth():
         APP.root.ids.clear_fth_btn.disabled = True
 
@@ -122,6 +124,7 @@ class Tweaks:
 
     @staticmethod
     @silent_exc
+    @notify_restart
     def switch_fth(__, enabled):
         key = OpenKey(
             HKEY_LOCAL_MACHINE,
