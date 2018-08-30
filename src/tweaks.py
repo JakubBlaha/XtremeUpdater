@@ -10,7 +10,7 @@ from main import IS_ADMIN, silent_exc
 
 APP = App.get_running_app()
 
-if platform.architecture()[0] == '32bit':
+if platform.machine().endswith('64'):
     VIEW_FLAG = KEY_WOW64_64KEY
 else:
     VIEW_FLAG = KEY_WOW64_32KEY
