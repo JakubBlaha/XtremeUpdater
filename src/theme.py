@@ -24,7 +24,7 @@ except FileNotFoundError:
 else:
     NAME = conf.get('theme', 'default')
 
-with open('theme.yaml') as f:
+with open('theme/theme.yaml') as f:
     themes = safe_load(f)
 
 VALUES = themes.get(NAME, None)
