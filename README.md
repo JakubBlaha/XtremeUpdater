@@ -7,7 +7,7 @@ Welcome to XtremeUpdater repo. This software's task is to improve mainly video g
 Website is located at https://xtremeupdater.com.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 
-## v0.6.0 - Not released
+## v0.6.0
 *We have changed the default way of updating dlls. Selective update is now secondary feature.*
 
 **Features**
