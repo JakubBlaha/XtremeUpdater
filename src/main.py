@@ -942,11 +942,10 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
         self.bar.unwork()
 
-    @new_thread
     def load_selective(self):
         self.ids.content.page = 6
 
-        if self.ids.dll_view.adapter.data == self.listed_dlls.sort():
+        if self.ids.dll_view.adapter.data == sorted(self.listed_dlls):
             return
 
         self.ids.dll_view.adapter.data = self.listed_dlls
@@ -974,6 +973,8 @@ class RootLayout(BoxLayout, HoveringBehavior):
             ConfLastDlls.set_list(self.path, dlls)
         else:
             dlls = self.listed_dlls
+
+        Notification(title_=f'Updating {len(dlls)} dlls', message=f'This can take a [color={theme.PRIM}]while[/color] depending on your [color={theme.PRIM}]internet speed[/color].').open()
 
         try:
             self.updater.update_dlls(self.path, dlls)
