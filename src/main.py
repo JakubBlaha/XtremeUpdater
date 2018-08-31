@@ -20,6 +20,7 @@ Config.set('graphics', 'resizable', 0)
 Config.set('input', 'mouse', 'mouse, disable_multitouch')
 Config.set('kivy', 'window_icon', 'img/icon.ico')
 Config.set('graphics', 'multisamples', 0)
+Config.set('graphics', 'maxfps', 60)
 
 from kivy.app import App
 from kivy.factory import Factory

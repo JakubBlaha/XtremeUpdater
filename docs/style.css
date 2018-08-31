@@ -119,6 +119,7 @@ main p.main-text {
 .profile-images-div {
     margin: auto;
     width: max-content;
+    width: -moz-max-content;
 }
 
 .about-profile-img {
