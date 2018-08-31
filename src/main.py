@@ -192,7 +192,8 @@ class CustButton(Button, HoveringBehavior):
         if not self.disabled or force:
             Animation(
                 color=getattr(self, 'orig_color', self.color),
-                background_color=getattr(self, 'orig_background_color', self.background_color),
+                background_color=getattr(self, 'orig_background_color',
+                                         self.background_color),
                 d=.1).start(self)
 
     def on_disabled(self, *args):
@@ -974,7 +975,11 @@ class RootLayout(BoxLayout, HoveringBehavior):
         else:
             dlls = self.listed_dlls
 
-        Notification(title_=f'Updating {len(dlls)} dlls', message=f'This can take a [color={theme.PRIM}]while[/color] depending on your [color={theme.PRIM}]internet speed[/color].').open()
+        Notification(
+            title_=f'Updating {len(dlls)} dlls',
+            message=
+            f'This can take a [color={theme.PRIM}]while[/color] depending on your [color={theme.PRIM}]internet speed[/color].'
+        ).open()
 
         try:
             self.updater.update_dlls(self.path, dlls)
@@ -1043,7 +1048,9 @@ class RootLayout(BoxLayout, HoveringBehavior):
     def add_game_callback(self):
         game_name = self.ids.game_name_input.text
         game_patch_dir = self.ids.game_add_form_dir.text
-        game_launch_path = self.ids.url_input.text
+        game_launch_path = (self.ids.game_add_form_launch.text
+                            if self.ids.game_add_form_launch.text else
+                            self.ids.url_input.text)
 
         if not (game_name and game_patch_dir and game_launch_path):
             return
@@ -1119,8 +1126,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
             title_='Logs exported',
             message=
             f'[color={theme.PRIM}]Logs[/color] were exported to [color={theme.PRIM}]{OUTPUT}[/color]',
-            height=160
-        ).open()
+            height=160).open()
 
 
 class ConfLastDlls:

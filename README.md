@@ -34,6 +34,7 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
   - Fixed bug causing flickering of background of some buttons.
   - Fixed bug causing buttons to not have on-hovering colors after recovering from *disabled* state.
   - Fixed potencial compatibility issues.
+  - Fixed bug causing *Launchable file* entry to be not functional.
 
 ## v0.5.20
 **Tweaks**
