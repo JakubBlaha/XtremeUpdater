@@ -507,6 +507,37 @@ RootLayout:
         padding: 8, 0
         markup: True
 
+<RunAsAdminButton>:
+    auto_dismiss: False
+    pos_hint: {'x': 0, 'y': .1}
+    size_hint: None, None
+    size: 60, 40
+    background: 'img/FFFFFF-0.png'
+    background_color: 0, 0, 0, 0
+
+    canvas:
+        Color:
+            rgba: theme.sec
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgb: theme.prim
+            a: .7
+        Line:
+            points: [max(1, i * (self.height if j % 2 else self.width) + (Window.height * self.pos_hint.get('y', 0) if j % 2 else Window.width * self.pos_hint.get('x', 0))) for j, i in enumerate(self._border_points)]
+        Line:
+            points: [max(1, i * (self.height if j % 2 else self.width) + (Window.height * self.pos_hint.get('y', 0) if j % 2 else Window.width * self.pos_hint.get('x', 0))) for j, i in enumerate([1 - i for i in self._border_points])]
+
+    CustButton:
+        id: button
+        text: '{}[font=fnt/segmdl2.ttf]{}[/font]'.format(*['', '\ue7ef'] if root._disp_icon > .5 else ['Run as admin', ''])
+        markup: True
+        font_size: 22
+        padding_x: 10
+        opacity: root._btn_opacity
+        color: 1, 1, 1, .8
+
 <CustSwitch>:
     size_hint: None, None
     size: 40, 40
@@ -1003,12 +1034,9 @@ RootLayout:
                     disabled: not dll_view.adapter.selection
                     on_release: root.update_callback(from_selection=True)
 
-
-    BoxLayout:
+    WorkingBar:
+        id: bar
+        value: 50
+        color: theme.prim
         size_hint_y: None
         height: 0
-
-        WorkingBar:
-            id: bar
-            value: 50
-            color: theme.prim            

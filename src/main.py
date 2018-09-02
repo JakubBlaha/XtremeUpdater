@@ -1,6 +1,7 @@
 import easygui
 import yaml
 import os
+import sys
 import win32api
 import shutil
 import ctypes
@@ -182,6 +183,14 @@ class CustButton(Button, HoveringBehavior):
 
     def on_enter(self):
         if not self.disabled:
+            try:
+                self.color = self.orig_color
+            except AttributeError:
+                pass
+            try:
+                self.background_color = self.orig_background_color
+            except AttributeError:
+                pass
             self.orig_background_color = self.background_color
             self.orig_color = self.color
             Animation(
@@ -191,7 +200,7 @@ class CustButton(Button, HoveringBehavior):
 
     def on_leave(self, force=False):
         if not self.disabled or force:
-            Animation(
+            self.on_leave_anim = Animation(
                 color=getattr(self, 'orig_color', self.color),
                 background_color=getattr(self, 'orig_background_color',
                                          self.background_color),
@@ -828,6 +837,75 @@ class IsAdminNotif(Notification):
             if IS_ADMIN else '[color=f55]Only some[/color]')
 
 
+from kivy.uix.modalview import ModalView
+
+
+class RunAsAdminButton(ModalView, HoveringBehavior):
+    _border_points = ListProperty([0, 0, 0, 0, 0, 0])
+    _disp_icon = NumericProperty(1)
+    _btn_opacity = NumericProperty(1)
+    _border_template = [
+        [0, 1, 0, 1, 0, 1],
+        [0, 1, 1, 1, 1, 1],
+        [0, 1, 1, 1, 1, 0],
+        [1, 1, 1, 1, 1, 0],
+        [1, 0, 1, 0, 1, 0],
+        [1, 0, 0, 0, 0, 0],
+        [1, 0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 0, 1],
+    ]
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+        anim = Animation(d=0)
+        for points in self._border_template:
+            anim += Animation(_border_points=points, d=.3, t='in_out_quint')
+
+        anim.repeat = True
+        anim.start(self)
+
+    def ping(self):
+        self.hovering = True
+        Clock.schedule_once(lambda *args: setattr(self, 'hovering', False), 4)
+
+    def on_touch_down(self, *args):
+        pass
+
+    def on_touch_up(self, touch):
+        if self.collide_point(*touch.pos):
+            self.on_release()
+
+    def on_touch_move(*args):
+        pass
+
+    def on_hovering(self, *args):
+        try:
+            self.fade_anim.cancel(self)
+        except AttributeError:
+            pass
+        self.fade_anim = (
+            Animation(
+            width=200 if self.hovering else 60,
+            d=.5,
+            t='out_expo') &
+            Animation(_disp_icon=not self.hovering, d=.2) &
+            (
+                Animation(
+                    _btn_opacity=0, d=.1
+                ) +
+                Animation(
+                    _btn_opacity=1, d=.1
+                )
+            )
+        )
+        self.fade_anim.start(self)
+
+    def on_release(self):
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, '' if hasattr(sys, '_MEIPASS') else __file__ , None, 1)
+        app.stop()
+
+
 class RootLayout(BoxLayout, HoveringBehavior):
     mouse_highlight_pos = ListProperty([-120, -120])
     dlls_loaded = BooleanProperty(False)
@@ -873,8 +951,15 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
     def update_common_paths(self, *args):
         self.ids.game_collection_view.update_local_games()
-        self.sync_popup.dismiss()
+        self.after_synced()
 
+    def after_synced(self):
+        self.sync_popup.dismiss()
+        if not IS_ADMIN:
+            btn = RunAsAdminButton()
+            btn.open()
+            btn.ping()
+        
     def on_mouse_pos(self, _, pos):
         x, y = pos
         self.mouse_highlight_pos = x - 60, y - 60
