@@ -1,6 +1,7 @@
 from kivy import Config
 from kivy.app import App
 from kivy.clock import Clock
+from kivy.logger import Logger
 from kivy.factory import Factory
 from kivy.animation import Animation
 from kivy.lang.builder import Builder
@@ -13,6 +14,9 @@ Config.set('graphics', 'height', 400)
 Config.set('graphics', 'borderless', 1)
 Config.set('graphics', 'resizable', 0)
 Config.set('graphics', 'window_icon', 'icon_no_bg.ico')
+import os
+LOGS_PATH = os.getcwd() + r'\XUI_logs'
+Config.set('kivy', 'log_dir', LOGS_PATH)
 
 from kivy.core.window import Window
 
@@ -54,7 +58,8 @@ Builder.load_string(
 '''
 )
 
-import os
+import logging
+import traceback
 from theme import *
 from _thread import start_new
 from urllib.request import urlretrieve
@@ -95,14 +100,24 @@ def setup():
     try:
         clone()
         download_launcher()
-    except:
+    except Exception:
         app.error()
         raise
         return
     app.info('Adding shortcut')
-    make_lnk()
+    try:
+        make_lnk()
+    except Exception:
+        app.error()
+        raise
+        return
     app.info('Starting the app')
-    start()
+    try:
+        start()
+    except Exception:
+        app.error()
+        raise
+        return
     app.stop()
 
 class RootLayout(BoxLayout):
@@ -117,7 +132,7 @@ class RootLayout(BoxLayout):
 
     def error(self):
         self.logo_rotate_clock.cancel()
-        self.info(f'[color=f00]Could not install[/color]\n\n[color={PRIM}][u][ref=support]Support[/ref][/u], [u][ref=close]Close[/ref][/u][/color]')
+        self.info(f'[color=f00]Could not install[/color]\n\n[color={PRIM}][u][ref=support]Support[/ref][/u], [u][ref=close]Close[/ref][/u], [u][ref=logs]Logs[/ref][/u][/color]')
         self.ids.info.bind(on_ref_press=self.ref_press)
 
         Animation(opacity=0, d=.5, t='out_expo').start(self.ids.logo)
@@ -128,6 +143,8 @@ class RootLayout(BoxLayout):
             os.startfile('https://discord.gg/Cs4rstF')
         elif name == 'close':
             app.close()
+        elif name == 'logs':
+            os.startfile(LOGS_PATH)
     
     def info(self, text):
         self.ids.info.text = text
@@ -151,5 +168,9 @@ class SetupApp(App):
         Clock.schedule_once(self.stop, .5)
 
 if __name__ == '__main__':
-    app = SetupApp()
-    app.run()
+    try:
+        app = SetupApp()
+        app.run()
+    except Exception:
+        Logger.error(f'Unhandled exception\n{traceback.format_exc()}')
+            

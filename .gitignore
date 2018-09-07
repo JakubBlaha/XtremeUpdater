@@ -98,14 +98,11 @@ ENV/
 # mypy
 .mypy_cache/
 
-# XtremeUpdater config and cache stuff
-
-*.xucfg
-
-# VSCode
-.vscode/
-
-# App dirs
+# XtremeUpdater config, backup, logs and cache stuff
 .cache/
 .config/
 .backup/
+XUI_logs/
+
+# VSCode
+.vscode/
