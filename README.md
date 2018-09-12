@@ -6,6 +6,7 @@ Welcome to XtremeUpdater repo. This software's task is to improve mainly video g
 
 Website is located at https://xtremeupdater.com.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
+The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpdater-Distribution)
 
 ## v0.6.1
 **Features**
