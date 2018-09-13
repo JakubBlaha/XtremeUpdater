@@ -4,8 +4,11 @@
 
 Welcome to XtremeUpdater repo. This software's task is to improve mainly video games performance, but can be used for increasing performance of almost **any** app. XtremeUpdater also contains *Game Collection* for easy game management and ~~loads~~ (not that much actually) of system tweaks to improve your overall system performance.
 
+**[Download](https://github.com/XtremeWare/XtremeUpdater/releases/download/Installer/XtremeUpdater-Setup.exe)**
+
 Website is located at https://xtremeupdater.com.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
+The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpdater-Distribution)
 
 ## v0.6.1 - Not released
 **Features**
