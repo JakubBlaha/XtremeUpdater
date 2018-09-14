@@ -906,11 +906,13 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
         app.stop()
 
 
-class RootLayout(BoxLayout, HoveringBehavior):
+from kivy.uix.effectwidget import EffectWidget, MonochromeEffect, InvertEffect, HorizontalBlurEffect, VerticalBlurEffect
+class RootLayout(EffectWidget, HoveringBehavior):
     mouse_highlight_pos = ListProperty([-120, -120])
     dlls_loaded = BooleanProperty(False)
     listed_dlls = ListProperty()
     path = StringProperty()
+    effects = [HorizontalBlurEffect(size=50), VerticalBlurEffect(size=50)]
 
     def __init__(self, **kw):
         super().__init__(**kw)
