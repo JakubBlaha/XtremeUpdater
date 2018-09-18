@@ -271,6 +271,8 @@ RootLayout:
         id: button
         text: root.icon
         on_release: root.command()
+        background_color: theme.sec
+        background_color_hovering: self.background_color
 
     Label:
         id: label
@@ -623,6 +625,38 @@ RootLayout:
     color: [i + .2 for i in theme.sec[:-1]] + [1]
     padding_y: 40
 
+<SpinnerButton@CustButton>:
+    size_hint_y: None
+    height: 41
+    background_color_hovering: theme.bg
+
+    canvas.before:
+        Color:
+            rgba: theme.sec
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    canvas.after:
+        Color:
+            rgba: theme.dark
+        Line:
+            points: self.x, self.y + self.height - 1, self.x + self.width, self.y + self.height - 1
+
+<ThemeSpinner>:
+    size_hint: None, None
+    size: 340, 40
+    background_normal: 'img/FFFFFF-0.png'
+    background_down: 'img/FFFFFF-0.png'
+    option_cls: 'SpinnerButton'
+
+    canvas.before:
+        Color:
+            rgba: theme.sec
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+
 <RootLayout>:
     orientation: 'vertical'
 
@@ -852,6 +886,10 @@ RootLayout:
 
                     SectionLabel:
                         text: 'GUI'
+
+                    ThemeSpinner:
+                        text: theme.decode_theme_name(theme.name)
+                        values: theme.available_themes
 
                     LabelSwitch:
                         text: 'Enable animations'

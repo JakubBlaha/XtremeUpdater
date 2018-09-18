@@ -13,9 +13,15 @@ The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpda
 ## v0.6.1 - Not released
 **Features**
   - Added *Run as admin* button.
+  - Added support for *theming*.
 
 **Bugfixes**
   - Fixed bug causing buttons to sometimes have unexpected colors.
+  - Fixed incorrect *LabelIconButton* background color.
+  - Fixed bug causing *Navigation buttons* to sometimes have incorrect text color.
+
+**Other**
+  - Added *Night Roses* theme.
 
 ## v0.6.0
 *We have changed the default way of updating dlls. Selective update is now secondary feature.*

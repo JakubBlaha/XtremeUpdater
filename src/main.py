@@ -36,6 +36,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
 from kivy.uix.button import Button
 from kivy.uix.image import CoreImage
+from kivy.uix.spinner import Spinner
 from custpagelayout import PageLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.graphics.texture import Texture
@@ -600,7 +601,7 @@ class NavigationButton(CustButton):
         (Animation(
             highlight_width=self.width,
             highlight_color=theme.sec,
-            color=theme.fg,
+            color=getattr(self, 'orig_color', self.color),
             d=.5,
             t='out_expo') & Animation(
                 highlight_height=self.height, d=.3,
@@ -816,7 +817,7 @@ class Notification(Popup):
 
     def dismiss(self, *args):
         anim = Animation(
-            opacity=0, _bg_offset=200, _decor_size=[0, 0], d=.5, t='out_expo')
+            opacity=0, _bg_offset=200, _decor_size=[0, 0], d=.5, t='in_expo')
         anim.bind(
             on_complete=lambda *args: super(Notification, self).dismiss())
         anim.start(self)
@@ -885,34 +886,66 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
         except AttributeError:
             pass
         self.fade_anim = (
-            Animation(
-            width=200 if self.hovering else 60,
-            d=.5,
-            t='out_expo') &
+            Animation(width=200 if self.hovering else 60, d=.5, t='out_expo') &
             Animation(_disp_icon=not self.hovering, d=.2) &
-            (
-                Animation(
-                    _btn_opacity=0, d=.1
-                ) +
-                Animation(
-                    _btn_opacity=1, d=.1
-                )
-            )
+            (Animation(_btn_opacity=0, d=.1) + Animation(_btn_opacity=1, d=.1))
         )
         self.fade_anim.start(self)
 
     def on_release(self):
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, '' if hasattr(sys, '_MEIPASS') else __file__ , None, 1)
+        ctypes.windll.shell32.ShellExecuteW(
+            None, "runas", sys.executable, ''
+            if hasattr(sys, '_MEIPASS') else __file__, None, 1)
         app.stop()
 
 
-from kivy.uix.effectwidget import EffectWidget, MonochromeEffect, InvertEffect, HorizontalBlurEffect, VerticalBlurEffect
-class RootLayout(EffectWidget, HoveringBehavior):
+# class SmoothScrollView(ScrollView):
+#     smooth_scroll_clock = Clock.schedule_once(lambda *args: None, 0)
+#     _scroll_y = 0
+#     _to_scroll_y = 0
+#     scrollup = False
+
+#     def on_scroll_y(self, *args):
+#         print('on')
+#         self._to_scroll_y = self.scroll_y
+
+#     def on_scroll_start(self, event):
+#         print('start')
+#         self.scroll_y = self._scroll_y
+#         self.scrollup = event.button == 'scrollup'
+#         self.smooth_scroll_clock = Clock.schedule_interval(self.update_smooth_scroll, 1/60)
+
+#     def update_smooth_scroll(self, *args):
+#         if (self.scrollup and self.scroll_y <= self._to_scroll_y) or (not self.scrollup and self.scroll_y >= self._to_scroll_y):
+#             self.smooth_scroll_clock.cancel()
+#             return
+
+#         self.scroll_y -= .01 * self.scrollup
+
+
+class ThemeSpinner(Spinner):
+    def on_values(self, *args):
+        try:
+            self.values.remove(self.text)
+        except ValueError:
+            pass
+
+    def on_text(self, *args):
+        self.values = theme.available_themes
+        theme.set_theme(theme.encode_theme_name(self.text))
+        if self.text != theme.decoded_name:
+            Notification(
+                title_='Restart required',
+                message=
+                f'Please [color={theme.PRIM}]restart[/color] XtremeUpdater to set the new theme.'
+            ).open()
+
+
+class RootLayout(BoxLayout, HoveringBehavior):
     mouse_highlight_pos = ListProperty([-120, -120])
     dlls_loaded = BooleanProperty(False)
     listed_dlls = ListProperty()
     path = StringProperty()
-    effects = [HorizontalBlurEffect(size=50), VerticalBlurEffect(size=50)]
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -961,7 +994,7 @@ class RootLayout(EffectWidget, HoveringBehavior):
             btn = RunAsAdminButton()
             btn.open()
             btn.ping()
-        
+
     def on_mouse_pos(self, _, pos):
         x, y = pos
         self.mouse_highlight_pos = x - 60, y - 60
@@ -1316,6 +1349,7 @@ class XtremeUpdaterApp(App):
 
 
 Window.clearcolor = theme.sec
+# Factory.register('ScrollView', ScrollView)
 
 if __name__ == '__main__':
     app = XtremeUpdaterApp()
