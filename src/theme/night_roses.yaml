@@ -1,0 +1,7 @@
+night_roses:
+  # https://www.color-hex.com/color-palette/65513
+  dark: '#1c1d1d'
+  sec: '#3d482f'
+  bg: '#903e5a'
+  fg: '#cb738d'
+  prim: '#efa5a9'

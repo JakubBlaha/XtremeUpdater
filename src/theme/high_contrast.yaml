@@ -1,0 +1,6 @@
+high_contrast:
+  dark: '#000000'
+  sec: '#001eff'
+  bg: '#111111'
+  fg: '#ffffff'
+  prim: '#ffff00'

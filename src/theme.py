@@ -1,9 +1,11 @@
 from yaml import safe_load, dump
 from kivy.utils import get_color_from_hex
+import os
+
 
 class Theme:
     CONFIG_PATH = '.config/Config.yaml'
-    THEME_PATH = 'theme/theme.yaml'
+    THEME_PATH = 'theme/'
     DEFAULT_VALUES = {
         'prim': "#dbac2a",
         'sec': "#232a3a",
@@ -13,7 +15,7 @@ class Theme:
     }
     name = 'default'
 
-    def __init__(self, values: dict = {}, name: str =''):
+    def __init__(self, values: dict = {}, name: str = ''):
         if not name:
             with open(self.CONFIG_PATH) as f:
                 try:
@@ -22,9 +24,14 @@ class Theme:
                     name = 'default'
 
         if not values:
-            with open(self.THEME_PATH) as f:
-                values = safe_load(f).get(name, {})
-
+            try:
+                with open(self.THEME_PATH + name + '.yaml') as f:
+                    values = {
+                        **self.DEFAULT_VALUES,
+                        **safe_load(f).get(name, {})
+                    }
+            except FileNotFoundError:
+                values = self.DEFAULT_VALUES
 
         self.name = name
         for key, value in {**self.DEFAULT_VALUES, **values}.items():
@@ -41,12 +48,12 @@ class Theme:
 
         data['theme'] = str(theme_name)
 
-        with open(cls.CONFIG_PATH ,'w') as f:
+        with open(cls.CONFIG_PATH, 'w') as f:
             dump(data, f)
 
     @staticmethod
     def decode_theme_name(code: str) -> str:
-        return code.replace('_', ' ').capitalize()
+        return os.path.splitext(code)[0].replace('_', ' ').capitalize()
 
     @property
     def decoded_name(self) -> str:
@@ -54,11 +61,14 @@ class Theme:
 
     @staticmethod
     def encode_theme_name(name: str) -> str:
-        return  name.replace(' ', '_').lower()
+        return name.replace(' ', '_').lower()
 
     @property
     def available_themes(self):
-        with open(self.THEME_PATH) as f:
-            return [self.decode_theme_name(name) for name in safe_load(f).keys()]
+        return [
+            self.decode_theme_name(name)
+            for name in os.listdir(self.THEME_PATH)
+        ]
+
 
 theme = Theme()
