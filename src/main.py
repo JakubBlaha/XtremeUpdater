@@ -39,6 +39,7 @@ from kivy.uix.image import CoreImage
 from kivy.uix.spinner import Spinner
 from custpagelayout import PageLayout
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.modalview import ModalView
 from kivy.graphics.texture import Texture
 from kivy.uix.scrollview import ScrollView
 from kivy.graphics import Rectangle, Color
@@ -92,8 +93,10 @@ def notify_restart(fn):
 class Animation(Animation):
     def __init__(self, **kw):
         super().__init__(**kw)
-        if not app.conf.animations:
-            self._duration = 0
+        try:
+            self._duration *= app.conf.animations
+        except (NameError, AttributeError):
+            pass
 
 
 class NoiseTexture(Widget):
@@ -800,17 +803,25 @@ class Notification(Popup):
 
     def __init__(self, **kw):
         super().__init__(**kw)
-
+        
         self.children[0].children[2].markup = True
 
-        (Animation(_decor_size=[self._decor_size[0], 0], d=0) + Animation(
+        is_notif = hasattr(app, 'curr_notif')
+
+        if is_notif:
+            app.curr_notif.dismiss()
+
+        app.curr_notif = self
+
+        anim = (Animation(_decor_size=[self._decor_size[0], 0], d=0) + Animation(
             opacity=1,
             _bg_offset=0,
             _decor_size=self._decor_size,
             d=.5,
-            t='out_expo')).start(self)
+            t='out_expo'))
 
-        Clock.schedule_once(self.dismiss, 3)
+        Clock.schedule_once(lambda *args: anim.start(self), is_notif * .5)
+        Clock.schedule_once(self.dismiss, is_notif * .5 + 3)
 
     def on_touch_down(self, *args):
         pass
@@ -821,6 +832,12 @@ class Notification(Popup):
         anim.bind(
             on_complete=lambda *args: super(Notification, self).dismiss())
         anim.start(self)
+        
+        try:
+            if app.curr_notif is self:
+                del app.curr_notif
+        except AttributeError:
+            pass
 
 
 class IsAdminNotif(Notification):
@@ -836,9 +853,6 @@ class IsAdminNotif(Notification):
         self.message = self.message_template.format(
             '[color=5f5]All[/color]'
             if IS_ADMIN else '[color=f55]Only some[/color]')
-
-
-from kivy.uix.modalview import ModalView
 
 
 class RunAsAdminButton(ModalView, HoveringBehavior):
@@ -899,28 +913,25 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
         app.stop()
 
 
-# class SmoothScrollView(ScrollView):
-#     smooth_scroll_clock = Clock.schedule_once(lambda *args: None, 0)
-#     _scroll_y = 0
-#     _to_scroll_y = 0
-#     scrollup = False
+class SmoothScrollView(ScrollView):
+    _scroll_y = NumericProperty(1)
+    scroll_anim = Animation()
 
-#     def on_scroll_y(self, *args):
-#         print('on')
-#         self._to_scroll_y = self.scroll_y
+    def on_scroll_y(self, instance, to_scroll):
+        if to_scroll == self._scroll_y:
+            return
 
-#     def on_scroll_start(self, event):
-#         print('start')
-#         self.scroll_y = self._scroll_y
-#         self.scrollup = event.button == 'scrollup'
-#         self.smooth_scroll_clock = Clock.schedule_interval(self.update_smooth_scroll, 1/60)
+        self.scroll_y = self._scroll_y
 
-#     def update_smooth_scroll(self, *args):
-#         if (self.scrollup and self.scroll_y <= self._to_scroll_y) or (not self.scrollup and self.scroll_y >= self._to_scroll_y):
-#             self.smooth_scroll_clock.cancel()
-#             return
+        self.scroll_anim.cancel(self)
+        self.scroll_anim = Animation(
+            _scroll_y=to_scroll,
+            d=.2, t='out_expo'
+        )
+        self.scroll_anim.start(self)
 
-#         self.scroll_y -= .01 * self.scrollup
+    def on__scroll_y(self, instance, _scroll_y):
+        self.scroll_y = _scroll_y
 
 
 class ThemeSpinner(Spinner):
