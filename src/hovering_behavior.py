@@ -1,17 +1,15 @@
-from kivy.core.window import Window
 from kivy.properties import BooleanProperty, DictProperty
-from kivy.uix.widget import Widget
 from kivy.animation import Animation
+from kivy.core.window import Window
 from kivy.clock import Clock
 
-class HoveringBehavior(Widget):
+class HoveringBehavior():
     hovering = BooleanProperty(False)
     hovering_attrs = DictProperty()
-    _orig_attrs = {}
     anim_kw = DictProperty()
+    _orig_attrs = {}
 
     def __init__(self, **kw):
-        super().__init__(**kw)
         self.bind_hovering()
 
     def bind_hovering(self, *args):

@@ -869,6 +869,9 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
     def __init__(self, **kw):
         super().__init__(**kw)
 
+        if not app.conf.animations:
+            return
+
         anim = Animation(d=0)
         for points in self._border_template:
             anim += Animation(_border_points=points, d=.3, t='in_out_quint')
@@ -1016,6 +1019,9 @@ class PulsingHearth(Label):
 
         self.font_size = 220
 
+        if not app.conf.animations:
+            return
+
         new_size = self.font_size + self.font_size // 4
         anim = (
             Animation(font_size=new_size, d=.2, t='in_expo') +
@@ -1036,16 +1042,17 @@ class DonateButton(Factory.BackgroundedButton):
     def on_enter(self):
         super().on_enter()
 
-        self.rotation_anim = (
-            Animation(rotation=-20, d=.05) +
-            Animation(rotation=0, d=1.75, t='out_elastic') +
-            Animation(d=1) +
-            Animation(rotation=20, d=.05) +
-            Animation(rotation=0, d=1.75, t='out_elastic') +
-            Animation(d=1)
-        )
-        self.rotation_anim.repeat = True
-        self.rotation_anim.start(self)
+        if app.conf.animations:
+            self.rotation_anim = (
+                Animation(rotation=-20, d=.05) +
+                Animation(rotation=0, d=1.75, t='out_elastic') +
+                Animation(d=1) +
+                Animation(rotation=20, d=.05) +
+                Animation(rotation=0, d=1.75, t='out_elastic') +
+                Animation(d=1)
+            )
+            self.rotation_anim.repeat = True
+            self.rotation_anim.start(self)
 
         Animation(opacity=1, d=.1).start(app.root.ids.heart)
 
