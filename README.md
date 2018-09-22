@@ -19,10 +19,12 @@ The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpda
   - Fixed bug causing buttons to sometimes have unexpected colors.
   - Fixed incorrect *LabelIconButton* background color.
   - Fixed bug causing *Navigation buttons* to sometimes have incorrect text color.
-  - Fixed bug causing *GameDVR* tweak to crash the app on startup if the machine is running *Windows 10 Enterprise*.
+  - Fixed bug causing *GameDVR* tweak to crash the app on startup if the machine is running *Windows Server 2016*.
 
 **Other**
   - Added *Night Roses* theme.
+  - Changed logging directory.
+  - Logger now loggs System information.
 
 ## v0.6.0
 *We have changed the default way of updating dlls. Selective update is now secondary feature.*

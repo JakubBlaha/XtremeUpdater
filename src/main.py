@@ -18,12 +18,14 @@ Config.set('graphics', 'width', 1000)
 Config.set('graphics', 'height', 550)
 Config.set('graphics', 'borderless', 1)
 Config.set('graphics', 'resizable', 0)
-Config.set('input', 'mouse', 'mouse, disable_multitouch')
-Config.set('kivy', 'window_icon', 'img/icon.ico')
 Config.set('graphics', 'multisamples', 0)
 Config.set('graphics', 'maxfps', 60)
+Config.set('input', 'mouse', 'mouse, disable_multitouch')
+Config.set('kivy', 'window_icon', 'img/icon.ico')
+Config.set('kivy', 'log_dir', os.getcwd() + '/logs')
 
 from kivy.app import App
+from kivy.logger import Logger
 from kivy.factory import Factory
 from kivy.core.window import Window
 from kivy.animation import Animation
@@ -49,6 +51,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.listview import ListItemButton
 from kivy.properties import StringProperty, ObjectProperty, DictProperty, ListProperty, NumericProperty, BooleanProperty
 
+import platform
 from theme import theme
 from dll_updater import DllUpdater
 from hovering_behavior import HoveringBehavior
@@ -90,6 +93,7 @@ def notify_restart(fn):
 
     return wrapper
 
+
 def font_color(color: tuple) -> tuple:
     """Returns the best font color for given background color."""
 
@@ -98,8 +102,13 @@ def font_color(color: tuple) -> tuple:
         color = color[:-1]
 
     red, green, blue = color
-    red *= 255; green *= 255; blue *= 255
-    calculated = (0, 0, 0, 1) if (red*0.299 + green*0.587 + blue*0.114) > 186 else (1, 1, 1, 1)
+    red *= 255
+    green *= 255
+    blue *= 255
+    calculated = (
+        0, 0, 0,
+        1) if (red * 0.299 + green * 0.587 + blue * 0.114) > 186 else (1, 1, 1,
+                                                                       1)
 
     return calculated if is_alpha else calculated[:-1]
 
@@ -972,10 +981,10 @@ class ThemeSpinnerButton(Label):
         super().__init__(**kw)
 
         self.spin_values = [
-            get_color_from_hex(value)
-            for key, value in theme.get_values(theme.encode_theme_name(self.text)).items()
+            get_color_from_hex(value) for key, value in theme.get_values(
+                theme.encode_theme_name(self.text)).items()
         ]
-    
+
         # Clock.schedule_once(self.swap_background)
         Clock.schedule_interval(self.swap_background, 2)
 
@@ -986,14 +995,12 @@ class ThemeSpinnerButton(Label):
     @bg_index.setter
     def bg_index(self, value):
         self._bg_index = value if value != len(self.spin_values) - 1 else 0
-    
+
     def swap_background(self, *args):
         self.bg_index += 1
-        (
-            Animation(bg_height=0, t='in_expo', d=.3) +
-            Animation(bg_color=self.spin_values[self.bg_index], d=0) +
-            Animation(bg_height=self.height, t='out_expo', d=.5)
-        ).start(self)
+        (Animation(bg_height=0, t='in_expo', d=.3) + Animation(
+            bg_color=self.spin_values[self.bg_index], d=0) + Animation(
+                bg_height=self.height, t='out_expo', d=.5)).start(self)
 
 
 class ThemeSwitcher(BoxLayout):
@@ -1009,30 +1016,34 @@ class ThemeSwitcher(BoxLayout):
     def on_frame(self, *args):
         self.cont = self.ids.container
         self.cont.add_widget(ThemeSpinnerButton(text=theme.decoded_name))
-        self.theme_index = [t.name for t in theme.available_themes].index(theme.name)
+        self.theme_index = [t.name for t in theme.available_themes].index(
+            theme.name)
 
     @property
     def curr_theme(self):
         return self.themes[self.theme_index]
 
     def previous_theme(self):
-        self.theme_index = self.theme_index - 1 if self.theme_index else len(self.themes) - 1
+        self.theme_index = self.theme_index - 1 if self.theme_index else len(
+            self.themes) - 1
 
     def next_theme(self):
-        self.theme_index = self.theme_index + 1 if self.theme_index != len(self.themes) - 1 else 0
+        self.theme_index = self.theme_index + 1 if self.theme_index != len(
+            self.themes) - 1 else 0
 
     def on_theme_index(self, *args):
-        curr_wg = self.cont.children[0]
-
         def on_complete(*args):
-            self.cont.remove_widget(curr_wg)
-            new_wg = ThemeSpinnerButton(text=self.themes[self.theme_index].decoded_name, size_hint_y=None, height=0)
+            self.cont.clear_widgets()
+            new_wg = ThemeSpinnerButton(
+                text=self.themes[self.theme_index].decoded_name,
+                size_hint_y=None,
+                height=0)
             self.cont.add_widget(new_wg)
-            Animation(height=self.height, d=.2, t='out_expo').start(new_wg)
+            Animation(height=self.height, d=.1, t='out_expo').start(new_wg)
 
         anim = Animation(opacity=0, d=.2, t='out_expo')
         anim.bind(on_complete=on_complete)
-        anim.start(curr_wg)
+        anim.start(self.cont.children[0])
 
         theme.set_theme(self.curr_theme.name)
         if self.curr_theme.name != theme.name:
@@ -1041,6 +1052,58 @@ class ThemeSwitcher(BoxLayout):
                 message=
                 f'Please [color={theme.PRIM}]restart[/color] XtremeUpdater to set the new theme.'
             ).open()
+
+
+class PulsingHearth(Label):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+        self.font_size = 220
+
+        new_size = self.font_size + self.font_size // 4
+        anim = (
+            Animation(font_size=new_size, d=.2, t='in_expo') +
+            Animation(font_size=self.font_size, d=.2, t='out_expo') +
+            Animation(d=1)
+        )
+        anim.repeat = True
+        anim.start(self)
+
+
+class BackgroundedButton(CustButton):
+    pass
+
+
+class DonateButton(Factory.BackgroundedButton):
+    rotation = NumericProperty()
+
+    def on_enter(self):
+        super().on_enter()
+
+        self.rotation_anim = (
+            Animation(rotation=-20, d=.05) +
+            Animation(rotation=0, d=1.75, t='out_elastic') +
+            Animation(d=1) +
+            Animation(rotation=20, d=.05) +
+            Animation(rotation=0, d=1.75, t='out_elastic') +
+            Animation(d=1)
+        )
+        self.rotation_anim.repeat = True
+        self.rotation_anim.start(self)
+
+        Animation(opacity=1, d=.1).start(app.root.ids.heart)
+
+    def on_leave(self):
+        super().on_leave()
+
+        try:
+            self.rotation_anim.cancel(self)
+        except AttributeError:
+            pass
+        else:
+            Animation(rotation=0, d=.1, t='out_expo').start(self)
+
+        Animation(opacity=0, d=.1).start(app.root.ids.heart)
 
 
 class RootLayout(BoxLayout, HoveringBehavior):
@@ -1451,7 +1514,8 @@ class XtremeUpdaterApp(App):
 
 
 Window.clearcolor = theme.sec
-# Factory.register('ScrollView', ScrollView)
+Logger.info(f'System = {platform.system()}')
+Logger.info(f'Release = {platform.release()}')
 
 if __name__ == '__main__':
     app = XtremeUpdaterApp()
