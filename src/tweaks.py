@@ -54,7 +54,7 @@ class Tweaks:
         try:
             AllowGameDVR = QueryValueEx(key, 'AllowGameDVR')[0]
 
-        except OSError, FileNotFoundError:
+        except (OSError, FileNotFoundError):
             AllowGameDVR = 1
 
         return GameDVR_enabled or AllowGameDVR
