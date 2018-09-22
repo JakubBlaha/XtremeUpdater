@@ -205,60 +205,16 @@ class HeaderMiniLabel(Label, HoveringBehavior):
 
 
 class CustButton(Button, HoveringBehavior):
-    color_hovering = ListProperty(theme.prim)
-    background_color_hovering = ListProperty([0, 0, 0, 0])
-
-    def on_enter(self):
-        super().on_enter()
-
-        if not self.disabled:
-            try:
-                self.color = self.orig_color
-            except AttributeError:
-                pass
-            try:
-                self.background_color = self.orig_background_color
-            except AttributeError:
-                pass
-            self.orig_background_color = self.background_color
-            self.orig_color = self.color
-            Animation(
-                color=self.color_hovering,
-                background_color=self.background_color_hovering,
-                d=.1).start(self)
-
-    def on_leave(self, force=False):
-        super().on_leave()
-
-        if not self.disabled or force:
-            self.on_leave_anim = Animation(
-                color=getattr(self, 'orig_color', self.color),
-                background_color=getattr(self, 'orig_background_color',
-                                         self.background_color),
-                d=.1).start(self)
-
     def on_disabled(self, *args):
         if self.disabled:
             Animation(opacity=.1, d=.1).start(self)
             if self.hovering:
-                self.on_leave(force=True)
+                self.on_leave()
 
         else:
             Animation(opacity=1, d=.1).start(self)
             if self.hovering:
                 self.on_enter()
-
-    def on_color(self, *args):
-        if self.hovering:
-            self.unbind(color=self.on_color)
-            self.color = self.color_hovering
-            self.bind(color=self.on_color)
-
-    def on_background_color(self, *args):
-        if self.hovering:
-            self.unbind(background_color=self.on_background_color)
-            self.background_color = self.background_color_hovering
-            self.bind(background_color=self.on_background_color)
 
 
 class LabelIconButton(BoxLayout):
@@ -643,7 +599,7 @@ class NavigationButton(CustButton):
         (Animation(
             highlight_width=self.width,
             highlight_color=theme.sec,
-            color=getattr(self, 'orig_color', self.color),
+            color=self._orig_attrs.get('color', self.color),
             d=.5,
             t='out_expo') & Animation(
                 highlight_height=self.height, d=.3,
