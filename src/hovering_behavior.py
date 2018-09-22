@@ -1,7 +1,7 @@
 from kivy.properties import BooleanProperty, DictProperty
 from kivy.animation import Animation
 from kivy.core.window import Window
-from kivy.clock import Clock
+
 
 class HoveringBehavior():
     hovering = BooleanProperty(False)
@@ -19,6 +19,9 @@ class HoveringBehavior():
         Window.unbind(mouse_pos=self.on_mouse_pos)
 
     def on_mouse_pos(self, _, pos):
+        if not self.get_root_window():
+            return
+
         self.hovering = self.collide_point(*self.to_widget(*pos))
 
     def on_hovering(self, *args):
@@ -34,12 +37,21 @@ class HoveringBehavior():
     def on_enter(self):
         if not self._orig_attrs:
             self.update_orig_attrs()
-        Animation(**self.hovering_attrs, **self.anim_kw).start(self)
+        try:
+            self.on_leave_anim.stop(self)
+        except AttributeError:
+            pass
+        self.on_enter_anim = Animation(**self.hovering_attrs, **self.anim_kw)
+        self.on_enter_anim.start(self)
 
     def on_leave(self):
         # TODO HOTFIX, AttributeError
         # self._orig_attrs = {
         #     key: value for key, value in self._orig_attrs.items() if hasattr(self, key)
         # }
-        Animation(**self._orig_attrs, **self.anim_kw).start(self)
- 
+        try:
+            self.on_enter_anim.stop(self)
+        except AttributeError:
+            pass
+        self.on_leave_anim = Animation(**self._orig_attrs, **self.anim_kw)
+        self.on_leave_anim.start(self)

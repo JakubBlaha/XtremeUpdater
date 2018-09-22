@@ -194,14 +194,13 @@ class HeaderMiniLabel(Label, HoveringBehavior):
             rotation_angle=self.rotation_angle + 500, d=.5,
             t='out_expo').start(self)
 
-    def on_hovering(self, *args):
-        if self.hovering:
-            Animation.stop_all(self)
-            (Animation(
-                rotation_angle=self.rotation_angle + 500,
-                color=theme.prim,
-                d=.5,
-                t='out_expo') + Animation(color=theme.bg, d=.5)).start(self)
+    def on_enter(self, *args):
+        Animation.stop_all(self)
+        (Animation(
+            rotation_angle=self.rotation_angle + 500,
+            color=theme.prim,
+            d=.5,
+            t='out_expo') + Animation(color=theme.bg, d=.5)).start(self)
 
 
 class CustButton(Button, HoveringBehavior):
