@@ -1,2 +1,3 @@
-Dll versioning
-Wimlib
+Check dll hashes before updating
+Compact
+Clear HOTFIX, AttributeError in hovering_behavior.py

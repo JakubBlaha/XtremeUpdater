@@ -28,6 +28,7 @@ from kivy.factory import Factory
 from kivy.core.window import Window
 from kivy.animation import Animation
 from kivy.clock import Clock, mainthread
+from kivy.utils import get_color_from_hex
 from kivy.storage.jsonstore import JsonStore
 from kivy.network.urlrequest import UrlRequest
 from kivy.adapters.listadapter import ListAdapter
@@ -88,6 +89,19 @@ def notify_restart(fn):
         ).open()
 
     return wrapper
+
+def font_color(color: tuple) -> tuple:
+    """Returns the best font color for given background color."""
+
+    is_alpha = len(color) == 4
+    if is_alpha:
+        color = color[:-1]
+
+    red, green, blue = color
+    red *= 255; green *= 255; blue *= 255
+    calculated = (0, 0, 0, 1) if (red*0.299 + green*0.587 + blue*0.114) > 186 else (1, 1, 1, 1)
+
+    return calculated if is_alpha else calculated[:-1]
 
 
 class Animation(Animation):
@@ -186,6 +200,8 @@ class CustButton(Button, HoveringBehavior):
     background_color_hovering = ListProperty([0, 0, 0, 0])
 
     def on_enter(self):
+        super().on_enter()
+
         if not self.disabled:
             try:
                 self.color = self.orig_color
@@ -203,6 +219,8 @@ class CustButton(Button, HoveringBehavior):
                 d=.1).start(self)
 
     def on_leave(self, force=False):
+        super().on_leave()
+
         if not self.disabled or force:
             self.on_leave_anim = Animation(
                 color=getattr(self, 'orig_color', self.color),
@@ -220,6 +238,18 @@ class CustButton(Button, HoveringBehavior):
             Animation(opacity=1, d=.1).start(self)
             if self.hovering:
                 self.on_enter()
+
+    def on_color(self, *args):
+        if self.hovering:
+            self.unbind(color=self.on_color)
+            self.color = self.color_hovering
+            self.bind(color=self.on_color)
+
+    def on_background_color(self, *args):
+        if self.hovering:
+            self.unbind(background_color=self.on_background_color)
+            self.background_color = self.background_color_hovering
+            self.bind(background_color=self.on_background_color)
 
 
 class LabelIconButton(BoxLayout):
@@ -803,7 +833,7 @@ class Notification(Popup):
 
     def __init__(self, **kw):
         super().__init__(**kw)
-        
+
         self.children[0].children[2].markup = True
 
         is_notif = hasattr(app, 'curr_notif')
@@ -813,12 +843,13 @@ class Notification(Popup):
 
         app.curr_notif = self
 
-        anim = (Animation(_decor_size=[self._decor_size[0], 0], d=0) + Animation(
-            opacity=1,
-            _bg_offset=0,
-            _decor_size=self._decor_size,
-            d=.5,
-            t='out_expo'))
+        anim = (
+            Animation(_decor_size=[self._decor_size[0], 0], d=0) + Animation(
+                opacity=1,
+                _bg_offset=0,
+                _decor_size=self._decor_size,
+                d=.5,
+                t='out_expo'))
 
         Clock.schedule_once(lambda *args: anim.start(self), is_notif * .5)
         Clock.schedule_once(self.dismiss, is_notif * .5 + 3)
@@ -832,7 +863,7 @@ class Notification(Popup):
         anim.bind(
             on_complete=lambda *args: super(Notification, self).dismiss())
         anim.start(self)
-        
+
         try:
             if app.curr_notif is self:
                 del app.curr_notif
@@ -924,27 +955,87 @@ class SmoothScrollView(ScrollView):
         self.scroll_y = self._scroll_y
 
         self.scroll_anim.cancel(self)
-        self.scroll_anim = Animation(
-            _scroll_y=to_scroll,
-            d=.2, t='out_expo'
-        )
+        self.scroll_anim = Animation(_scroll_y=to_scroll, d=.2, t='out_expo')
         self.scroll_anim.start(self)
 
     def on__scroll_y(self, instance, _scroll_y):
         self.scroll_y = _scroll_y
 
 
-class ThemeSpinner(Spinner):
-    def on_values(self, *args):
-        try:
-            self.values.remove(self.text)
-        except ValueError:
-            pass
+class ThemeSpinnerButton(Label):
+    bg_height = NumericProperty()
+    bg_color = ListProperty([0, 0, 0, 0])
+    _bg_index = 0
+    base_size = ListProperty([120, 40])
 
-    def on_text(self, *args):
-        self.values = theme.available_themes
-        theme.set_theme(theme.encode_theme_name(self.text))
-        if self.text != theme.decoded_name:
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+        self.spin_values = [
+            get_color_from_hex(value)
+            for key, value in theme.get_values(theme.encode_theme_name(self.text)).items()
+        ]
+    
+        # Clock.schedule_once(self.swap_background)
+        Clock.schedule_interval(self.swap_background, 2)
+
+    @property
+    def bg_index(self):
+        return self._bg_index
+
+    @bg_index.setter
+    def bg_index(self, value):
+        self._bg_index = value if value != len(self.spin_values) - 1 else 0
+    
+    def swap_background(self, *args):
+        self.bg_index += 1
+        (
+            Animation(bg_height=0, t='in_expo', d=.3) +
+            Animation(bg_color=self.spin_values[self.bg_index], d=0) +
+            Animation(bg_height=self.height, t='out_expo', d=.5)
+        ).start(self)
+
+
+class ThemeSwitcher(BoxLayout):
+    themes = ListProperty()
+    theme_index = NumericProperty()
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+        self.themes = theme.available_themes
+        Clock.schedule_once(self.on_frame)
+
+    def on_frame(self, *args):
+        self.cont = self.ids.container
+        self.cont.add_widget(ThemeSpinnerButton(text=theme.decoded_name))
+        self.theme_index = [t.name for t in theme.available_themes].index(theme.name)
+
+    @property
+    def curr_theme(self):
+        return self.themes[self.theme_index]
+
+    def previous_theme(self):
+        self.theme_index = self.theme_index - 1 if self.theme_index else len(self.themes) - 1
+
+    def next_theme(self):
+        self.theme_index = self.theme_index + 1 if self.theme_index != len(self.themes) - 1 else 0
+
+    def on_theme_index(self, *args):
+        curr_wg = self.cont.children[0]
+
+        def on_complete(*args):
+            self.cont.remove_widget(curr_wg)
+            new_wg = ThemeSpinnerButton(text=self.themes[self.theme_index].decoded_name, size_hint_y=None, height=0)
+            self.cont.add_widget(new_wg)
+            Animation(height=self.height, d=.2, t='out_expo').start(new_wg)
+
+        anim = Animation(opacity=0, d=.2, t='out_expo')
+        anim.bind(on_complete=on_complete)
+        anim.start(curr_wg)
+
+        theme.set_theme(self.curr_theme.name)
+        if self.curr_theme.name != theme.name:
             Notification(
                 title_='Restart required',
                 message=

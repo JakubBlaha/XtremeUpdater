@@ -23,20 +23,24 @@ class Theme:
                 except (FileNotFoundError, KeyError):
                     name = 'default'
 
-        if not values:
-            try:
-                with open(self.THEME_PATH + name + '.yaml') as f:
-                    values = {
-                        **self.DEFAULT_VALUES,
-                        **safe_load(f).get(name, {})
-                    }
-            except FileNotFoundError:
-                values = self.DEFAULT_VALUES
+        values = values if values else self.get_values(name)
 
         self.name = name
         for key, value in {**self.DEFAULT_VALUES, **values}.items():
             setattr(self, key, get_color_from_hex(value))
             setattr(self, key.upper(), value)
+
+    @classmethod
+    def get_values(cls, theme_name):
+        theme_name = theme_name.replace('.yaml', '')
+        try:
+            with open(cls.THEME_PATH + theme_name + '.yaml') as f:
+                return {
+                    **cls.DEFAULT_VALUES,
+                    **safe_load(f).get(theme_name, {})
+                }
+        except FileNotFoundError:
+            return cls.DEFAULT_VALUES
 
     @classmethod
     def set_theme(cls, theme_name):
@@ -66,7 +70,7 @@ class Theme:
     @property
     def available_themes(self):
         return [
-            self.decode_theme_name(name)
+            Theme(name=name)
             for name in os.listdir(self.THEME_PATH)
         ]
 
