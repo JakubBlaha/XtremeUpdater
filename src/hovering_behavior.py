@@ -17,9 +17,7 @@ class HoveringBehavior(EventDispatcher):
 
         super().__init__(**kw)
 
-        Clock.schedule_once(self.check_hovering_attrs)
-
-    def check_hovering_attrs(self, *args):
+    def on_hovering_attrs(self, *args):
         if self.hovering_attrs:
             self.bind_hovering()
 
