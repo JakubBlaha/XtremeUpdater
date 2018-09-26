@@ -3,6 +3,7 @@ from kivy.animation import Animation
 from kivy.core.window import Window
 from kivy.event import EventDispatcher
 from kivy.factory import Factory
+from kivy.clock import Clock
 
 class HoveringBehavior(EventDispatcher):
     hovering = BooleanProperty(False)
@@ -16,7 +17,10 @@ class HoveringBehavior(EventDispatcher):
 
         super().__init__(**kw)
 
-        if self.hovering_attrs or True: # TODO HOTFIX
+        Clock.schedule_once(self.check_hovering_attrs)
+
+    def check_hovering_attrs(self, *args):
+        if self.hovering_attrs:
             self.bind_hovering()
 
     def bind_hovering(self, *args):
@@ -39,8 +43,6 @@ class HoveringBehavior(EventDispatcher):
             self._orig_attrs[key] = getattr(self, key)
 
     def on_enter(self):
-        print(self.hovering_attrs)
-
         if not self.hovering_attrs:
             return
 
