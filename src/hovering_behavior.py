@@ -1,16 +1,23 @@
 from kivy.properties import BooleanProperty, DictProperty
 from kivy.animation import Animation
 from kivy.core.window import Window
+from kivy.event import EventDispatcher
+from kivy.factory import Factory
 
-
-class HoveringBehavior():
+class HoveringBehavior(EventDispatcher):
     hovering = BooleanProperty(False)
     hovering_attrs = DictProperty()
     anim_kw = DictProperty()
     _orig_attrs = {}
 
     def __init__(self, **kw):
-        self.bind_hovering()
+        self.register_event_type('on_enter')
+        self.register_event_type('on_leave')
+
+        super().__init__(**kw)
+
+        if self.hovering_attrs or True: # TODO HOTFIX
+            self.bind_hovering()
 
     def bind_hovering(self, *args):
         Window.bind(mouse_pos=self.on_mouse_pos)
@@ -25,16 +32,18 @@ class HoveringBehavior():
         self.hovering = self.collide_point(*self.to_widget(*pos))
 
     def on_hovering(self, *args):
-        if self.hovering:
-            self.on_enter()
-        else:
-            self.on_leave()
+        self.dispatch('on_enter' if self.hovering else 'on_leave')
 
     def update_orig_attrs(self, *args):
         for key in self.hovering_attrs.keys():
             self._orig_attrs[key] = getattr(self, key)
 
     def on_enter(self):
+        print(self.hovering_attrs)
+
+        if not self.hovering_attrs:
+            return
+
         if not self._orig_attrs:
             self.update_orig_attrs()
         try:
@@ -45,13 +54,15 @@ class HoveringBehavior():
         self.on_enter_anim.start(self)
 
     def on_leave(self):
-        # TODO HOTFIX, AttributeError
-        # self._orig_attrs = {
-        #     key: value for key, value in self._orig_attrs.items() if hasattr(self, key)
-        # }
+        if not self.hovering_attrs:
+            return
+
         try:
             self.on_enter_anim.stop(self)
         except AttributeError:
             pass
+
         self.on_leave_anim = Animation(**self._orig_attrs, **self.anim_kw)
         self.on_leave_anim.start(self)
+
+Factory.register('HoveringBehavior', HoveringBehavior)
