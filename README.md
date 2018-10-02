@@ -21,6 +21,8 @@ The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpda
   - Fixed incorrect *LabelIconButton* background color.
   - Fixed bug causing *Navigation buttons* to sometimes have incorrect text color.
   - Fixed bug causing *GameDVR* tweak to crash the app on startup if the machine is running *Windows Server 2016*.
+  - App now does not close when UAC prompt is rejected.
+  - *Sync popup* now does not close itself when clicking outside of it.
 
 **Other**
   - Added *Night Roses* theme.

@@ -41,6 +41,7 @@ from kivy.uix.button import Button
 from kivy.uix.image import CoreImage
 from kivy.uix.spinner import Spinner
 from custpagelayout import PageLayout
+from ignoretouch import IgnoreTouchBehavior
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.modalview import ModalView
 from kivy.graphics.texture import Texture
@@ -711,7 +712,7 @@ class DllViewAdapter(ListAdapter):
         Clock.schedule_once(lambda *args: self.select_list(views))
 
 
-class SyncPopup(Popup, NoiseTexture):
+class SyncPopup(Popup, NoiseTexture, IgnoreTouchBehavior):
     icon_rotation = NumericProperty()
 
     def __init__(self, **kw):
@@ -794,7 +795,7 @@ class WorkingBar(Widget):
         Animation(_x1=0, _x2=value, d=.5, t='out_expo').start(self)
 
 
-class Notification(Popup):
+class Notification(Popup, IgnoreTouchBehavior):
     title_ = StringProperty('Notification')
     message = StringProperty('Example message')
     _decor_size = ListProperty([6, 20])
@@ -822,9 +823,6 @@ class Notification(Popup):
 
         Clock.schedule_once(lambda *args: anim.start(self), is_notif * .5)
         Clock.schedule_once(self.dismiss, is_notif * .5 + 3)
-
-    def on_touch_down(self, *args):
-        pass
 
     def dismiss(self, *args):
         anim = Animation(
@@ -892,7 +890,16 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
 
     def on_touch_up(self, touch):
         if self.collide_point(*touch.pos):
-            self.on_release()
+            Logger.info('Executing as admin')
+
+            succeed = ctypes.windll.shell32.ShellExecuteW(
+                None, "runas", sys.executable,
+                '' if hasattr(sys, '_MEIPASS') else __file__, None, 1) == 42
+
+            Logger.info('Successfully executed as admin' if succeed else 'Failed to execute as admin')
+
+            if succeed:
+                app.stop()
 
     def on_touch_move(*args):
         pass
@@ -908,12 +915,6 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
             (Animation(_btn_opacity=0, d=.1) + Animation(_btn_opacity=1, d=.1))
         )
         self.fade_anim.start(self)
-
-    def on_release(self):
-        ctypes.windll.shell32.ShellExecuteW(
-            None, "runas", sys.executable,
-            '' if hasattr(sys, '_MEIPASS') else __file__, None, 1)
-        app.stop()
 
 
 class SmoothScrollView(ScrollView):
@@ -953,20 +954,9 @@ class ThemeSwitcher(BoxLayout):
     def swap_color(self, *args):
         self.display_colors.append(self.display_colors.pop(0))
 
-        (
-            Animation(
-                display_height=0,
-                d=.2, t='in_expo'
-            ) +
-            Animation(
-                display_color=self.display_colors[0],
-                d=0
-            ) +
-            Animation(
-                display_height=self.height,
-                d=.2, t='out_expo'
-            )
-        ).start(self)
+        (Animation(display_height=0, d=.2, t='in_expo') + Animation(
+            display_color=self.display_colors[0], d=0) + Animation(
+                display_height=self.height, d=.2, t='out_expo')).start(self)
 
     def on_theme(self, __, theme_):
         theme_.set_theme()
@@ -974,10 +964,7 @@ class ThemeSwitcher(BoxLayout):
 
         def on_complete(*args):
             self.ids.label.text = self.theme.decoded_name
-            Animation(
-                opacity=1,
-                d=.2, t='out_expo'
-            ).start(self.ids.label)
+            Animation(opacity=1, d=.2, t='out_expo').start(self.ids.label)
 
         anim = Animation(opacity=0, d=.2, t='in_expo')
         anim.bind(on_complete=on_complete)
@@ -1407,11 +1394,12 @@ class XtremeUpdaterApp(App):
         self.root.goto_page(4)
 
 
-Window.clearcolor = theme.sec
-Logger.info(f'System = {platform.system()}')
-Logger.info(f'Release = {platform.release()}')
-
 if __name__ == '__main__':
+    Logger.info(f'System = {platform.system()}')
+    Logger.info(f'Release = {platform.release()}')
+
+    Window.clearcolor = theme.sec
+
     app = XtremeUpdaterApp()
     app.run()
 
