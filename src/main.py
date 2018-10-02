@@ -217,6 +217,10 @@ class CustButton(Button, HoveringBehavior):
                 self.on_enter()
 
 
+class BackgroundedButton(CustButton):
+    pass
+
+
 class LabelIconButton(BoxLayout):
     text = StringProperty()
     icon = StringProperty()
@@ -994,55 +998,6 @@ class ThemeSwitcher(BoxLayout):
 
     def next_theme(self):
         self.themes.append(self.themes.pop(0))
-
-
-class PulsingHeart(Label):
-    def __init__(self, **kw):
-        super().__init__(**kw)
-
-        self.font_size = 220
-
-        if not app.conf.animations:
-            return
-
-        new_size = self.font_size + self.font_size // 4
-        anim = (Animation(font_size=new_size, d=.2, t='in_expo') + Animation(
-            font_size=self.font_size, d=.2, t='out_expo') + Animation(d=1))
-        anim.repeat = True
-        anim.start(self)
-
-
-class BackgroundedButton(CustButton):
-    pass
-
-
-class DonateButton(Factory.BackgroundedButton):
-    rotation = NumericProperty()
-
-    def on_enter(self):
-        super().on_enter()
-
-        if app.conf.animations:
-            self.rotation_anim = (Animation(rotation=-20, d=.05) + Animation(
-                rotation=0, d=1.75, t='out_elastic') + Animation(
-                    d=1) + Animation(rotation=20, d=.05) + Animation(
-                        rotation=0, d=1.75, t='out_elastic') + Animation(d=1))
-            self.rotation_anim.repeat = True
-            self.rotation_anim.start(self)
-
-        Animation(opacity=1, d=.1).start(app.root.ids.heart)
-
-    def on_leave(self):
-        super().on_leave()
-
-        try:
-            self.rotation_anim.cancel(self)
-        except AttributeError:
-            pass
-        else:
-            Animation(rotation=0, d=.1, t='out_expo').start(self)
-
-        Animation(opacity=0, d=.1).start(app.root.ids.heart)
 
 
 class RootLayout(BoxLayout, HoveringBehavior):

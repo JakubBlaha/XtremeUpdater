@@ -39,7 +39,7 @@ class HoveringBehavior(EventDispatcher):
             self._orig_attrs[key] = getattr(self, key)
 
     def on_enter(self):
-        if not self.hovering_attrs:
+        if not self.hovering_attrs or getattr(self, 'disabled', False):
             return
 
         if not self._orig_attrs:

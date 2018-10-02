@@ -746,12 +746,8 @@ RootLayout:
         Widget:
 
         IconNavigationButton:
-            text: '\ueb51'
-            page_index: 3
-
-        IconNavigationButton:
             text: '\ue713'
-            page_index: 4
+            page_index: 3
 
     Content:
         id: content
@@ -883,41 +879,6 @@ RootLayout:
                             command: Tweaks.clear_fth
 
         ContentLayout:
-            id: content_favorite
-
-            RelativeLayout:
-                Label:
-                    font_name: 'fnt/segmdl2.ttf'
-                    text: '\uea92'
-                    color: theme.sec
-                    pos: root.width / 2 - self.width / 2, 80
-                    font_size: getattr(heart, 'font_size')
-                    
-                PulsingHeart:
-                    id: heart
-                    font_name: 'fnt/segmdl2.ttf'
-                    text: '\ueb52'
-                    color: 1, .3, .3, 1
-                    pos: root.width / 2 - self.width / 2, 80
-                    font_size: 220
-
-                DonateButton:
-                    canvas.before:
-                        PushMatrix:
-                        Rotate:
-                            angle: self.rotation
-                            origin: self.center
-
-                    canvas.after:
-                        PopMatrix:
-
-                    text: 'Donate'
-                    size_hint: None, None
-                    size: 340, 40
-                    pos: root.width / 2 - self.width / 2, 100
-                    hovering_attrs: {'background_color': theme.sec}
-
-        ContentLayout:
             id: content_settings
 
             SmoothScrollView:
@@ -950,6 +911,14 @@ RootLayout:
                         text: 'Export logs'
                         icon: '\ue9f9'
                         command: root.export_logs
+
+                    SectionLabel:
+                        text: 'Buy us a coffee'
+                    
+                    LabelIconButton:
+                        text: 'Donate | not yet'
+                        icon: '\ueb51'
+                        disabled: True
 
                     SectionLabel:
                         text: 'GUI'
