@@ -6,7 +6,6 @@
 #:import DllViewAdapter main.DllViewAdapter
 #:import Tweaks tweaks.Tweaks
 #:import get_version_number get_version_number.get_version_number
-#:import HoveringBehavior hovering_behavior.HoveringBehavior
 #:import startfile os.startfile
 #:import version main.__version__
 #:import __file__ main.__file__
@@ -881,7 +880,7 @@ RootLayout:
         ContentLayout:
             id: content_settings
 
-            SmoothScrollView:
+            ScrollView:
                 BoxLayout:
                     orientation: 'vertical'
                     padding: 10, 40

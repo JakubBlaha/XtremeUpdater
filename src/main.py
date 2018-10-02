@@ -55,7 +55,7 @@ from kivy.properties import StringProperty, ObjectProperty, DictProperty, ListPr
 import platform
 from theme import theme
 from dll_updater import DllUpdater
-from hovering_behavior import HoveringBehavior
+from hovering import HoveringBehavior
 from windowdragbehavior import WindowDragBehavior
 from get_image_url import get_image_url_from_response, TEMPLATE, HEADERS
 
@@ -164,16 +164,18 @@ class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
 
     def setup_mini_labels(self, *args):
         for i in range(17):
-            label = HeaderMiniLabel(
-                text=self.current_icon, x=i * 48 + 120, y=self.y - i % 2 * 10)
-            self.add_widget(label, 1)
+            self.add_widget(
+                HeaderMiniLabel(
+                    text=self.current_icon,
+                    x=i * 48 + 120,
+                    y=self.y - i % 2 * 10))
 
     def on_current_icon(self, *args):
         for child in self.children:
             child.text = self.current_icon
 
 
-class HeaderMiniLabel(Label, HoveringBehavior):
+class HeaderMiniLabel(Label):
     rotation_angle = NumericProperty()
 
     def __init__(self, **kw):
@@ -181,8 +183,6 @@ class HeaderMiniLabel(Label, HoveringBehavior):
 
         if app.conf.animations:
             Clock.schedule_once(self.rotate, randint(0, 10))
-        else:
-            self.unbind_hovering()
 
         self.rotation_angle = randint(0, 361)
 
@@ -195,14 +195,6 @@ class HeaderMiniLabel(Label, HoveringBehavior):
         Animation(
             rotation_angle=self.rotation_angle + 500, d=.5,
             t='out_expo').start(self)
-
-    def on_enter(self, *args):
-        Animation.stop_all(self)
-        (Animation(
-            rotation_angle=self.rotation_angle + 500,
-            color=theme.prim,
-            d=.5,
-            t='out_expo') + Animation(color=theme.bg, d=.5)).start(self)
 
 
 class CustButton(Button, HoveringBehavior):
@@ -896,7 +888,8 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
                 None, 'runas', sys.executable,
                 '' if hasattr(sys, '_MEIPASS') else __file__, None, 1) > 32
 
-            Logger.info('Successfully executed as admin' if ok else 'Failed to execute as admin')
+            Logger.info('Successfully executed as admin'
+                        if ok else 'Failed to execute as admin')
 
             if ok:
                 app.stop()

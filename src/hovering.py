@@ -5,6 +5,7 @@ from kivy.event import EventDispatcher
 from kivy.factory import Factory
 from kivy.clock import Clock
 
+
 class HoveringBehavior(EventDispatcher):
     hovering = BooleanProperty(False)
     hovering_attrs = DictProperty()
@@ -16,7 +17,7 @@ class HoveringBehavior(EventDispatcher):
         self.register_event_type('on_leave')
 
         super().__init__(**kw)
-            
+
         self.bind_hovering()
 
     def bind_hovering(self, *args):
@@ -62,5 +63,6 @@ class HoveringBehavior(EventDispatcher):
 
         self.on_leave_anim = Animation(**self._orig_attrs, **self.anim_kw)
         self.on_leave_anim.start(self)
+
 
 Factory.register('HoveringBehavior', HoveringBehavior)
