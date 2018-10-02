@@ -911,8 +911,8 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
 
     def on_release(self):
         ctypes.windll.shell32.ShellExecuteW(
-            None, "runas", sys.executable, ''
-            if hasattr(sys, '_MEIPASS') else __file__, None, 1)
+            None, "runas", sys.executable,
+            '' if hasattr(sys, '_MEIPASS') else __file__, None, 1)
         app.stop()
 
 
@@ -934,90 +934,73 @@ class SmoothScrollView(ScrollView):
         self.scroll_y = _scroll_y
 
 
-class ThemeSpinnerButton(Label):
-    bg_height = NumericProperty()
-    bg_color = ListProperty([0, 0, 0, 0])
-    _bg_index = 0
-    base_size = ListProperty([120, 40])
-
-    def __init__(self, **kw):
-        super().__init__(**kw)
-
-        self.spin_values = [
-            get_color_from_hex(value) for key, value in theme.get_values(
-                theme.encode_theme_name(self.text)).items()
-        ]
-
-        # Clock.schedule_once(self.swap_background)
-        Clock.schedule_interval(self.swap_background, 2)
-
-    @property
-    def bg_index(self):
-        return self._bg_index
-
-    @bg_index.setter
-    def bg_index(self, value):
-        self._bg_index = value if value != len(self.spin_values) - 1 else 0
-
-    def swap_background(self, *args):
-        self.bg_index += 1
-        (Animation(bg_height=0, t='in_expo', d=.3) + Animation(
-            bg_color=self.spin_values[self.bg_index], d=0) + Animation(
-                bg_height=self.height, t='out_expo', d=.5)).start(self)
-
-
 class ThemeSwitcher(BoxLayout):
     themes = ListProperty()
-    theme_index = NumericProperty()
+    theme = ObjectProperty()
+    display_color = ListProperty([0, 0, 0, 0])
+    display_colors = []
+    display_height = NumericProperty()
 
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        self.themes = theme.available_themes
-        Clock.schedule_once(self.on_frame)
+        def on_frame(*args):
+            self.themes = theme.ordered_available_themes
+            Clock.schedule_interval(self.swap_color, 2)
 
-    def on_frame(self, *args):
-        self.cont = self.ids.container
-        self.cont.add_widget(ThemeSpinnerButton(text=theme.decoded_name))
-        self.theme_index = [t.name for t in theme.available_themes].index(
-            theme.name)
+        Clock.schedule_once(on_frame)
 
-    @property
-    def curr_theme(self):
-        return self.themes[self.theme_index]
+    def swap_color(self, *args):
+        self.display_colors.append(self.display_colors.pop(0))
 
-    def previous_theme(self):
-        self.theme_index = self.theme_index - 1 if self.theme_index else len(
-            self.themes) - 1
+        (
+            Animation(
+                display_height=0,
+                d=.2, t='in_expo'
+            ) +
+            Animation(
+                display_color=self.display_colors[0],
+                d=0
+            ) +
+            Animation(
+                display_height=self.height,
+                d=.2, t='out_expo'
+            )
+        ).start(self)
 
-    def next_theme(self):
-        self.theme_index = self.theme_index + 1 if self.theme_index != len(
-            self.themes) - 1 else 0
+    def on_theme(self, __, theme_):
+        theme_.set_theme()
+        self.display_colors = list(theme_.get_values_kivy_color().values())
 
-    def on_theme_index(self, *args):
         def on_complete(*args):
-            self.cont.clear_widgets()
-            new_wg = ThemeSpinnerButton(
-                text=self.themes[self.theme_index].decoded_name,
-                size_hint_y=None,
-                height=0)
-            self.cont.add_widget(new_wg)
-            Animation(height=self.height, d=.1, t='out_expo').start(new_wg)
+            self.ids.label.text = self.theme.decoded_name
+            Animation(
+                opacity=1,
+                d=.2, t='out_expo'
+            ).start(self.ids.label)
 
-        anim = Animation(opacity=0, d=.2, t='out_expo')
+        anim = Animation(opacity=0, d=.2, t='in_expo')
         anim.bind(on_complete=on_complete)
-        anim.start(self.cont.children[0])
+        anim.start(self.ids.label)
 
-        theme.set_theme(self.curr_theme.name)
-        if self.curr_theme.name != theme.name:
+        if self.theme.name != theme.name:
             Notification(
-                title_='Restart required',
+                title='Restart required',
                 message=
                 f'Please [color={theme.PRIM}]restart[/color] XtremeUpdater to set the new theme.'
             ).open()
 
+    def on_themes(self, __, themes):
+        self.theme = themes[0]
 
-class PulsingHearth(Label):
+    def previous_theme(self):
+        self.themes = [self.themes.pop(-1)] + self.themes
+
+    def next_theme(self):
+        self.themes.append(self.themes.pop(0))
+
+
+class PulsingHeart(Label):
     def __init__(self, **kw):
         super().__init__(**kw)
 
@@ -1027,11 +1010,8 @@ class PulsingHearth(Label):
             return
 
         new_size = self.font_size + self.font_size // 4
-        anim = (
-            Animation(font_size=new_size, d=.2, t='in_expo') +
-            Animation(font_size=self.font_size, d=.2, t='out_expo') +
-            Animation(d=1)
-        )
+        anim = (Animation(font_size=new_size, d=.2, t='in_expo') + Animation(
+            font_size=self.font_size, d=.2, t='out_expo') + Animation(d=1))
         anim.repeat = True
         anim.start(self)
 
@@ -1047,14 +1027,10 @@ class DonateButton(Factory.BackgroundedButton):
         super().on_enter()
 
         if app.conf.animations:
-            self.rotation_anim = (
-                Animation(rotation=-20, d=.05) +
-                Animation(rotation=0, d=1.75, t='out_elastic') +
-                Animation(d=1) +
-                Animation(rotation=20, d=.05) +
-                Animation(rotation=0, d=1.75, t='out_elastic') +
-                Animation(d=1)
-            )
+            self.rotation_anim = (Animation(rotation=-20, d=.05) + Animation(
+                rotation=0, d=1.75, t='out_elastic') + Animation(
+                    d=1) + Animation(rotation=20, d=.05) + Animation(
+                        rotation=0, d=1.75, t='out_elastic') + Animation(d=1))
             self.rotation_anim.repeat = True
             self.rotation_anim.start(self)
 

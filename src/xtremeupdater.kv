@@ -656,20 +656,42 @@ RootLayout:
     size: 340, 40
     themes: theme.available_themes
 
+    canvas.before:
+        Color:
+            rgba: self.display_color
+        Rectangle:
+            pos: self.pos
+            size: self.width, self.display_height
+
     IconButton:
         text: '\ue973'
         size_hint_x: .1
         on_release: root.previous_theme()
         background_color: theme.sec
-        hovering_attrs: {'background_color': theme.sec}
-    BoxLayout:
-        id: container
+        size_hint_x: None
+        width: 40
+
+    Label:
+        id: label
+        text_size: self.size
+        valign: 'center'
+        padding_x: 10
+
+        canvas.before:
+            Color:
+                rgb: theme.sec
+                a: .8
+            Rectangle:
+                pos: self.pos
+                size: self.width / 2 * self.opacity, self.height
+
     IconButton:
         text: '\ue974'
         size_hint_x: .1
         on_release: root.next_theme()
         background_color: theme.sec
-        hovering_attrs: {'background_color': theme.sec}
+        size_hint_x: None
+        width: 40
 
 <RootLayout>:
     orientation: 'vertical'
@@ -871,7 +893,7 @@ RootLayout:
                     pos: root.width / 2 - self.width / 2, 80
                     font_size: getattr(heart, 'font_size')
                     
-                PulsingHearth:
+                PulsingHeart:
                     id: heart
                     font_name: 'fnt/segmdl2.ttf'
                     text: '\ueb52'

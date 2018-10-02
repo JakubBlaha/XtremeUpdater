@@ -14,6 +14,7 @@ The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpda
 **Features**
   - Added *Run as admin* button.
   - Added support for *theming*.
+  - Added *Donate* tab.
 
 **Bugfixes**
   - Fixed bug causing buttons to sometimes have unexpected colors.

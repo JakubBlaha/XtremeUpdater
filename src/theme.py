@@ -30,21 +30,31 @@ class Theme:
             setattr(self, key, get_color_from_hex(value))
             setattr(self, key.upper(), value)
 
-    @classmethod
-    def get_values(cls, theme_name):
+    def get_values(self, theme_name=None):
+        if not theme_name:
+            theme_name = self.name
+
         theme_name = theme_name.replace('.yaml', '')
         try:
-            with open(cls.THEME_PATH + theme_name + '.yaml') as f:
+            with open(self.THEME_PATH + theme_name + '.yaml') as f:
                 return {
-                    **cls.DEFAULT_VALUES,
+                    **self.DEFAULT_VALUES,
                     **safe_load(f).get(theme_name, {})
                 }
         except FileNotFoundError:
-            return cls.DEFAULT_VALUES
+            return self.DEFAULT_VALUES
 
-    @classmethod
-    def set_theme(cls, theme_name):
-        with open(cls.CONFIG_PATH) as f:
+    def get_values_kivy_color(self, theme_name=None):
+        return {
+            key: get_color_from_hex(value)
+            for key, value in self.get_values(theme_name).items()
+        }
+
+    def set_theme(self, theme_name=None):
+        if not theme_name:
+            theme_name = self.name
+
+        with open(self.CONFIG_PATH) as f:
             data = safe_load(f)
 
         if data.get('theme', '') == theme_name:
@@ -52,7 +62,7 @@ class Theme:
 
         data['theme'] = str(theme_name)
 
-        with open(cls.CONFIG_PATH, 'w') as f:
+        with open(self.CONFIG_PATH, 'w') as f:
             dump(data, f)
 
     @staticmethod
@@ -73,6 +83,14 @@ class Theme:
             Theme(name=name)
             for name in os.listdir(self.THEME_PATH)
         ]
+
+    @property
+    def ordered_available_themes(self):
+        l = self.available_themes
+        while l[0].name != self.name:
+            l.append(l.pop(0))
+
+        return l
 
 
 theme = Theme()
