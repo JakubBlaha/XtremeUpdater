@@ -16,10 +16,8 @@ class HoveringBehavior(EventDispatcher):
         self.register_event_type('on_leave')
 
         super().__init__(**kw)
-
-    def on_hovering_attrs(self, *args):
-        if self.hovering_attrs:
-            self.bind_hovering()
+            
+        self.bind_hovering()
 
     def bind_hovering(self, *args):
         Window.bind(mouse_pos=self.on_mouse_pos)

@@ -178,8 +178,6 @@ class HeaderMiniLabel(Label, HoveringBehavior):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        self.bind_hovering()
-
         if app.conf.animations:
             Clock.schedule_once(self.rotate, randint(0, 10))
         else:
@@ -870,8 +868,6 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
 
     def __init__(self, **kw):
         super().__init__(**kw)
-
-        self.bind_hovering()
 
         if not app.conf.animations:
             return
