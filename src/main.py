@@ -890,15 +890,15 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
 
     def on_touch_up(self, touch):
         if self.collide_point(*touch.pos):
-            Logger.info('Executing as admin')
+            Logger.info('Executing as admin...')
 
-            succeed = ctypes.windll.shell32.ShellExecuteW(
-                None, "runas", sys.executable,
-                '' if hasattr(sys, '_MEIPASS') else __file__, None, 1) == 42
+            ok = ctypes.windll.shell32.ShellExecuteW(
+                None, 'runas', sys.executable,
+                '' if hasattr(sys, '_MEIPASS') else __file__, None, 1) > 32
 
-            Logger.info('Successfully executed as admin' if succeed else 'Failed to execute as admin')
+            Logger.info('Successfully executed as admin' if ok else 'Failed to execute as admin')
 
-            if succeed:
+            if ok:
                 app.stop()
 
     def on_touch_move(*args):
@@ -909,6 +909,7 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
             self.fade_anim.cancel(self)
         except AttributeError:
             pass
+
         self.fade_anim = (
             Animation(width=200 if self.hovering else 60, d=.5, t='out_expo') &
             Animation(_disp_icon=not self.hovering, d=.2) &
