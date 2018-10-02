@@ -54,10 +54,14 @@ from kivy.properties import StringProperty, ObjectProperty, DictProperty, ListPr
 
 import platform
 from theme import theme
+from fontcolor import font_color
 from dll_updater import DllUpdater
 from hovering import HoveringBehavior
 from windowdragbehavior import WindowDragBehavior
 from get_image_url import get_image_url_from_response, TEMPLATE, HEADERS
+from PIL import Image
+from cropped_thumbnail import cropped_thumbnail
+from io import BytesIO
 
 IS_ADMIN = ctypes.windll.shell32.IsUserAnAdmin()
 
@@ -93,25 +97,6 @@ def notify_restart(fn):
         ).open()
 
     return wrapper
-
-
-def font_color(color: tuple) -> tuple:
-    """Returns the best font color for given background color."""
-
-    is_alpha = len(color) == 4
-    if is_alpha:
-        color = color[:-1]
-
-    red, green, blue = color
-    red *= 255
-    green *= 255
-    blue *= 255
-    calculated = (
-        0, 0, 0,
-        1) if (red * 0.299 + green * 0.587 + blue * 0.114) > 186 else (1, 1, 1,
-                                                                       1)
-
-    return calculated if is_alpha else calculated[:-1]
 
 
 class Animation(Animation):
@@ -501,10 +486,6 @@ class ImageCacher:
 
         def load_image(index):
             def on_request_success(req, result):
-                from PIL import Image
-                from cropped_thumbnail import cropped_thumbnail
-                from io import BytesIO
-
                 buffer = BytesIO(result)
                 img = Image.open(buffer)
                 img = cropped_thumbnail(img, [333, 187])
