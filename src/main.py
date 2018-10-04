@@ -570,10 +570,12 @@ class GameButton(Button, HoveringBehavior):
 
         for ch in self.icon_buttons:
             ch.color = color
-    
+
     @property
     def icon_buttons(self):
-        return [ch for ch in self.children if isinstance(ch, Factory.IconButton)]
+        return [
+            ch for ch in self.children if isinstance(ch, Factory.IconButton)
+        ]
 
     def on_release(self):
         path = self.path
@@ -1037,7 +1039,11 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
     def switch_animations_enabled(self, _, value):
         app.conf.animations = value
-        self.ids.content.anim_kwargs['d'] = .5 * value
+        Notification(
+            title_='Restart required',
+            message=
+            f'A [color={theme.PRIM}]restart[/color] may be required to [color={theme.PRIM}]{"enable" if value else "disable"}[/color] animations.'
+        ).open()
 
     @new_thread
     def load_directory(self):
