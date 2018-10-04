@@ -1377,7 +1377,7 @@ class XtremeUpdaterApp(App):
         self.conf = Conf(self.STORE_PATH, self.DEFAULT_STORE)
 
     def open_settings(self):
-        self.root.goto_page(4)
+        self.root.goto_page(3)
 
 
 if __name__ == '__main__':

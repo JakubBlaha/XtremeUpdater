@@ -75,6 +75,8 @@ class PageLayout(Layout):
 
     :data:`anim_kwargs` is a :class:`~kivy.properties.DictProperty`
     and defaults to {'d': .5, 't': 'in_quad'}.
+
+    .. versionadded:: 1.11.0
     '''
 
     def __init__(self, **kwargs):
@@ -125,7 +127,6 @@ class PageLayout(Layout):
                 y=y_parent,
                 **self.anim_kwargs).start(c)
 
-
     def on_touch_down(self, touch):
         if (
             self.disabled or
@@ -144,7 +145,6 @@ class PageLayout(Layout):
             touch.grab(self)
             return True
         return page.on_touch_down(touch)
-
 
     def on_touch_move(self, touch):
         if touch.grab_current != self:
@@ -200,7 +200,6 @@ class PageLayout(Layout):
 
         return page.on_touch_move(touch)
 
-
     def on_touch_up(self, touch):
         if touch.grab_current == self:
             if (
@@ -220,7 +219,6 @@ class PageLayout(Layout):
 
         if len(self.children) > 1:
             return self.children[-self.page + 1].on_touch_up(touch)
-
 
 
 if __name__ == '__main__':
