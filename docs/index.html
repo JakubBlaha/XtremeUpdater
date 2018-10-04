@@ -2,6 +2,16 @@
 <html>
 
 <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-126966243-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-126966243-1');
+    </script>
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <!--<link href="https://cdn.rawgit.com/michalsnik/aos/2.1.1/dist/aos.css" rel="stylesheet">-->
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400" rel="stylesheet">
@@ -11,10 +21,10 @@
     <title>XtremeUpdater</title>
     <script src="https://cdn.jsdelivr.net/npm/@widgetbot/crate@3" async defer>
         new Crate({
-          server: '420287592366342163',
-          channel: '474907151324807168',
-          shard: 'https://cl2.widgetbot.io',
-          color: '#dbac2a'
+            server: '420287592366342163',
+            channel: '474907151324807168',
+            shard: 'https://cl2.widgetbot.io',
+            color: '#dbac2a'
         })
     </script>
 </head>
@@ -40,8 +50,10 @@
 -->
 
 <body onresize="resize()" onload="setup()">
-    
-    <header id="header"><div class="head-fade-effect"></div></header>
+
+    <header id="header">
+        <div class="head-fade-effect"></div>
+    </header>
     <main>
         <a href="#main-title">
             <div id="main-circle"></div>
@@ -69,7 +81,8 @@
             It also comes with a very nice and easy to use GUI.<br>
             <br>
             <strong>But how does it work then?</strong><br>
-            XtremeUpdater speeds up apps' performance by updating their dependencies called Dynamic link libraries (Dlls),
+            XtremeUpdater speeds up apps' performance by updating their dependencies called Dynamic link libraries
+            (Dlls),
             which often come with the actual programs outdated
             to support even the oldest versions of Windows, such as Windows XP.
             Even though XtremeUpdater updates the libraries to the latest versions made for modern operating systems,
@@ -154,14 +167,18 @@
             Actually, it's totally free and <i>OpenSource</i>!
             Go ahead and click the download button. Don't be afraid!
         </p>
-        <a id='download-button' href='https://github.com/XtremeWare/XtremeUpdater/releases/download/Installer/XtremeUpdater-Setup.exe' target='_blank' class="download-button">DOWNLOAD</a>
+        <a id='download-button' href='https://github.com/XtremeWare/XtremeUpdater/releases/download/Installer/XtremeUpdater-Setup.exe'
+            target='_blank' class="download-button">DOWNLOAD</a>
         <div class="main-title">Our team</div><br>
         <div class="sub-main-title">XtremeWare</div>
         <div class='profile-images-div'>
-            <img alt='Tomáš Hobza' src='https://scontent.fprg2-1.fna.fbcdn.net/v/t1.0-9/33923793_481093855641126_1000303320666996736_n.jpg?_nc_cat=0&oh=1affe7f83c155fa652a30904c397df9e&oe=5C1419BD' class='about-profile-img'>
+            <img alt='Tomáš Hobza' src='https://scontent.fprg2-1.fna.fbcdn.net/v/t1.0-9/33923793_481093855641126_1000303320666996736_n.jpg?_nc_cat=0&oh=1affe7f83c155fa652a30904c397df9e&oe=5C1419BD'
+                class='about-profile-img'>
             <img alt='David Knack' src='img/icon.png' class='about-profile-img'>
-            <img alt='Jakub Bláha' src='https://scontent.fprg2-1.fna.fbcdn.net/v/t1.0-9/28276339_482910655437319_5641446940146482225_n.jpg?_nc_cat=0&oh=d259392836f3b0abde083425233c4d68&oe=5BCEFD25' class='about-profile-img'>
-            <img alt='Reiny Zamayuti' src='https://scontent.fprg2-1.fna.fbcdn.net/v/t1.0-9/378066_278605828865146_307852255_n.jpg?_nc_cat=0&oh=ef0c563bd47704ba862f3604e1548615&oe=5BDF814B' class='about-profile-img'>
+            <img alt='Jakub Bláha' src='https://scontent.fprg2-1.fna.fbcdn.net/v/t1.0-9/28276339_482910655437319_5641446940146482225_n.jpg?_nc_cat=0&oh=d259392836f3b0abde083425233c4d68&oe=5BCEFD25'
+                class='about-profile-img'>
+            <img alt='Reiny Zamayuti' src='https://scontent.fprg2-1.fna.fbcdn.net/v/t1.0-9/378066_278605828865146_307852255_n.jpg?_nc_cat=0&oh=ef0c563bd47704ba862f3604e1548615&oe=5BDF814B'
+                class='about-profile-img'>
         </div>
         <p class="main-text">
             This is our team. The team consists of four developers with enthusiasm for gaming.
@@ -170,7 +187,7 @@
             because we know the feeling of lacking strong hardware. We also want to
             serve the best support to our users. If you have any new ideas for any apps,
             please <a href='https://discord.gg/Cs4rstF' target='_blank'>contact us</a>.
-            We wish you a nice day.  
+            We wish you a nice day.
         </p>
     </main>
     <footer>
@@ -215,9 +232,9 @@
                     duration: 1200,
                 })*/
 
-    (function($) {
+    (function ($) {
 
-        $.fn.visible = function(partial) {
+        $.fn.visible = function (partial) {
 
             var $t = $(this),
                 $w = $(window),
@@ -238,16 +255,16 @@
 
     var allMods = $(".main-text");
 
-    allMods.each(function(i, el) {
+    allMods.each(function (i, el) {
         var el = $(el);
         if (el.visible(true)) {
             el.addClass("already-visible");
         }
     });
 
-    win.scroll(function(event) {
+    win.scroll(function (event) {
 
-        allMods.each(function(i, el) {
+        allMods.each(function (i, el) {
             var el = $(el);
             if (el.visible(true)) {
                 el.addClass("come-in");
@@ -257,7 +274,7 @@
     });
 
     var mainbottom = $('header').height() - 70;
-    $(window).on('scroll', function() {
+    $(window).on('scroll', function () {
         stop = Math.round($(window).scrollTop());
         if (stop >= mainbottom) {
             $('.head-fade-effect').addClass('past-main');
@@ -268,7 +285,7 @@
 
     function resize() {
         var mainbottom = $('header').height() - 70;
-        $(window).on('scroll', function() {
+        $(window).on('scroll', function () {
             stop = Math.round($(window).scrollTop());
             if (stop >= mainbottom) {
                 $('.nav').addClass('past-main');
@@ -277,9 +294,9 @@
             }
         });
 
-        setTimeout(function() {
+        setTimeout(function () {
             var mainbottom = $('header').height() - 70;
-            $(window).on('scroll', function() {
+            $(window).on('scroll', function () {
                 stop = Math.round($(window).scrollTop());
                 if (stop >= mainbottom) {
                     $('.nav').addClass('past-main');
@@ -289,9 +306,9 @@
             });
         }, 200);
 
-        setTimeout(function() {
+        setTimeout(function () {
             var mainbottom = $('header').height() - 70;
-            $(window).on('scroll', function() {
+            $(window).on('scroll', function () {
                 stop = Math.round($(window).scrollTop());
                 if (stop >= mainbottom) {
                     $('.nav').addClass('past-main');
