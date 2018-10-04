@@ -45,7 +45,7 @@ from ignoretouch import IgnoreTouchBehavior
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.modalview import ModalView
 from kivy.graphics.texture import Texture
-from kivy.uix.scrollview import ScrollView
+from scrollview import ScrollView as SmoothScrollView
 from kivy.graphics import Rectangle, Color
 from kivy.uix.label import Label, CoreLabel
 from kivy.uix.floatlayout import FloatLayout
@@ -97,6 +97,10 @@ def notify_restart(fn):
         ).open()
 
     return wrapper
+
+
+class SmoothScrollView(SmoothScrollView):
+    pass
 
 
 class Animation(Animation):
@@ -290,7 +294,7 @@ class OverdrawLabel(FloatLayout):
         anim.start(self)
 
 
-class GameCollection(ScrollView):
+class GameCollection(SmoothScrollView):
     COMMON_PATHS_URL = 'https://raw.githubusercontent.com/XtremeWare/XtremeUpdater/master/res/CommonPaths.yaml'
     COMMON_PATHS_CACHE_PATH = '.cache/common/paths/CommonPaths.yaml'
     CUSTOM_PATHS_PATH = '.config/CustomPaths.json'
@@ -515,6 +519,7 @@ class GameButton(Button, HoveringBehavior):
     def __init__(self, **kw):
         super().__init__(**kw)
         self.on_leave()
+        self.ids.image.bind(texture=self.update_icon_color)
 
     def launch_game(self):
         app.root.bar.ping()
@@ -542,15 +547,33 @@ class GameButton(Button, HoveringBehavior):
         ImageCacher.download_image(query, self.ids.image)
         self.ids.image.source = os.path.join(ImageCacher.CACHE_DIR, query)
 
-    def on_enter(self):
-        Animation.stop_all(self)
-        Animation(opacity=1, d=.1).start(self)
-        Animation(opacity=1, d=.1).start(self.ids.label)
+    def update_icon_color(self, *args):
+        total_w = 0
+        max_h = 0
 
-    def on_leave(self):
-        Animation.stop_all(self)
-        Animation(opacity=.7, d=.1).start(self)
-        Animation(opacity=0, d=.1).start(self.ids.label)
+        for ch in self.icon_buttons:
+            total_w += ch.width
+            max_h = ch.height if ch.height > max_h else max_h
+
+        x = self.width - total_w
+        y = self.height - max_h
+
+        tex = self.ids.image.texture.get_region(x, y, total_w, max_h)
+
+        img = Image.frombytes('RGBA', (tex.size), tex.pixels)
+        img.thumbnail((1, 1))
+        avg_color = img.getpixel((0, 0))
+
+        avg_color = [i / 255 for i in avg_color]
+
+        color = font_color(avg_color)
+
+        for ch in self.icon_buttons:
+            ch.color = color
+    
+    @property
+    def icon_buttons(self):
+        return [ch for ch in self.children if isinstance(ch, Factory.IconButton)]
 
     def on_release(self):
         path = self.path
@@ -890,24 +913,6 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
             (Animation(_btn_opacity=0, d=.1) + Animation(_btn_opacity=1, d=.1))
         )
         self.fade_anim.start(self)
-
-
-class SmoothScrollView(ScrollView):
-    _scroll_y = NumericProperty(1)
-    scroll_anim = Animation()
-
-    def on_scroll_y(self, instance, to_scroll):
-        if to_scroll == self._scroll_y:
-            return
-
-        self.scroll_y = self._scroll_y
-
-        self.scroll_anim.cancel(self)
-        self.scroll_anim = Animation(_scroll_y=to_scroll, d=.2, t='out_expo')
-        self.scroll_anim.start(self)
-
-    def on__scroll_y(self, instance, _scroll_y):
-        self.scroll_y = _scroll_y
 
 
 class ThemeSwitcher(BoxLayout):

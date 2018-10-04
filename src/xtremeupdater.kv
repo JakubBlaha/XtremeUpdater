@@ -163,14 +163,15 @@ RootLayout:
         padding: root.padding
         color: root.color
 
-<Scrollview>:
+<SmoothScrollView>:
     scroll_wheel_distance: 100
     bar_width: 10
     bar_color: theme.sec
     bar_inactive_color: [0, 0, 0, 0]
     scroll_type: ['content', 'bars']
+    smooth: app.conf.animations
 
-<DllView@ListView, ScrollView>:
+<DllView@ListView, SmoothScrollView>:
     bar_color: theme.bg
 
     adapter:
@@ -197,6 +198,9 @@ RootLayout:
     background_color: 0, 0, 0, 0
     size_hint: None, None
     size: 333, 187
+    opacity: .7
+    hovering_attrs: {'opacity': 1}
+    anim_kw: {'d': .1}
 
     AsyncImage:
         id: image
@@ -216,6 +220,7 @@ RootLayout:
         size_hint_y: None
         height: 30
         color: theme.prim
+        opacity: (root.opacity - .7) / .3
 
         canvas.before:
             Color:
@@ -246,7 +251,6 @@ RootLayout:
 <GameCollection>:
     padding: 40, 0
     size: self.parent.size
-    effect_cls: 'OpacityScrollEffect'
 
     StackLayout:
         id: board
@@ -391,7 +395,7 @@ RootLayout:
     BoxLayout:
         orientation: 'vertical'
 
-        ScrollView:
+        SmoothScrollView:
             Label:
                 text: root.message
                 text_size: self.width, None
@@ -835,7 +839,7 @@ RootLayout:
         ContentLayout:
             id: content_system
             
-            ScrollView:
+            SmoothScrollView:
                 BoxLayout:
                     orientation: 'vertical'
                     padding: 10, 40
@@ -880,7 +884,7 @@ RootLayout:
         ContentLayout:
             id: content_settings
 
-            ScrollView:
+            SmoothScrollView:
                 BoxLayout:
                     orientation: 'vertical'
                     padding: 10, 40
@@ -982,7 +986,7 @@ RootLayout:
                         size_hint_y: None
 
         ContentLayout:
-            ScrollView:
+            SmoothScrollView:
                 BoxLayout:
                     orientation: 'vertical'
                     padding: 20, 0

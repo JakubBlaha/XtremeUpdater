@@ -24,6 +24,10 @@ The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpda
   - App now does not close when UAC prompt is rejected.
   - *Sync popup* now does not close itself when clicking outside of it.
 
+**Tweaks**
+  - Everything now scrolls smoothly.
+  - Icon buttons in the *Game Collection* now have always a contrast color.
+
 **Other**
   - Added *Night Roses* theme.
   - Changed logging directory.

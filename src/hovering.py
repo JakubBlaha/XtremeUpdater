@@ -32,30 +32,31 @@ class HoveringBehavior(EventDispatcher):
 
         self.hovering = self.collide_point(*self.to_widget(*pos))
 
-    def on_hovering(self, *args):
-        self.dispatch('on_enter' if self.hovering else 'on_leave')
+    def on_hovering(self, __, hovering):
+        self.dispatch('on_enter' if hovering else 'on_leave')
 
     def update_orig_attrs(self, *args):
-        for key in self.hovering_attrs.keys():
-            self._orig_attrs[key] = getattr(self, key)
+        self._orig_attrs = {
+            key: getattr(self, key)
+            for key in self.hovering_attrs.keys()
+        }
 
     def on_enter(self):
-        if not self.hovering_attrs or getattr(self, 'disabled', False):
+        if getattr(self, 'disabled', False):
             return
 
         if not self._orig_attrs:
             self.update_orig_attrs()
+
         try:
             self.on_leave_anim.stop(self)
         except AttributeError:
             pass
+
         self.on_enter_anim = Animation(**self.hovering_attrs, **self.anim_kw)
         self.on_enter_anim.start(self)
 
     def on_leave(self):
-        if not self.hovering_attrs:
-            return
-
         try:
             self.on_enter_anim.stop(self)
         except AttributeError:
