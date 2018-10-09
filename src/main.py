@@ -1097,7 +1097,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.bar.unwork()
 
     def load_selective(self):
-        self.ids.content.page = 6
+        self.goto_page(5)
 
         if self.ids.dll_view.adapter.data == sorted(self.listed_dlls):
             return
