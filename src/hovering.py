@@ -65,5 +65,8 @@ class HoveringBehavior(EventDispatcher):
         self.on_leave_anim = Animation(**self._orig_attrs, **self.anim_kw)
         self.on_leave_anim.start(self)
 
+    def on_hovering_attrs(self, *args):
+        self.on_hovering(self, self.hovering)
+
 
 Factory.register('HoveringBehavior', HoveringBehavior)

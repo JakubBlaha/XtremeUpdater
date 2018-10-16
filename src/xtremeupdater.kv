@@ -3,7 +3,6 @@
 #:import main main
 #:import theme theme.theme
 #:import Window kivy.core.window.Window
-#:import DllViewAdapter main.DllViewAdapter
 #:import Tweaks tweaks.Tweaks
 #:import get_version_number get_version_number.get_version_number
 #:import startfile os.startfile
@@ -22,6 +21,7 @@ RootLayout:
     background_color: 0, 0, 0, 0
     hovering_attrs: {'color': theme.prim}
     anim_kw: {'d': .1}
+    border: 0, 0, 0, 0
 
 <BackgroundedButton>:
     background_color: theme.bg
@@ -145,13 +145,16 @@ RootLayout:
     text_size: self.size
     valign: 'center'
     padding: 40, 0
-    background_normal: 'img/FFFFFF-1.png'
-    background_down: self.background_normal
-    selected_color: theme.prim
-    deselected_color: theme.sec
     color: theme.fg
-    size_hint_y: None
-    height: 25
+    hovering_attrs: {'over_color_alpha': .1}
+
+    canvas.after:
+        Color:
+            rgba: 0, 0, 0, self.over_color_alpha
+        
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
     Label:
         text: get_version_number(app.root.path + root.text)
@@ -171,25 +174,17 @@ RootLayout:
     scroll_type: ['content', 'bars']
     smooth: app.conf.animations
 
-<DllView@ListView, SmoothScrollView>:
-    bar_color: theme.bg
+<DllView>:
+    viewclass: 'DllViewItem'
 
-    adapter:
-        DllViewAdapter(
-        data=[],
-        args_converter=lambda index, item: {'text': item},
-        cls='DllViewItem',
-        selection_mode='multiple'
-        )
-
-<DllActionButton@CustButton>:
-    size_hint_x: None
-    bold: True
-    text_size: self.size
-    halign: 'center'
-    valign: 'bottom'
-    padding: 0, 6
-    disabled: True
+    RecycleBoxLayout:
+        default_size: None, 25
+        default_size_hint: 1, None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: 'vertical'
+        multiselect: True
+        touch_multiselect: True
 
 <GameButton>:
     background_normal: 'img/FFFFFF-1.png'
@@ -1070,9 +1065,9 @@ RootLayout:
 
                 IconButton:
                     id: invert_selection_button
-                    disabled: not dll_view.adapter.data
+                    disabled: not dll_view.data
                     text: '\ue8b3'
-                    on_release: root.ids.dll_view.adapter.invert_selection()
+                    on_release: root.ids.dll_view.invert_selection()
 
             DllView:
                 id: dll_view
@@ -1098,14 +1093,14 @@ RootLayout:
                     font_size: 18
                     text: 'Restore'
                     size_hint_x: .5
-                    disabled: not dll_view.adapter.selection
+                    disabled: not dll_view.data
                     on_release: root.restore_callback()
 
                 BackgroundedButton:
                     id: update_button
                     text: 'Update'
                     size_hint_x: .5
-                    disabled: not dll_view.adapter.selection
+                    disabled: not dll_view.data
                     on_release: root.update_callback(from_selection=True)
 
     WorkingBar:

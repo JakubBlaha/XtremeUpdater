@@ -46,10 +46,12 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.modalview import ModalView
 from kivy.graphics.texture import Texture
 from scrollview import ScrollView as SmoothScrollView
+from kivy.uix.recycleview import RecycleView
+from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.graphics import Rectangle, Color
 from kivy.uix.label import Label, CoreLabel
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.listview import ListItemButton
+from kivy.uix.listview import ListItemButton, ListView
 from kivy.properties import StringProperty, ObjectProperty, DictProperty, ListProperty, NumericProperty, BooleanProperty
 
 import platform
@@ -676,38 +678,73 @@ class Content(PageLayout):
             pass
 
 
-class DllViewItem(ListItemButton):
-    def on_is_selected(self, *args):
-        if self.is_selected:
-            super().select()
+class DllViewItem(RecycleDataViewBehavior, CustButton):
+    index = None
+    selected = BooleanProperty()
+    over_color_alpha = NumericProperty()
 
-            self.background_color = self.deselected_color
-            Animation.stop_all(self)
-            Animation(background_color=self.selected_color, d=.1).start(self)
+    def __init__(self, **kw):
+        super().__init__(*kw)
+
+        self._update_colors()
+
+    def refresh_view_attrs(self, rv, index, data):
+        ''' Catch and handle the view changes '''
+        self.index = index
+        return super().refresh_view_attrs(rv, index, data)
+
+    def on_press(self):
+        self.selected = not self.selected
+        self.parent.parent.data[self.index]['selected'] = self.selected
+
+    def on_selected(self, *args):
+        Animation.stop_all(self)
+        self._update_colors()
+
+    def _update_colors(self, *args):
+        if self.selected:
+            Animation(
+                background_color=theme.prim, color=theme.sec, d=.1).start(self)
 
         else:
-            super().deselect()
-
-            self.background_color = self.selected_color
-            Animation.stop_all(self)
-            Animation(background_color=self.deselected_color, d=.1).start(self)
+            Animation(
+                background_color=theme.sec, color=theme.fg, d=.1).start(self)
 
 
-class DllViewAdapter(ListAdapter):
-    def on_data(self, *args):
-        self.unbind(data=self.on_data)
-        self.data.sort()
-        self.bind(data=self.on_data)
+class DllView(RecycleView):
+    dlls = ListProperty()
 
-    def get_views(self) -> list:
-        return [self.get_view(index) for index, __ in enumerate(self.data)]
+    def on_dlls(self, __, dlls):
+        self.data = [{'text': dll, 'selected': False} for dll in dlls]
 
     def invert_selection(self):
-        Clock.schedule_once(lambda *args: self.select_list(self.get_views()))
+        self.deselect_all() if len(self.selected_nodes) == len(
+            self.data) else self.select_all()
 
-    def select_by_text(self, items: list):
-        views = [view for view in self.get_views() if view.text in items]
-        Clock.schedule_once(lambda *args: self.select_list(views))
+    def select_by_text(self, items):
+        for item in self.data:
+            item['selected'] = item.get('text', '') in items
+
+        self.refresh_from_data()
+
+    def select_all(self):
+        for item in self.data:
+            item['selected'] = True
+
+        self.refresh_from_data()
+
+    def deselect_all(self):
+        for item in self.data:
+            item['selected'] = False
+
+        self.refresh_from_data()
+
+    @property
+    def selected_nodes(self):
+        return [item for item in self.data if item.get('selected', False)]
+
+    # def on_scroll_start(*args, **kw):
+    #     SmoothScrollView.on_scroll_start(*args, **kw)
 
 
 class SyncPopup(Popup, NoiseTexture, IgnoreTouchBehavior):
@@ -1099,17 +1136,17 @@ class RootLayout(BoxLayout, HoveringBehavior):
     def load_selective(self):
         self.goto_page(5)
 
-        if self.ids.dll_view.adapter.data == sorted(self.listed_dlls):
-            return
+        # if self.ids.dll_view.dlls == sorted(self.listed_dlls):
+        #     return
 
-        self.ids.dll_view.adapter.data = self.listed_dlls
+        self.ids.dll_view.dlls = self.listed_dlls
 
         last_selected = ConfLastDlls.get_list(self.path)
 
         if last_selected:
-            self.ids.dll_view.adapter.select_by_text(last_selected)
-        elif not self.ids.dll_view.adapter.selection:
-            self.ids.dll_view.adapter.invert_selection()
+            self.ids.dll_view.select_by_text(last_selected)
+        elif not self.ids.dll_view.selected_nodes:
+            self.ids.dll_view.select_all()
 
         self.bar.ping()
 
@@ -1123,7 +1160,10 @@ class RootLayout(BoxLayout, HoveringBehavior):
             text='Updating dlls..')
 
         if from_selection:
-            dlls = [item.text for item in self.ids.dll_view.adapter.selection]
+            dlls = [
+                item.get('text', '')
+                for item in self.ids.dll_view.selected_nodes
+            ]
             ConfLastDlls.set_list(self.path, dlls)
         else:
             dlls = self.listed_dlls
@@ -1159,13 +1199,15 @@ class RootLayout(BoxLayout, HoveringBehavior):
                 self.ids.content_updater.add_widget(
                     self.launch_now_btn, index=0)
 
-        self.ids.dll_view.adapter.data = []
+        self.ids.dll_view.data = []
 
     def launch_updated(self):
         os.startfile(self.launch_path)
 
     def restore_callback(self):
-        dlls = [item.text for item in self.ids.dll_view.adapter.selection]
+        dlls = [
+            item.get('text', '') for item in self.ids.dll_view.selected_nodes
+        ]
         restored, not_restored = self.updater.restore_dlls(self.path, dlls)
 
         Factory.RestorePopup(

@@ -89,8 +89,8 @@ class DllUpdater:
             dst = os.path.abspath(path + dll)
             try:
                 copy(src, dst)
-            except OSError:
-                raise
+            except FileNotFoundError:
+                pass
             else:
                 restored.append(dll)
         
