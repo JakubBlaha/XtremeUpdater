@@ -682,6 +682,7 @@ class DllViewItem(RecycleDataViewBehavior, CustButton):
     index = None
     selected = BooleanProperty()
     over_color_alpha = NumericProperty()
+    rv = None
 
     def __init__(self, **kw):
         super().__init__(*kw)
@@ -690,12 +691,13 @@ class DllViewItem(RecycleDataViewBehavior, CustButton):
 
     def refresh_view_attrs(self, rv, index, data):
         ''' Catch and handle the view changes '''
+
+        self.rv = rv
         self.index = index
         return super().refresh_view_attrs(rv, index, data)
 
     def on_press(self):
-        self.selected = not self.selected
-        self.parent.parent.data[self.index]['selected'] = self.selected
+        self.rv.select_by_index(self.index, not self.selected)
 
     def on_selected(self, *args):
         Animation.stop_all(self)
@@ -713,35 +715,55 @@ class DllViewItem(RecycleDataViewBehavior, CustButton):
 
 class DllView(RecycleView):
     dlls = ListProperty()
+    selected_nodes = ListProperty()
 
     def on_dlls(self, __, dlls):
         self.data = [{'text': dll, 'selected': False} for dll in dlls]
 
+    def _update_selected_nodes(self, *args):
+        self.selected_nodes = [
+            item for item in self.data if item.get('selected', False)
+        ]
+
     def invert_selection(self):
+        ''' Selects all nodes if some or none are already selected and deselects all nodes if all nodes are currently selected. '''
+
         self.deselect_all() if len(self.selected_nodes) == len(
             self.data) else self.select_all()
 
-    def select_by_text(self, items):
+    def select_by_text(self, items: list):
+        ''' Selects nodes which text is in the items list argument. '''
+
         for item in self.data:
             item['selected'] = item.get('text', '') in items
 
-        self.refresh_from_data()
+        super().refresh_from_data()
+        self._update_selected_nodes()
+
+    def select_by_index(self, index, selected):
+        ''' Selects / deselects a node on given index. '''
+
+        self.data[index]['selected'] = selected
+        super().refresh_from_data()
+        self._update_selected_nodes()
 
     def select_all(self):
+        ''' Selects all nodes. '''
+
         for item in self.data:
             item['selected'] = True
 
-        self.refresh_from_data()
+        super().refresh_from_data()
+        self._update_selected_nodes()
 
     def deselect_all(self):
+        ''' Deselects all nodes. '''
+
         for item in self.data:
             item['selected'] = False
 
-        self.refresh_from_data()
-
-    @property
-    def selected_nodes(self):
-        return [item for item in self.data if item.get('selected', False)]
+        super().refresh_from_data()
+        self._update_selected_nodes()
 
     # def on_scroll_start(*args, **kw):
     #     SmoothScrollView.on_scroll_start(*args, **kw)

@@ -1093,14 +1093,14 @@ RootLayout:
                     font_size: 18
                     text: 'Restore'
                     size_hint_x: .5
-                    disabled: not dll_view.data
+                    disabled: not dll_view.selected_nodes
                     on_release: root.restore_callback()
 
                 BackgroundedButton:
                     id: update_button
                     text: 'Update'
                     size_hint_x: .5
-                    disabled: not dll_view.data
+                    disabled: not dll_view.selected_nodes
                     on_release: root.update_callback(from_selection=True)
 
     WorkingBar:
