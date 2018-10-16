@@ -83,6 +83,7 @@ class DllUpdater:
 
     def restore_dlls(self, path: str, dlls: list) -> tuple:
         '''Returns ([restored], [not restored])'''
+
         restored = []
         for dll in dlls:
             src = os.path.abspath(self.BACKUP_DIR + os.path.splitdrive(path)[1] + dll)
@@ -92,6 +93,7 @@ class DllUpdater:
             except FileNotFoundError:
                 pass
             else:
+                os.remove(src)
                 restored.append(dll)
         
         return (restored, set(dlls) - set(restored))

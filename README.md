@@ -28,6 +28,7 @@ The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpda
 **Tweaks**
   - Everything now scrolls smoothly.
   - Icon buttons in the *Game Collection* now have always a contrast color.
+  - Restored dlls are now deletd from the backup directory.
 
 **Other**
   - Added *Night Roses* theme.
