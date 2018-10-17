@@ -1,7 +1,8 @@
 #:kivy 1.10.1
 
 #:import main main
-#:import theme theme.theme
+#:import conf main.conf
+#:import theme main.theme
 #:import Window kivy.core.window.Window
 #:import Tweaks tweaks.Tweaks
 #:import get_version_number get_version_number.get_version_number
@@ -173,7 +174,7 @@ RootLayout:
     bar_color: theme.sec
     bar_inactive_color: [0, 0, 0, 0]
     scroll_type: ['content', 'bars']
-    smooth: app.conf.animations
+    smooth: conf.animations
 
 <DllView>:
     viewclass: 'DllViewItem'
@@ -749,7 +750,7 @@ RootLayout:
 
     Content:
         id: content
-        anim_kwargs: {'t': 'out_expo', 'd': .5 * app.conf.animations}
+        anim_kwargs: {'t': 'out_expo', 'd': .5 * conf.animations}
         commands: {2: lambda: Factory.IsAdminNotif().open()}
 
         ContentLayout:
@@ -926,17 +927,17 @@ RootLayout:
                     LabelSwitch:
                         text: 'Enable animations'
                         active_callback: root.switch_animations_enabled
-                        active: app.conf.animations
+                        active: conf.animations
 
                     LabelSwitch:
                         text: 'Enable mouse highlight'
                         active_callback: root.switch_mouse_highlight
-                        active: app.conf.mouse_highlight
+                        active: conf.mouse_highlight
 
                     LabelSwitch:
                         text: 'Decorate head'
                         active_callback: root.switch_head_decor
-                        active: app.conf.head_decor
+                        active: conf.head_decor
 
                     SectionLabel:
                         text: 'Cache'

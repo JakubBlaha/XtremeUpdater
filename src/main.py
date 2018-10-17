@@ -8,7 +8,9 @@ import ctypes
 from random import randint
 from _thread import start_new
 from traceback import format_exc
-from PIL import ImageGrab, ImageFilter
+from PIL import ImageGrab, ImageFilter, Image
+import platform
+from io import BytesIO
 
 import kivy
 kivy.require('1.10.1')
@@ -54,18 +56,25 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.listview import ListItemButton, ListView
 from kivy.properties import StringProperty, ObjectProperty, DictProperty, ListProperty, NumericProperty, BooleanProperty
 
-import platform
-from theme import theme
-from fontcolor import font_color
-from dll_updater import DllUpdater
 from hovering import HoveringBehavior
 from windowdragbehavior import WindowDragBehavior
+
+from theme import Theme
+from config import Conf
+from dll_updater import DllUpdater
+from fontcolor import font_color
 from get_image_url import get_image_url_from_response, TEMPLATE, HEADERS
-from PIL import Image
 from cropped_thumbnail import cropped_thumbnail
-from io import BytesIO
 
 IS_ADMIN = ctypes.windll.shell32.IsUserAnAdmin()
+STORE_PATH = '.config/config.yaml'
+DEFAULT_STORE = {
+    'mouse_highlight': 1,
+    'head_decor': 1,
+    'animations': 1,
+    'show_disclaimer': 1,
+    'theme': 'default'
+}
 
 
 def new_thread(fn):
@@ -109,7 +118,7 @@ class Animation(Animation):
     def __init__(self, **kw):
         super().__init__(**kw)
         try:
-            self._duration *= app.conf.animations
+            self._duration *= conf.animations
         except (NameError, AttributeError):
             pass
 
@@ -149,7 +158,7 @@ class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        if app.conf.head_decor:
+        if conf.head_decor:
             Clock.schedule_once(
                 lambda *args: Clock.schedule_once(self.setup_mini_labels))
 
@@ -172,7 +181,7 @@ class HeaderMiniLabel(Label):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        if app.conf.animations:
+        if conf.animations:
             Clock.schedule_once(self.rotate, randint(0, 10))
 
         self.rotation_angle = randint(0, 361)
@@ -203,7 +212,9 @@ class CustButton(Button, HoveringBehavior):
                 self.on_leave()
 
         else:
-            Animation(color=self.color[:3] + [self._orig_font_opacity], d=.1).start(self)
+            Animation(
+                color=self.color[:3] + [self._orig_font_opacity],
+                d=.1).start(self)
             if self.hovering:
                 self.on_enter()
 
@@ -287,7 +298,7 @@ class OverdrawLabel(FloatLayout):
 
         Animation.stop_all(self)
         Animation(opacity=1, d=.2).start(self)
-        if app.conf.animations:
+        if conf.animations:
             anim = (
                 Animation(angle=self.__MAX_TILT, d=.3, t='in_out_expo') +
                 Animation(angle=0, d=1, t='out_elastic') + Animation(d=2) +
@@ -306,7 +317,7 @@ class OverdrawLabel(FloatLayout):
 class GameCollection(SmoothScrollView):
     COMMON_PATHS_URL = 'https://raw.githubusercontent.com/XtremeWare/XtremeUpdater/master/res/CommonPaths.yaml'
     COMMON_PATHS_CACHE_PATH = '.cache/common/paths/CommonPaths.yaml'
-    CUSTOM_PATHS_PATH = '.config/CustomPaths.json'
+    CUSTOM_PATHS_PATH = '.conf/CustomPaths.json'
     datastore = DictProperty()
     custom_paths = DictProperty()
 
@@ -603,7 +614,12 @@ class NavigationButton(CustButton):
     highlight_height = NumericProperty()
     highlight_width = NumericProperty()
     highlight_width_ratio = .8
-    highlight_color = ListProperty(theme.prim)
+    highlight_color = ListProperty([0, 0, 0, 0])
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+        self.highlight_color = theme.prim
 
     def highlight(self):
         self.__active = True
@@ -726,7 +742,10 @@ class DllView(RecycleView):
     selected_nodes = ListProperty()
 
     def on_dlls(self, __, dlls):
-        self.data = [{'text': dll, 'selected': dll in self.selected_nodes} for dll in dlls]
+        self.data = [{
+            'text': dll,
+            'selected': dll in self.selected_nodes
+        } for dll in dlls]
 
     def _update_selected_nodes(self, *args):
         self.selected_nodes = [
@@ -791,9 +810,6 @@ class DllView(RecycleView):
         for child in self.layout_manager.children:
             child.refresh_hovering()
 
-    # def on_scroll_start(*args, **kw):
-    #     SmoothScrollView.on_scroll_start(*args, **kw)
-
 
 class SyncPopup(Popup, NoiseTexture, IgnoreTouchBehavior):
     icon_rotation = NumericProperty()
@@ -801,7 +817,7 @@ class SyncPopup(Popup, NoiseTexture, IgnoreTouchBehavior):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        if app.conf.animations:
+        if conf.animations:
             Clock.schedule_interval(self.rotate_icon, 2)
 
     def rotate_icon(self, *args):
@@ -954,7 +970,7 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        if not app.conf.animations:
+        if not conf.animations:
             return
 
         anim = Animation(d=0)
@@ -1064,7 +1080,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         super().__init__(**kw)
 
         self.bar = self.ids.bar
-        self.switch_mouse_highlight(None, app.conf.mouse_highlight)
+        self.switch_mouse_highlight(None, conf.mouse_highlight)
 
         def on_frame(*args):
             self.show_sync_popup()
@@ -1120,10 +1136,10 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.unbind_hovering()
             self.mouse_highlight_pos = -120, -120
 
-        app.conf.mouse_highlight = value
+        conf.mouse_highlight = value
 
     def switch_animations_enabled(self, _, value):
-        app.conf.animations = value
+        conf.animations = value
         Notification(
             title_='Restart required',
             message=
@@ -1175,9 +1191,9 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.ids.selective_update_btn.disabled = False
             self.ids.update_all_btn.disabled = False
 
-            if app.conf.show_disclaimer:
+            if conf.show_disclaimer:
                 Factory.DisclaimerPopup().open()
-                app.conf.show_disclaimer = False
+                conf.show_disclaimer = False
 
         self.bar.unwork()
 
@@ -1298,7 +1314,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         if not (game_name and game_patch_dir and game_launch_path):
             return
 
-        os.makedirs('.config', exist_ok=True)
+        os.makedirs('.conf', exist_ok=True)
 
         if not game_launch_path:
             game_launch_path = self.ids.game_add_form_launch.text
@@ -1326,7 +1342,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         os.remove(GameCollection.CUSTOM_PATHS_PATH)
 
     def switch_head_decor(self, _, value):
-        app.conf.head_decor = value
+        conf.head_decor = value
 
         if value:
             self.ids.header_label.setup_mini_labels()
@@ -1373,7 +1389,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
 
 class ConfLastDlls:
-    PATH = '.config/LastDlls.yaml'
+    PATH = '.conf/LastDlls.yaml'
 
     @classmethod
     def __ensure_file(cls):
@@ -1420,55 +1436,16 @@ class ConfLastDlls:
             return False
 
 
-class Conf:
-    __store = {}
-    __path = ''
-
-    def __init__(self, path, defaults):
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        object.__setattr__(self, '__path', path)
-
-        if os.path.isfile(path):
-            with open(path, 'r') as config:
-                object.__setattr__(self, '__store', {
-                    **defaults,
-                    **yaml.load(config)
-                })
-        else:
-            object.__setattr__(self, '__store', defaults)
-
-    def __setattr__(self, name, value):
-        object.__getattribute__(self, '__store')[name] = value
-        self.__dump_to_file()
-
-    def __getattr__(self, name):
-        return object.__getattribute__(self, '__store')[name]
-
-    def __dump_to_file(self):
-        with open(object.__getattribute__(self, '__path'), 'w') as conf:
-            conf.write(yaml.dump(object.__getattribute__(self, '__store')))
-
-
 class XtremeUpdaterApp(App):
-    STORE_PATH = '.config/Config.yaml'
-    DEFAULT_STORE = {
-        'mouse_highlight': 1,
-        'head_decor': 1,
-        'animations': 1,
-        'show_disclaimer': 1,
-        'theme': 'default'
-    }
-
-    def __init__(self, **kw):
-        super().__init__(**kw)
-        self.load_store()
-
-    def load_store(self):
-        self.conf = Conf(self.STORE_PATH, self.DEFAULT_STORE)
-
     def open_settings(self):
         self.root.goto_page(3)
 
+
+Logger.info('Reading conf..')
+conf = Conf(STORE_PATH, DEFAULT_STORE)
+
+Logger.info('Reading theme..')
+theme = Theme()
 
 if __name__ == '__main__':
     Logger.info(f'System = {platform.system()}')
@@ -1479,4 +1456,4 @@ if __name__ == '__main__':
     app = XtremeUpdaterApp()
     app.run()
 
-__version__ = '0.6.1'
+__version__ = '0.7.0'

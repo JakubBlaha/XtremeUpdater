@@ -20,7 +20,7 @@ class Theme:
             with open(self.CONFIG_PATH) as f:
                 try:
                     name = safe_load(f)['theme']
-                except (FileNotFoundError, KeyError):
+                except KeyError:
                     name = 'default'
 
         values = values if values else self.get_values(name)
@@ -91,6 +91,3 @@ class Theme:
             l.append(l.pop(0))
 
         return l
-
-
-theme = Theme()
