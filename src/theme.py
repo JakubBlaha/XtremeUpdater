@@ -4,7 +4,7 @@ import os
 
 
 class Theme:
-    CONFIG_PATH = '.config/Config.yaml'
+    CONFIG_PATH = '.config/config.yaml'
     THEME_PATH = 'theme/'
     DEFAULT_VALUES = {
         'prim': "#dbac2a",
