@@ -779,6 +779,18 @@ class DllView(RecycleView):
 
         self.refresh_from_data()
 
+    def on_scroll_start(self, *args):
+        super().on_scroll_start(*args)
+        self.refresh_views_hovering()
+
+    def on_scroll_move(self, *args):
+        super().on_scroll_start(*args)
+        self.refresh_views_hovering()
+
+    def refresh_views_hovering(self):
+        for child in self.layout_manager.children:
+            child.refresh_hovering()
+
     # def on_scroll_start(*args, **kw):
     #     SmoothScrollView.on_scroll_start(*args, **kw)
 

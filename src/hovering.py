@@ -11,6 +11,7 @@ class HoveringBehavior(EventDispatcher):
     hovering_attrs = DictProperty()
     anim_kw = DictProperty()
     _orig_attrs = {}
+    _last_pos = (0, 0)
 
     def __init__(self, **kw):
         self.register_event_type('on_enter')
@@ -26,11 +27,17 @@ class HoveringBehavior(EventDispatcher):
     def unbind_hovering(self, *args):
         Window.unbind(mouse_pos=self.on_mouse_pos)
 
-    def on_mouse_pos(self, _, pos):
+    def on_mouse_pos(self, __, pos):
+        self._last_pos = pos
+
         if not self.get_root_window():
             return
 
         self.hovering = self.collide_point(*self.to_widget(*pos))
+
+    def refresh_hovering(self):
+        print('refreshing')
+        self.on_mouse_pos(None, self._last_pos)
 
     def on_hovering(self, __, hovering):
         self.dispatch('on_enter' if hovering else 'on_leave')
