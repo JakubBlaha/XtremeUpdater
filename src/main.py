@@ -704,7 +704,8 @@ class DllViewItem(RecycleDataViewBehavior, CustButton):
         return super().refresh_view_attrs(rv, index, data)
 
     def on_press(self):
-        self.rv.select_by_index(self.index, not self.selected)
+        self.selected = not self.selected
+        self.rv.select_by_index_from_view(self.index, self.selected)
 
     def on_selected(self, *args):
         Animation.stop_all(self)
@@ -725,7 +726,7 @@ class DllView(RecycleView):
     selected_nodes = ListProperty()
 
     def on_dlls(self, __, dlls):
-        self.data = [{'text': dll, 'selected': False} for dll in dlls]
+        self.data = [{'text': dll, 'selected': dll in self.selected_nodes} for dll in dlls]
 
     def _update_selected_nodes(self, *args):
         self.selected_nodes = [
@@ -744,15 +745,19 @@ class DllView(RecycleView):
         for item in self.data:
             item['selected'] = item.get('text', '') in items
 
-        super().refresh_from_data()
         self._update_selected_nodes()
 
-    def select_by_index(self, index, selected):
+        self.refresh_from_data()
+
+    def select_by_index_from_view(self, index, selected):
         ''' Selects / deselects a node on given index. '''
 
         self.data[index]['selected'] = selected
-        super().refresh_from_data()
         self._update_selected_nodes()
+
+    def select_by_index(self, *args):
+        self.select_by_index_from_view(*args)
+        self.refresh_from_data()
 
     def select_all(self):
         ''' Selects all nodes. '''
@@ -760,8 +765,9 @@ class DllView(RecycleView):
         for item in self.data:
             item['selected'] = True
 
-        super().refresh_from_data()
         self._update_selected_nodes()
+
+        self.refresh_from_data()
 
     def deselect_all(self):
         ''' Deselects all nodes. '''
@@ -769,8 +775,9 @@ class DllView(RecycleView):
         for item in self.data:
             item['selected'] = False
 
-        super().refresh_from_data()
         self._update_selected_nodes()
+
+        self.refresh_from_data()
 
     # def on_scroll_start(*args, **kw):
     #     SmoothScrollView.on_scroll_start(*args, **kw)
