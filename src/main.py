@@ -1389,7 +1389,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
 
 class ConfLastDlls:
-    PATH = '.conf/LastDlls.yaml'
+    PATH = '.config/LastDlls.yaml'
 
     @classmethod
     def __ensure_file(cls):
@@ -1441,7 +1441,7 @@ class XtremeUpdaterApp(App):
         self.root.goto_page(3)
 
 
-Logger.info('Reading conf..')
+Logger.info('Reading config..')
 conf = Conf(STORE_PATH, DEFAULT_STORE)
 
 Logger.info('Reading theme..')
