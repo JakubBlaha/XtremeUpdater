@@ -189,14 +189,21 @@ class HeaderMiniLabel(Label):
 
 
 class CustButton(Button, HoveringBehavior):
+    _orig_font_opacity = 1
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.orig_font_opacity = self.color[3]
+
     def on_disabled(self, *args):
         if self.disabled:
-            Animation(opacity=.1, d=.1).start(self)
+            self._orig_font_opacity = self.color[3]
+            Animation(color=self.color[:3] + [.1], d=.1).start(self)
             if self.hovering:
                 self.on_leave()
 
         else:
-            Animation(opacity=1, d=.1).start(self)
+            Animation(color=self.color[:3] + [self._orig_font_opacity], d=.1).start(self)
             if self.hovering:
                 self.on_enter()
 
