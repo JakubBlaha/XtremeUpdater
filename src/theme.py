@@ -18,10 +18,7 @@ class Theme:
     def __init__(self, values: dict = {}, name: str = ''):
         if not name:
             with open(self.CONFIG_PATH) as f:
-                try:
-                    name = safe_load(f)['theme']
-                except KeyError:
-                    name = 'default'
+                name = safe_load(f).get('theme', 'default')
 
         values = values if values else self.get_values(name)
 
