@@ -50,7 +50,7 @@ from kivy.graphics.texture import Texture
 from scrollview import ScrollView as SmoothScrollView
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
-from kivy.graphics import Rectangle, Color, Rotate, PushMatrix, PopMatrix
+from kivy.graphics import Rectangle, Color, Rotate, PushMatrix, PopMatrix, Fbo, Translate, Scale
 from kivy.uix.label import Label, CoreLabel
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.listview import ListItemButton, ListView
@@ -433,22 +433,28 @@ class CustPopup(Popup):
     icon = StringProperty()
 
     def __init__(self, **kw):
-        img = ImageGrab.grab()
-        img = img.crop([
-            Window.left, Window.top, Window.left + Window.width,
-            Window.top + Window.height
-        ])
-        img = img.filter(ImageFilter.GaussianBlur(50))
-
         super().__init__(**kw)
 
-        def on_frame(*args):
+        if app.root:
+            fbo = Fbo(size=app.root.size, with_stencilbuffer=True)
+
+            with fbo:
+                Scale(1, -1, 1)
+                Translate(-app.root.x, -app.root.y - app.root.height, 0)
+
+            fbo.add(app.root.canvas)
+            fbo.draw()
+            tex = fbo.texture
+            fbo.remove(app.root.canvas)
+            tex.flip_vertical()
+
+            img = Image.frombytes('RGBA', tex.size, tex.pixels)
+            img = img.filter(ImageFilter.GaussianBlur(50))
+
             tex = Texture.create(size=img.size)
-            tex.blit_buffer(pbuffer=img.tobytes())
+            tex.blit_buffer(pbuffer=img.tobytes(), size=img.size, colorfmt='rgba')
             tex.flip_vertical()
             self.canvas.before.get_group('blur')[0].texture = tex
-
-        Clock.schedule_once(on_frame)
 
         self.children[0].children[2].markup = True
 
