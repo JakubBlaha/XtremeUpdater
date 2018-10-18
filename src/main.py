@@ -50,7 +50,7 @@ from kivy.graphics.texture import Texture
 from scrollview import ScrollView as SmoothScrollView
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
-from kivy.graphics import Rectangle, Color
+from kivy.graphics import Rectangle, Color, Rotate, PushMatrix, PopMatrix
 from kivy.uix.label import Label, CoreLabel
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.listview import ListItemButton, ListView
@@ -154,47 +154,59 @@ class NoiseTexture(Widget):
 
 class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
     current_icon = StringProperty('\ue78b')
+    decor_rotations = []
 
     def __init__(self, **kw):
         super().__init__(**kw)
 
         if conf.head_decor:
             Clock.schedule_once(
-                lambda *args: Clock.schedule_once(self.setup_mini_labels))
+                lambda *args: Clock.schedule_once(self.setup_decor))
 
-    def setup_mini_labels(self, *args):
-        for i in range(17):
-            self.add_widget(
-                HeaderMiniLabel(
-                    text=self.current_icon,
-                    x=i * 48 + 120,
-                    y=self.y - i % 2 * 10))
+            if conf.animations:
+                Clock.schedule_once(lambda *args: Clock.schedule_interval(self.random_decor_rotation, .5))
+
+    def random_decor_rotation(self, *args):
+        rotation = self.decor_rotations[randint(0, len(self.decor_rotations) - 1)]
+        angle_add = randint(100, 200) * (1 - 2 * randint(0, 1))
+        self.rotate_rotation(rotation, angle_add)
+
+    def all_decor_rotation(self, *args):
+        for rotation in self.decor_rotations:
+            angle_add = 360 * (1 - 2 * randint(0, 1))
+            self.rotate_rotation(rotation, angle_add)
+
+    def rotate_rotation(self, rotation, angle_add):
+        Animation(angle=rotation.angle + angle_add, d=.5, t='out_expo').start(rotation)
+
+    def setup_decor(self, *args):
+        label = Label(
+            text=self.current_icon,
+            font_name='fnt/segmdl2.ttf',
+            color=theme.bg,
+            size=(40, 40),
+            font_size=20)
+        label.texture_update()
+
+        tex = label.texture
+
+        X_OFFSET = 130
+        with self.canvas:
+            for i in range(int(self.width - X_OFFSET) // int(tex.width)):
+                rect_pos = (i * 48 + X_OFFSET, self.y + i % 2 * 10)
+                rect_center = rect_pos[0] + tex.width / 2, rect_pos[
+                    1] + tex.height / 2
+
+                PushMatrix()
+                self.decor_rotations.append(
+                    Rotate(angle=randint(0, 360), origin=rect_center, group='decor'))
+                Rectangle(pos=rect_pos, size=tex.size, texture=tex, group='decor')
+                PopMatrix()
 
     def on_current_icon(self, *args):
-        for child in self.children:
-            child.text = self.current_icon
-
-
-class HeaderMiniLabel(Label):
-    rotation_angle = NumericProperty()
-
-    def __init__(self, **kw):
-        super().__init__(**kw)
-
-        if conf.animations:
-            Clock.schedule_once(self.rotate, randint(0, 10))
-
-        self.rotation_angle = randint(0, 361)
-
-    def rotate(self, *args):
-        Animation(
-            rotation_angle=randint(0, 1000), d=.5, t='out_expo').start(self)
-        Clock.schedule_once(self.rotate, randint(5, 10))
-
-    def on_text(self, *args):
-        Animation(
-            rotation_angle=self.rotation_angle + 500, d=.5,
-            t='out_expo').start(self)
+        self.canvas.remove_group('decor')
+        self.setup_decor()
+        self.all_decor_rotation()
 
 
 class CustButton(Button, HoveringBehavior):
@@ -317,7 +329,7 @@ class OverdrawLabel(FloatLayout):
 class GameCollection(SmoothScrollView):
     COMMON_PATHS_URL = 'https://raw.githubusercontent.com/XtremeWare/XtremeUpdater/master/res/CommonPaths.yaml'
     COMMON_PATHS_CACHE_PATH = '.cache/common/paths/CommonPaths.yaml'
-    CUSTOM_PATHS_PATH = '.conf/CustomPaths.json'
+    CUSTOM_PATHS_PATH = '.config/CustomPaths.json'
     datastore = DictProperty()
     custom_paths = DictProperty()
 
@@ -1349,7 +1361,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         conf.head_decor = value
 
         if value:
-            self.ids.header_label.setup_mini_labels()
+            self.ids.header_label.setup_decor()
         else:
             self.ids.header_label.clear_widgets()
 

@@ -39,21 +39,6 @@ RootLayout:
     markup: True
     noise_color: Window.clearcolor
 
-<HeaderMiniLabel>:
-    color: theme.bg
-    size: 40, 40
-    font_name: 'fnt/segmdl2.ttf'
-    font_size: 20
-
-    canvas.before:
-        PushMatrix
-        Rotate:
-            angle: self.rotation_angle
-            origin: self.center
-    
-    canvas.after:
-        PopMatrix
-        
 <ContentLayout@BoxLayout+NoiseTexture>:
     orientation: 'vertical'
     noise_color: theme.dark
