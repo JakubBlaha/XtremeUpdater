@@ -36,7 +36,6 @@ class HoveringBehavior(EventDispatcher):
         self.hovering = self.collide_point(*self.to_widget(*pos))
 
     def refresh_hovering(self):
-        print('refreshing')
         self.on_mouse_pos(None, self._last_pos)
 
     def on_hovering(self, __, hovering):
