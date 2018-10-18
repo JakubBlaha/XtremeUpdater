@@ -49,9 +49,9 @@ class Tweaks:
         key = OpenKeyEx(HKEY_CURRENT_USER, r'System\GameConfigStore')
         GameDVR_enabled = QueryValueEx(key, 'GameDVR_enabled')[0]
 
-        key = OpenKeyEx(HKEY_LOCAL_MACHINE,
-                        r'SOFTWARE\Policies\Microsoft\Windows\GameDVR')
         try:
+            key = OpenKeyEx(HKEY_LOCAL_MACHINE,
+                        r'SOFTWARE\Policies\Microsoft\Windows\GameDVR')
             AllowGameDVR = QueryValueEx(key, 'AllowGameDVR')[0]
 
         except (OSError, FileNotFoundError):

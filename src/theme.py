@@ -5,7 +5,7 @@ import os
 
 class Theme:
     CONFIG_PATH = '.config/config.yaml'
-    THEME_PATH = 'theme/'
+    THEME_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'theme/')
     DEFAULT_VALUES = {
         'prim': "#dbac2a",
         'sec': "#232a3a",

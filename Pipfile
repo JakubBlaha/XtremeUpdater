@@ -7,8 +7,15 @@ name = "pypi"
 pyyaml = "*"
 "beautifulsoup4" = "*"
 pillow = "*"
+kivy = "*"
+easygui = "*"
+"pywin32" = "*"
+kivy-deps-glew = "*"
+"kivy-deps-sdl2" = "*"
+kivy-deps-angle = "*"
+humanize = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.6"
+python_version = "3.7"

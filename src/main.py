@@ -578,6 +578,10 @@ class GameButton(Button, HoveringBehavior):
         x = self.width - total_w
         y = self.height - max_h
 
+        # dirty fix
+        if self.ids.image.texture is None:
+            return
+
         tex = self.ids.image.texture.get_region(x, y, total_w, max_h)
 
         img = Image.frombytes('RGBA', (tex.size), tex.pixels)
