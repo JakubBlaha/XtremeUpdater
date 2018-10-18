@@ -86,7 +86,11 @@ class Theme:
     @property
     def ordered_available_themes(self):
         l = self.available_themes
+        
+        if self.name not in [t.name for t in l]:
+            return l
+
         while l[0].name != self.name:
             l.append(l.pop(0))
-
+            
         return l
