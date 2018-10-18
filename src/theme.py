@@ -2,28 +2,30 @@ from yaml import safe_load, dump
 from kivy.utils import get_color_from_hex
 import os
 
+CONFIG_PATH = '.config/config.yaml'
+THEME_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'theme/')
+DEFAULT_VALUES = {
+    'prim': "#dbac2a",
+    'sec': "#232a3a",
+    'bg': "#131a2a",
+    'fg': "#ffffff",
+    'dark': "#10131a"
+}
 
 class Theme:
-    CONFIG_PATH = '.config/config.yaml'
-    THEME_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'theme/')
-    DEFAULT_VALUES = {
-        'prim': "#dbac2a",
-        'sec': "#232a3a",
-        'bg': "#131a2a",
-        'fg': "#ffffff",
-        'dark': "#10131a"
-    }
     name = 'default'
 
     def __init__(self, values: dict = {}, name: str = ''):
+        name = name.replace('.yaml', '')
+
         if not name:
-            with open(self.CONFIG_PATH) as f:
-                name = safe_load(f).get('theme', 'default')
+            with open(CONFIG_PATH) as f:
+                name = safe_load(f).get('theme', self.name)
 
         values = values if values else self.get_values(name)
 
         self.name = name
-        for key, value in {**self.DEFAULT_VALUES, **values}.items():
+        for key, value in {**DEFAULT_VALUES, **values}.items():
             setattr(self, key, get_color_from_hex(value))
             setattr(self, key.upper(), value)
 
@@ -33,13 +35,13 @@ class Theme:
 
         theme_name = theme_name.replace('.yaml', '')
         try:
-            with open(self.THEME_PATH + theme_name + '.yaml') as f:
+            with open(THEME_PATH + theme_name + '.yaml') as f:
                 return {
-                    **self.DEFAULT_VALUES,
+                    **DEFAULT_VALUES,
                     **safe_load(f).get(theme_name, {})
                 }
         except FileNotFoundError:
-            return self.DEFAULT_VALUES
+            return DEFAULT_VALUES
 
     def get_values_kivy_color(self, theme_name=None):
         return {
@@ -51,7 +53,7 @@ class Theme:
         if not theme_name:
             theme_name = self.name
 
-        with open(self.CONFIG_PATH) as f:
+        with open(CONFIG_PATH) as f:
             data = safe_load(f)
 
         if data.get('theme', '') == theme_name:
@@ -59,12 +61,12 @@ class Theme:
 
         data['theme'] = str(theme_name)
 
-        with open(self.CONFIG_PATH, 'w') as f:
+        with open(CONFIG_PATH, 'w') as f:
             dump(data, f)
 
     @staticmethod
     def decode_theme_name(code: str) -> str:
-        return os.path.splitext(code)[0].replace('_', ' ').capitalize()
+        return os.path.splitext(code)[0].replace('_', ' ').replace('.yaml', '').capitalize()
 
     @property
     def decoded_name(self) -> str:
@@ -78,7 +80,7 @@ class Theme:
     def available_themes(self):
         return [
             Theme(name=name)
-            for name in os.listdir(self.THEME_PATH)
+            for name in os.listdir(THEME_PATH)
         ]
 
     @property
