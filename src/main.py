@@ -155,19 +155,34 @@ class NoiseTexture(Widget):
 class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
     current_icon = StringProperty('\ue78b')
     decor_rotations = []
+    decor_enabled = BooleanProperty(False)
 
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        if conf.head_decor:
+        self.decor_enabled = conf.head_decor
+
+        if self.decor_enabled:
             Clock.schedule_once(
                 lambda *args: Clock.schedule_once(self.setup_decor))
 
             if conf.animations:
                 Clock.schedule_once(lambda *args: Clock.schedule_interval(self.random_decor_rotation, .5))
 
+    def on_decor_enabled(self, __, value):
+        conf.head_decor = value
+
+        if value:
+            self.setup_decor()
+        else:
+            self.clear_decor()
+
     def random_decor_rotation(self, *args):
-        rotation = self.decor_rotations[randint(0, len(self.decor_rotations) - 1)]
+        if not self.decor_rotations:
+            return
+
+        rotation = self.decor_rotations[randint(0,
+                                                len(self.decor_rotations) - 1)]
         angle_add = randint(100, 200) * (1 - 2 * randint(0, 1))
         self.rotate_rotation(rotation, angle_add)
 
@@ -177,7 +192,9 @@ class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
             self.rotate_rotation(rotation, angle_add)
 
     def rotate_rotation(self, rotation, angle_add):
-        Animation(angle=rotation.angle + angle_add, d=.5, t='out_expo').start(rotation)
+        Animation(
+            angle=rotation.angle + angle_add, d=.5,
+            t='out_expo').start(rotation)
 
     def setup_decor(self, *args):
         label = Label(
@@ -197,16 +214,30 @@ class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
                 rect_center = rect_pos[0] + tex.width / 2, rect_pos[
                     1] + tex.height / 2
 
-                PushMatrix()
+                PushMatrix(group='decor')
                 self.decor_rotations.append(
-                    Rotate(angle=randint(0, 360), origin=rect_center, group='decor'))
-                Rectangle(pos=rect_pos, size=tex.size, texture=tex, group='decor')
-                PopMatrix()
+                    Rotate(
+                        angle=randint(0, 360),
+                        origin=rect_center,
+                        group='decor'))
+                Rectangle(
+                    pos=rect_pos, size=tex.size, texture=tex, group='decor')
+                PopMatrix(group='decor')
 
     def on_current_icon(self, *args):
-        self.canvas.remove_group('decor')
+        if not self.decor_enabled:
+            return
+
+        self.clear_decor()
         self.setup_decor()
         self.all_decor_rotation()
+
+    def clear_decor(self):
+        self.canvas.remove_group('decor')
+        # self.canvas.clear()
+        # for instruction in self.canvas.get_group('canvas'):
+        #     self.canavs.remove(instruction)
+
 
 
 class CustButton(Button, HoveringBehavior):
@@ -452,7 +483,8 @@ class CustPopup(Popup):
             img = img.filter(ImageFilter.GaussianBlur(50))
 
             tex = Texture.create(size=img.size)
-            tex.blit_buffer(pbuffer=img.tobytes(), size=img.size, colorfmt='rgba')
+            tex.blit_buffer(
+                pbuffer=img.tobytes(), size=img.size, colorfmt='rgba')
             tex.flip_vertical()
             self.canvas.before.get_group('blur')[0].texture = tex
 
@@ -1362,14 +1394,6 @@ class RootLayout(BoxLayout, HoveringBehavior):
     @silent_exc
     def reset_custom_paths(self):
         os.remove(GameCollection.CUSTOM_PATHS_PATH)
-
-    def switch_head_decor(self, _, value):
-        conf.head_decor = value
-
-        if value:
-            self.ids.header_label.setup_decor()
-        else:
-            self.ids.header_label.clear_widgets()
 
     def uninstall_prompt(self):
         self.uninstall_popup = Factory.UninstallPopup()

@@ -98,7 +98,7 @@ RootLayout:
 
         canvas.before:
             Color:
-                rgba: theme.sec
+                rgba: theme.dark
 
             Rectangle:
                 pos: self.pos
@@ -740,7 +740,7 @@ RootLayout:
 
         ContentLayout:
             id: content_updater
-            noise_color: theme.sec
+            noise_color: theme.dark
 
             BoxLayout:
                 size_hint_y: None
@@ -755,6 +755,7 @@ RootLayout:
 
                 PathInput:
                     id: path_info
+                    background_color: 0, 0, 0, 0
 
                 IconButton:
                     id: refresh_button
@@ -792,11 +793,13 @@ RootLayout:
                         id: selective_update_btn
                         text: 'Selective update'
                         on_release: root.load_selective()
+                        hovering_attrs: {'background_color': theme.sec}
 
                     BackgroundedButton:
                         id: update_all_btn
                         text: 'Update all'
                         on_release: root.update_callback()
+                        hovering_attrs: {'background_color': theme.sec}
 
                     Widget:
                 
@@ -921,7 +924,7 @@ RootLayout:
 
                     LabelSwitch:
                         text: 'Decorate head'
-                        active_callback: root.switch_head_decor
+                        active_callback: lambda __, value: setattr(root.ids.header_label, 'decor_enabled', value)
                         active: conf.head_decor
 
                     SectionLabel:
