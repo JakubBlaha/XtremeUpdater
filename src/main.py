@@ -154,6 +154,7 @@ class NoiseTexture(Widget):
 
 class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
     current_icon = StringProperty('\ue78b')
+    decors = []
     decor_rotations = []
     decor_enabled = BooleanProperty(False)
 
@@ -188,7 +189,7 @@ class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
 
     def all_decor_rotation(self, *args):
         for rotation in self.decor_rotations:
-            angle_add = 360 * (1 - 2 * randint(0, 1))
+            angle_add = 100 * (1 - 2 * randint(0, 1))
             self.rotate_rotation(rotation, angle_add)
 
     def rotate_rotation(self, rotation, angle_add):
@@ -197,22 +198,14 @@ class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
             t='out_expo').start(rotation)
 
     def setup_decor(self, *args):
-        label = Label(
-            text=self.current_icon,
-            font_name='fnt/segmdl2.ttf',
-            color=theme.bg,
-            size=(40, 40),
-            font_size=20)
-        label.texture_update()
-
-        tex = label.texture
-
         X_OFFSET = 130
+        WIDTH, HEIGHT = 20, 21
+        SIZE = WIDTH, HEIGHT
         with self.canvas:
-            for i in range(int(self.width - X_OFFSET) // int(tex.width)):
+            for i in range(int(self.width - X_OFFSET) // WIDTH):
                 rect_pos = (i * 48 + X_OFFSET, self.y + i % 2 * 10)
-                rect_center = rect_pos[0] + tex.width / 2, rect_pos[
-                    1] + tex.height / 2
+                rect_center = rect_pos[0] + WIDTH / 2, rect_pos[
+                    1] + HEIGHT / 2
 
                 PushMatrix(group='decor')
                 self.decor_rotations.append(
@@ -220,24 +213,34 @@ class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
                         angle=randint(0, 360),
                         origin=rect_center,
                         group='decor'))
-                Rectangle(
-                    pos=rect_pos, size=tex.size, texture=tex, group='decor')
+                self.decors.append(
+                    Rectangle(
+                        pos=rect_pos,
+                        size=SIZE,
+                        group='decor'))
                 PopMatrix(group='decor')
+
+        self.on_current_icon()
 
     def on_current_icon(self, *args):
         if not self.decor_enabled:
             return
 
-        self.clear_decor()
-        self.setup_decor()
+        label = Label(
+            text=self.current_icon,
+            font_name='fnt/segmdl2.ttf',
+            color=theme.bg)
+        label.texture_update()
+
+        tex = label.texture
+
+        for decor in self.decors:
+            decor.texture = tex
+
         self.all_decor_rotation()
 
     def clear_decor(self):
         self.canvas.remove_group('decor')
-        # self.canvas.clear()
-        # for instruction in self.canvas.get_group('canvas'):
-        #     self.canavs.remove(instruction)
-
 
 
 class CustButton(Button, HoveringBehavior):
