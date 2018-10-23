@@ -29,6 +29,7 @@ The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpda
   - Everything now scrolls smoothly.
   - Icon buttons in the *Game Collection* now have always a contrast color.
   - Restored dlls are now deletd from the backup directory.
+  - *Path input* now changes text color depending on whether entered path exists or not.
 
 **Other**
   - Added *Night Roses* theme.
