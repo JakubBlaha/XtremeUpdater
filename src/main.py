@@ -53,7 +53,7 @@ from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.graphics import Rectangle, Color, Rotate, PushMatrix, PopMatrix, Fbo, Translate, Scale
 from kivy.uix.label import Label, CoreLabel
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.listview import ListItemButton, ListView
+from kivy.uix.textinput import TextInput
 from kivy.properties import StringProperty, ObjectProperty, DictProperty, ListProperty, NumericProperty, BooleanProperty
 
 from hovering import HoveringBehavior
@@ -108,6 +108,26 @@ def notify_restart(fn):
         ).open()
 
     return wrapper
+
+
+class CustTextInput(TextInput):
+    pass
+
+
+class PathInput(CustTextInput):
+    def on_focus(self, __, has_focus):
+        if has_focus:
+            self.update_color()
+        else:
+            self.foreground_color = theme.sec
+
+    def on_text(self, *args):
+        if self.focus:
+            self.update_color()
+
+    def update_color(self):
+        GREEN, RED = (.3, 1, .3, 1), (1, .3, .3, 1)
+        self.foreground_color = GREEN if os.path.isdir(os.path.abspath(self.text)) else RED
 
 
 class SmoothScrollView(SmoothScrollView):
