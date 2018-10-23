@@ -1277,9 +1277,6 @@ class RootLayout(BoxLayout, HoveringBehavior):
     def load_selective(self):
         self.goto_page(5)
 
-        # if self.ids.dll_view.dlls == sorted(self.listed_dlls):
-        #     return
-
         self.ids.dll_view.dlls = self.listed_dlls
 
         last_selected = ConfLastDlls.get_list(self.path)
@@ -1288,8 +1285,6 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.ids.dll_view.select_by_text(last_selected)
         elif not self.ids.dll_view.selected_nodes:
             self.ids.dll_view.select_all()
-
-        self.bar.ping()
 
     @new_thread
     def update_callback(self, from_selection=False):
