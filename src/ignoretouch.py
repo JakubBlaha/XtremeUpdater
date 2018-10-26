@@ -1,6 +1,6 @@
 class IgnoreTouchBehavior:
-    def __init_subclass__(cls, **kw):
-        super().__init_subclass__(**kw)
+    def __init_subclass__(cls, *args, **kw):
+        super().__init_subclass__(*args, **kw)
 
         orig_init = cls.__init__
 

@@ -1258,11 +1258,12 @@ class RootLayout(BoxLayout, HoveringBehavior):
                 self.listed_dlls.append(relative_path)
 
         if not self.listed_dlls:
+            Clock.schedule_once(lambda *args:
             ErrorPopup(
                 title='No dlls found here!',
                 message=
                 f'We are sorry. We have not found any dlls to update here in\n[color={theme.PRIM}]{path}[/color].'
-            ).open()
+            ).open())
 
         else:
             self.ids.selective_update_btn.disabled = False
