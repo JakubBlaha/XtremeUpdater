@@ -94,8 +94,6 @@ RootLayout:
     opacity: 0
 
     Label:
-        id: label
-
         canvas.before:
             Color:
                 rgba: theme.dark
@@ -104,25 +102,35 @@ RootLayout:
                 pos: self.pos
                 size: self.size
 
-            PushMatrix
-            Rotate:
-                angle: root.angle
-                origin: self.center
-
-        canvas.after:
-            PopMatrix
-
         pos: root.widget.pos
         size_hint: None, None
         size: root.widget.size
         color: theme.prim
-        markup: True
         font_size: 36
         text_size: self.size
-        text: root.TEMPLATE.format(root.icon, root.text)
+        text: root.text
         halign: 'center'
         valign: 'center'
         opacity: root.opacity
+
+        Label:
+            center: self.parent.center[0], self.parent.center[1] + self.font_size
+            text: root.icon
+            font_name: 'fnt/segmdl2.ttf'
+            color: self.parent.color
+            font_size: 72
+            text_size: self.size
+            halign: 'center'
+            valigh: 'center'
+
+            canvas.before:
+                PushMatrix:
+                Rotate:
+                    angle: root.angle
+                    origin: self.center
+
+            canvas.after:
+                PopMatrix:
 
 <Content>:
     border: 0

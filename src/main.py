@@ -347,9 +347,8 @@ class OverdrawLabel(FloatLayout):
     icon = StringProperty()
     text = StringProperty()
     widget = ObjectProperty()
-    TEMPLATE = '[size=72][font=fnt/segmdl2.ttf]{}[/font][/size]\n{}'
     angle = NumericProperty(0)
-    __MAX_TILT = 2
+    __MAX_TILT = 4
 
     @mainthread
     def __init__(self, **kw):
