@@ -484,6 +484,9 @@ class GameCollection(SmoothScrollView):
 
 class CustPopup(Popup):
     icon = StringProperty()
+    show_close_button = BooleanProperty(False)
+    _close_button_color = ListProperty((1, 1, 1, 1))
+    _hovering_close_btn = BooleanProperty(False)
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -529,7 +532,37 @@ class CustPopup(Popup):
             self.icon_rect = Rectangle(
                 texture=tex, pos=self.pos, size=label.size)
 
+        # close button texture
+        label = CoreLabel(text='\u00d7', font_size=36, size=(36, 36))
+        label.refresh()
+        self.canvas.after.get_group('close_button')[0].texture = label.texture
+        self._close_button_color = theme.sec
+
+        # close button hovering behavior
+        Window.bind(mouse_pos=self.on_mouse_pos)
+
         Clock.schedule_interval(self.dance_icon, 2)
+
+    # close button hovering behavior
+    def on_mouse_pos(self, __, pos):
+        self._hovering_close_btn = self.collides_close_button(*pos)
+        
+    def on__hovering_close_btn(self, __, hovering):
+        if hovering:
+            Animation(_close_button_color=theme.prim, d=.1).start(self)
+        else:
+            Animation(_close_button_color=theme.sec, d=.1).start(self)
+
+    def on_touch_down(self, touch):
+        # handle close button
+        if self.collides_close_button(*touch.pos):
+            self.dismiss()
+
+        return super().on_touch_down(touch)
+
+    def collides_close_button(self, x, y):
+        btn = self.canvas.after.get_group('close_button')[0]
+        return btn.pos[0] <= x <= btn.pos[0] + btn.size[0] and btn.pos[1] <= y <= btn.pos[1] + btn.size[1]
 
     def on_pos(self, *args):
         self.icon_rect.pos = self.pos
