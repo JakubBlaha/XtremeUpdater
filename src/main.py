@@ -1262,7 +1262,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
                 title='No dlls found here!',
                 message=
                 f'We are sorry. We have not found any dlls to update here in\n[color={theme.PRIM}]{path}[/color].'
-            ).open())
+            ).open(), -1)
 
         else:
             self.ids.selective_update_btn.disabled = False
