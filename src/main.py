@@ -1270,8 +1270,8 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.ids.selective_update_btn.disabled = False
             self.ids.update_all_btn.disabled = False
 
-            if conf.show_disclaimer:
-                Factory.DisclaimerPopup().open()
+            if conf.show_disclaimer or True:
+                Clock.schedule_once(lambda *args: Factory.DisclaimerPopup().open())
                 conf.show_disclaimer = False
 
         self.bar.unwork()
