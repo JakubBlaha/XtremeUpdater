@@ -489,28 +489,31 @@ class CustPopup(Popup):
         super().__init__(**kw)
 
         if app.root:
-            fbo = Fbo(size=app.root.size, with_stencilbuffer=True)
+            def render_background(*args):
+                fbo = Fbo(size=app.root.size, with_stencilbuffer=True)
 
-            with fbo:
-                Scale(1, -1, 1)
-                Translate(-app.root.x, -app.root.y - app.root.height, 0)
+                with fbo:
+                    Scale(1, -1, 1)
+                    Translate(-app.root.x, -app.root.y - app.root.height, 0)
 
-            fbo.add(app.root.canvas)
-            fbo.draw()
-            tex = fbo.texture
-            fbo.remove(app.root.canvas)
-            tex.flip_vertical()
+                fbo.add(app.root.canvas)
+                fbo.draw()
+                tex = fbo.texture
+                fbo.remove(app.root.canvas)
+                tex.flip_vertical()
 
-            img = Image.frombytes('RGBA', tex.size, tex.pixels)
-            img = img.filter(ImageFilter.GaussianBlur(50))
+                img = Image.frombytes('RGBA', tex.size, tex.pixels)
+                img = img.filter(ImageFilter.GaussianBlur(50))
 
-            tex = Texture.create(size=img.size)
-            tex.blit_buffer(
-                pbuffer=img.tobytes(), size=img.size, colorfmt='rgba')
-            tex.flip_vertical()
-            self.canvas.before.get_group('blur')[0].texture = tex
+                tex = Texture.create(size=img.size)
+                tex.blit_buffer(
+                    pbuffer=img.tobytes(), size=img.size, colorfmt='rgba')
+                tex.flip_vertical()
+                self.canvas.before.get_group('blur')[0].texture = tex
 
-        self.children[0].children[2].markup = True
+            self.children[0].children[2].markup = True
+
+            Clock.schedule_once(render_background)
 
         label = CoreLabel(
             text=self.icon,
@@ -1257,12 +1260,11 @@ class RootLayout(BoxLayout, HoveringBehavior):
                 self.listed_dlls.append(relative_path)
 
         if not self.listed_dlls:
-            Clock.schedule_once(lambda *args:
             ErrorPopup(
                 title='No dlls found here!',
                 message=
                 f'We are sorry. We have not found any dlls to update here in\n[color={theme.PRIM}]{path}[/color].'
-            ).open(), -1)
+            ).open()
 
         else:
             self.ids.selective_update_btn.disabled = False
@@ -1386,7 +1388,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         if not (game_name and game_patch_dir and game_launch_path):
             return
 
-        os.makedirs('.conf', exist_ok=True)
+        os.makedirs('.config', exist_ok=True)
 
         if not game_launch_path:
             game_launch_path = self.ids.game_add_form_launch.text
