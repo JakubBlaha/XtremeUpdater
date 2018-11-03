@@ -1476,9 +1476,17 @@ class RootLayout(BoxLayout, HoveringBehavior):
     @silent_exc
     def export_logs(self):
         OUTPUT = os.path.expanduser('~\\Desktop\\XtremeUpdater_Logs.zip')
-        SOURCE = os.path.expanduser('~\\.kivy\\logs')
+        SOURCE = os.path.abspath('logs\\')
 
-        shutil.make_archive(OUTPUT, 'zip', SOURCE)
+        Logger.info(f"Trying to export logs from {SOURCE} to {OUTPUT}")
+
+        try:
+            shutil.make_archive(OUTPUT, 'zip', SOURCE)
+        except:
+            Logger.error(f"Failed to export logs from {SOURCE} to {OUTPUT}\n{format_exc()}")
+            raise
+        else:
+            Logger.info(f"Successfully exported logs from {SOURCE} to {OUTPUT}")
 
         Notification(
             title_='Logs exported',
@@ -1555,4 +1563,4 @@ if __name__ == '__main__':
     app = XtremeUpdaterApp()
     app.run()
 
-__version__ = '0.7.0'
+__version__ = '0.7.1'

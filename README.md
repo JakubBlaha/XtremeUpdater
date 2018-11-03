@@ -10,11 +10,11 @@ Website is located at https://xtremeupdater.com.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpdater-Distribution)
 
+## v0.7.1
+**Bugfixes**
+  - Fixed bug causing the *Export logs* button to try to export logs from a bad directory.
+
 ## v0.7.0
-Progress: *Testing*
-
-#
-
 **Features**
   - Added *Run as admin* button.
   - Added support for *theming*.
