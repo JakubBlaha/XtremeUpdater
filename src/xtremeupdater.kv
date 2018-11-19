@@ -37,7 +37,7 @@ RootLayout:
     padding: 10, 5
     color: theme.prim
     markup: True
-    noise_color: Window.clearcolor
+    noise_color: theme.sec
 
 <ContentLayout@BoxLayout+NoiseTexture>:
     orientation: 'vertical'
@@ -54,7 +54,7 @@ RootLayout:
 <HeaderButton@CustButton+NoiseTexture>:
     size_hint_x: None
     width: self.height
-    noise_color: Window.clearcolor
+    noise_color: theme.sec
 
 <IconButton@CustButton>:
     size_hint_x: None
@@ -623,10 +623,10 @@ RootLayout:
     height: 100
     text_size: self.size
     halign: 'center'
-    background_color: theme.sec
-    hovering_attrs: {'background_color': theme.sec}
+    background_color: theme.dark
+    hovering_attrs: {'color': theme.prim}
     underline: True
-    color: [i + .2 for i in theme.sec[:-1]] + [1]
+    color: [i + .2 for i in theme.dark[:-1]] + [1]
     padding_y: 40
 
 <ThemeSwitcher>:
@@ -670,6 +670,18 @@ RootLayout:
         background_color: theme.sec
         size_hint_x: None
         width: 40
+
+<WorkingNotif>:
+    pos_hint: {'top': 1, 'x': 150 / Window.width}
+    size_hint_y: None
+    height: 0
+    background: 'img/FFFFFF-0.png'
+
+    Label:
+        text: root.text + " ..."
+        text_size: self.size
+        valign: 'center'
+        padding: 10, 0
 
 <RootLayout>:
     orientation: 'vertical'
