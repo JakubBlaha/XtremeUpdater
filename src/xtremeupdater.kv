@@ -140,8 +140,8 @@ RootLayout:
     valign: 'center'
     padding: 40, 0
     color: theme.fg
-    hovering_attrs: {'over_color_alpha': .1}
-    anim_kw: {'d': .05}
+    hovering_attrs: {'over_color_alpha': .05}
+    anim_kw: {'d': 0}
 
     canvas.after:
         Color:
@@ -314,7 +314,7 @@ RootLayout:
     size_hint_x: 1
     background_color: theme.dark
     foreground_color: theme.sec
-    on_text_validate: app.root.load_dll_view_data(self.text)
+    on_text_validate: app.root.request_load_dlls(self.text)
 
 <SyncPopup>:
     size_hint: 1, None

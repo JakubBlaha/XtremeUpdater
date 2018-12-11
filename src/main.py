@@ -576,8 +576,10 @@ class CustPopup(Popup):
             size_hint=self.final_size_hint, opacity=1, d=.5,
             t='out_expo').start(self)
 
-    def on_dismiss(self, *args):
-        Animation(size_hint=[1, 1], opacity=0, d=.1, t='in_expo').start(self)
+    def dismiss(self, *args):
+        anim = Animation(size_hint=[1, 1], opacity=0, d=.3, t='in_expo')
+        anim.bind(on_complete=lambda *__: super(CustPopup, self).dismiss())
+        anim.start(self)
 
 
 class GameRemovePopup(CustPopup):
