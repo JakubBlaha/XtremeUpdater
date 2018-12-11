@@ -17,6 +17,7 @@ The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpda
 
 **Other**
   - A lasting notification will be shown when scanning dlls.
+  - Added an option to hide the *Run as admin* button.
 
 ## v0.7.1
 **Bugfixes**

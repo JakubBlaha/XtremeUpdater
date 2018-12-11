@@ -1262,9 +1262,9 @@ class RootLayout(BoxLayout, HoveringBehavior):
     def after_synced(self):
         self.sync_popup.dismiss()
         if not IS_ADMIN:
-            btn = RunAsAdminButton()
-            btn.open()
-            btn.ping()
+            self.admin_btn = RunAsAdminButton()
+            self.run_as_admin_shown = self.run_as_admin_shown
+            self.admin_btn.ping()
 
     def on_mouse_pos(self, _, pos):
         x, y = pos
@@ -1287,6 +1287,19 @@ class RootLayout(BoxLayout, HoveringBehavior):
             message=
             f'A [color={theme.PRIM}]restart[/color] may be required to [color={theme.PRIM}]{"enable" if value else "disable"}[/color] animations.'
         ).open()
+
+    @property
+    def run_as_admin_shown(self):
+        return getattr(conf, 'run_as_admin_shown', True)
+
+    @run_as_admin_shown.setter
+    def run_as_admin_shown(self, value):
+        if value:
+            self.admin_btn.open()
+        else:
+            self.admin_btn.dismiss()
+
+        conf.run_as_admin_shown = value
 
     @new_thread
     def load_directory(self):

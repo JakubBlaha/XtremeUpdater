@@ -602,6 +602,7 @@ RootLayout:
         text_size: self.size
         valign: 'center'
         padding: 10, 0
+        markup: True
 
 <WorkingBar>:
     canvas:
@@ -936,6 +937,11 @@ RootLayout:
                         text: 'GUI'
 
                     ThemeSwitcher:
+
+                    LabelSwitch:
+                        text: 'Show [i]Run as admin[/i] button'
+                        active_callback: lambda __, value: setattr(root, 'run_as_admin_shown', value)
+                        active: root.run_as_admin_shown
 
                     LabelSwitch:
                         text: 'Enable animations'
