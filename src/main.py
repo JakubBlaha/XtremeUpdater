@@ -127,7 +127,8 @@ class PathInput(CustTextInput):
 
     def update_color(self):
         GREEN, RED = (.3, 1, .3, 1), (1, .3, .3, 1)
-        self.foreground_color = GREEN if os.path.isdir(os.path.abspath(self.text)) else RED
+        self.foreground_color = GREEN if os.path.isdir(
+            os.path.abspath(self.text)) else RED
 
 
 class SmoothScrollView(SmoothScrollView):
@@ -224,8 +225,7 @@ class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
         with self.canvas:
             for i in range(int(self.width - X_OFFSET) // WIDTH):
                 rect_pos = (i * 48 + X_OFFSET, self.y + i % 2 * 10)
-                rect_center = rect_pos[0] + WIDTH / 2, rect_pos[
-                    1] + HEIGHT / 2
+                rect_center = rect_pos[0] + WIDTH / 2, rect_pos[1] + HEIGHT / 2
 
                 PushMatrix(group='decor')
                 self.decor_rotations.append(
@@ -234,10 +234,7 @@ class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
                         origin=rect_center,
                         group='decor'))
                 self.decors.append(
-                    Rectangle(
-                        pos=rect_pos,
-                        size=SIZE,
-                        group='decor'))
+                    Rectangle(pos=rect_pos, size=SIZE, group='decor'))
                 PopMatrix(group='decor')
 
         self.on_current_icon()
@@ -492,6 +489,7 @@ class CustPopup(Popup):
         super().__init__(**kw)
 
         if app.root:
+
             def render_background(*args):
                 fbo = Fbo(size=app.root.size, with_stencilbuffer=True)
 
@@ -546,7 +544,7 @@ class CustPopup(Popup):
     # close button hovering behavior
     def on_mouse_pos(self, __, pos):
         self._hovering_close_btn = self.collides_close_button(*pos)
-        
+
     def on__hovering_close_btn(self, __, hovering):
         if hovering:
             Animation(_close_button_color=theme.prim, d=.1).start(self)
@@ -562,7 +560,8 @@ class CustPopup(Popup):
 
     def collides_close_button(self, x, y):
         btn = self.canvas.after.get_group('close_button')[0]
-        return btn.pos[0] <= x <= btn.pos[0] + btn.size[0] and btn.pos[1] <= y <= btn.pos[1] + btn.size[1]
+        return btn.pos[0] <= x <= btn.pos[0] + btn.size[0] and btn.pos[
+            1] <= y <= btn.pos[1] + btn.size[1]
 
     def on_pos(self, *args):
         self.icon_rect.pos = self.pos
@@ -715,7 +714,7 @@ class GameButton(Button, HoveringBehavior):
         if self.expand_user_patch:
             path = os.path.expanduser(path)
 
-        app.root.load_dll_view_data(path)
+        app.root.request_load_dlls(path)
         app.root.launch_path = self.exe
 
 
@@ -1182,6 +1181,37 @@ class ThemeSwitcher(BoxLayout):
         self.themes.append(self.themes.pop(0))
 
 
+class WorkingNotif(ModalView, IgnoreTouchBehavior):
+    text = StringProperty()
+
+    _highlight_alpha = NumericProperty(.8)
+
+    def open(self, *args, **kw):
+        if not kw.get('animation', True):
+            self.pos_hint = {'top': 1}
+        return super().open(*args, **kw)
+
+    def on_open(self):
+        # Come-in animation
+        Animation(pos_hint={'top': 1}, d=.5, t='out_expo').start(self)
+
+        # Bg flashing animation
+        anim = (Animation(_highlight_alpha=.8, t="out_expo") + Animation(
+            _highlight_alpha=0, t="out_expo"))
+        anim.repeat = True
+        anim.start(self)
+
+    def dismiss(self, *args):
+        # Come-out animation
+        anim = Animation(
+            pos_hint={'top': (Window.height + self.height) / Window.height},
+            d=.5,
+            t='out_expo')
+        anim.bind(
+            on_complete=lambda *__: super(WorkingNotif, self).dismiss(args))
+        anim.start(self)
+
+
 class RootLayout(BoxLayout, HoveringBehavior):
     mouse_highlight_pos = ListProperty([-120, -120])
     dlls_loaded = BooleanProperty(False)
@@ -1260,16 +1290,14 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
     @new_thread
     def load_directory(self):
-        self.load_dll_view_data(easygui.diropenbox())
+        self.request_load_dlls(easygui.diropenbox())
 
-    @new_thread
-    def load_dll_view_data(self, path):
+    def request_load_dlls(self, path):
         if not path:
-            return
+            return False
 
         path = os.path.abspath(path)
 
-        self.goto_page(0)
         self.launch_path = None
         self.path = path
         self.ids.path_info.text = path
@@ -1277,19 +1305,24 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.ids.update_all_btn.disabled = True
 
         if not os.path.isdir(path):
-            return
+            return False
 
+        notif = WorkingNotif(text='Searching for dlls')
+        notif.open(animation=1)
+        Clock.schedule_once(lambda *__: self._load_dlls(path, notif), .5)
+
+    def _load_dlls(self, path, notif=None):
         try:
             self.ids.content_updater.remove_widget(self.launch_now_btn)
         except AttributeError:
             pass
 
         self.ids.quickupdate_content.overdrawer.dismiss()
-        self.bar.work()
 
         self.listed_dlls = []
+
         for relative_path in self.updater.local_dlls(path):
-            if os.path.basename(relative_path) in self.updater.available_dlls:
+            if relative_path.split('\\')[-1] in self.updater.available_dlls:
                 self.listed_dlls.append(relative_path)
 
         if not self.listed_dlls:
@@ -1304,10 +1337,14 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.ids.update_all_btn.disabled = False
 
             if conf.show_disclaimer:
-                Clock.schedule_once(lambda *args: Factory.DisclaimerPopup().open())
+                Clock.schedule_once(
+                    lambda *args: Factory.DisclaimerPopup().open())
                 conf.show_disclaimer = False
 
-        self.bar.unwork()
+        self.goto_page(0)
+        self.bar.ping()
+        if notif:
+            notif.dismiss()
 
     def load_selective(self):
         self.goto_page(5)
@@ -1483,10 +1520,13 @@ class RootLayout(BoxLayout, HoveringBehavior):
         try:
             shutil.make_archive(OUTPUT, 'zip', SOURCE)
         except:
-            Logger.error(f"Failed to export logs from {SOURCE} to {OUTPUT}\n{format_exc()}")
+            Logger.error(
+                f"Failed to export logs from {SOURCE} to {OUTPUT}\n{format_exc()}"
+            )
             raise
         else:
-            Logger.info(f"Successfully exported logs from {SOURCE} to {OUTPUT}")
+            Logger.info(
+                f"Successfully exported logs from {SOURCE} to {OUTPUT}")
 
         Notification(
             title_='Logs exported',
@@ -1558,9 +1598,9 @@ if __name__ == '__main__':
     Logger.info(f'System = {platform.system()}')
     Logger.info(f'Release = {platform.release()}')
 
-    Window.clearcolor = theme.sec
+    Window.clearcolor = theme.dark
 
     app = XtremeUpdaterApp()
     app.run()
 
-__version__ = '0.7.1'
+__version__ = '0.7.2'

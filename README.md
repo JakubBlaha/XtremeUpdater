@@ -13,6 +13,10 @@ The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpda
 ## v0.7.2
 **Bugfixes**
   - Fixed the *Play now* button.
+  - Fixed scanning directories to be enormously slow in some cases.
+
+**Other**
+  - A lasting notification will be shown when scanning dlls.
 
 ## v0.7.1
 **Bugfixes**

@@ -672,16 +672,35 @@ RootLayout:
         width: 40
 
 <WorkingNotif>:
-    pos_hint: {'top': 1, 'x': 150 / Window.width}
+    pos_hint: {'top': (Window.height + self.height) / Window.height, 'x': 0}
     size_hint_y: None
-    height: 0
+    height: 30
     background: 'img/FFFFFF-0.png'
+    background_color: 0, 0, 0, 0
 
     Label:
         text: root.text + " ..."
         text_size: self.size
         valign: 'center'
         padding: 10, 0
+        color: theme.fg
+        bold: True
+
+        canvas.before:
+            Color:
+                rgba: theme.sec
+
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+            Color:
+                rgb: theme.prim
+                a: root._highlight_alpha
+
+            Rectangle:
+                pos: self.pos
+                size: self.size
 
 <RootLayout>:
     orientation: 'vertical'

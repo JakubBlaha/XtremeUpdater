@@ -7,32 +7,35 @@ import os
 def get_data(url):
     return urlopen(url).read()
 
+
 class DllUpdater:
     URL = "https://github.com/XtremeWare/XtremeUpdater/tree/master/dll/"
     RAW_URL = "https://github.com/XtremeWare/XtremeUpdater/raw/master/dll/"
     BACKUP_DIR = ".backup/"
     CACHE_DIR = '.cache/dlls/'
-    available_dlls = []
+    available_dlls = ()
 
     @staticmethod
     def local_dlls(path):
-        for dirpath, __, filenames in os.walk(path):
-            for f in filenames:
-                if f.endswith('.dll'):
-                    yield dirpath.replace(path, '') + f'\\{f}'
+        for dp, __, fs in os.walk(path):
+            for f in fs:
+                if f.endswith(".dll"):
+                    yield dp.replace(path, '') + f'\\{f}'
 
     def load_available_dlls(self):
         try:
             html = get_data(self.URL)
             soup = BeautifulSoup(html, 'html.parser')
+            _available_dlls = []
             for a in soup.find_all('a', {'class': 'js-navigation-open'}):
                 if a.parent.parent.get('class')[0] == 'content':
-                    self.available_dlls.append(a.text)
+                    _available_dlls.append(a.text)
 
         except:
             return False
 
         else:
+            self.available_dlls = tuple(_available_dlls)
             return True                       
 
     @classmethod
