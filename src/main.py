@@ -526,7 +526,6 @@ class CustPopup(Popup):
         fbo.remove(app.root.canvas)
 
         tex = fbo.texture
-        tex.flip_vertical()
 
         img = Image.frombytes('RGBA', tex.size, tex.pixels)
         img = img.filter(ImageFilter.GaussianBlur(50))
