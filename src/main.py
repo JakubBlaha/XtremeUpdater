@@ -8,7 +8,7 @@ import ctypes
 from random import randint
 from _thread import start_new
 from traceback import format_exc
-from PIL import ImageGrab, ImageFilter, Image
+from PIL import ImageFilter, Image
 import platform
 from io import BytesIO
 
@@ -32,10 +32,8 @@ from kivy.factory import Factory
 from kivy.core.window import Window
 from kivy.animation import Animation
 from kivy.clock import Clock, mainthread
-from kivy.utils import get_color_from_hex
 from kivy.storage.jsonstore import JsonStore
 from kivy.network.urlrequest import UrlRequest
-from kivy.adapters.listadapter import ListAdapter
 
 from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
@@ -129,10 +127,6 @@ class PathInput(CustTextInput):
         GREEN, RED = (.3, 1, .3, 1), (1, .3, .3, 1)
         self.foreground_color = GREEN if os.path.isdir(
             os.path.abspath(self.text)) else RED
-
-
-class SmoothScrollView(SmoothScrollView):
-    pass
 
 
 class Animation(Animation):
@@ -376,6 +370,11 @@ class OverdrawLabel(FloatLayout):
         anim.start(self)
 
 
+class SmoothScrollView(SmoothScrollView):
+    # Has to be here for the rule to be applied
+    pass
+
+
 class GameCollection(SmoothScrollView):
     COMMON_PATHS_URL = 'https://raw.githubusercontent.com/XtremeWare/XtremeUpdater/master/res/CommonPaths.yaml'
     COMMON_PATHS_CACHE_PATH = '.cache/common/paths/CommonPaths.yaml'
@@ -484,37 +483,15 @@ class CustPopup(Popup):
     show_close_button = BooleanProperty(False)
     _close_button_color = ListProperty((1, 1, 1, 1))
     _hovering_close_btn = BooleanProperty(False)
+    _icon_tex = ObjectProperty()
 
     def __init__(self, **kw):
         super().__init__(**kw)
 
         if app.root:
+            Clock.schedule_once(self.render_background)
 
-            def render_background(*args):
-                fbo = Fbo(size=app.root.size, with_stencilbuffer=True)
-
-                with fbo:
-                    Scale(1, -1, 1)
-                    Translate(-app.root.x, -app.root.y - app.root.height, 0)
-
-                fbo.add(app.root.canvas)
-                fbo.draw()
-                tex = fbo.texture
-                fbo.remove(app.root.canvas)
-                tex.flip_vertical()
-
-                img = Image.frombytes('RGBA', tex.size, tex.pixels)
-                img = img.filter(ImageFilter.GaussianBlur(50))
-
-                tex = Texture.create(size=img.size)
-                tex.blit_buffer(
-                    pbuffer=img.tobytes(), size=img.size, colorfmt='rgba')
-                tex.flip_vertical()
-                self.canvas.before.get_group('blur')[0].texture = tex
-
-            self.children[0].children[2].markup = True
-
-            Clock.schedule_once(render_background)
+        self.children[0].children[2].markup = True
 
         label = CoreLabel(
             text=self.icon,
@@ -523,12 +500,8 @@ class CustPopup(Popup):
             color=theme.sec,
             padding=[18, 18])
         label.refresh()
-        tex = label.texture
-
-        with self.canvas:
-            Color(1, 1, 1, 1)
-            self.icon_rect = Rectangle(
-                texture=tex, pos=self.pos, size=label.size)
+        self._icon_tex = label.texture
+        self._icon_rect = self.canvas.get_group('icon')[0]
 
         # close button texture
         label = CoreLabel(text='\u00d7', font_size=36, size=(36, 36))
@@ -541,6 +514,31 @@ class CustPopup(Popup):
 
         Clock.schedule_interval(self.dance_icon, 2)
 
+    def render_background(self, *args):
+        fbo = Fbo(size=app.root.size, with_stencilbuffer=True)
+
+        with fbo:
+            Scale(1, -1, 1)
+            Translate(-app.root.x, -app.root.y - app.root.height, 0)
+
+        fbo.add(app.root.canvas)
+        fbo.draw()
+        fbo.remove(app.root.canvas)
+
+        tex = fbo.texture
+        tex.flip_vertical()
+
+        img = Image.frombytes('RGBA', tex.size, tex.pixels)
+        img = img.filter(ImageFilter.GaussianBlur(50))
+
+        tex = Texture.create(size=img.size)
+        tex.blit_buffer(
+            pbuffer=img.tobytes(), size=img.size, colorfmt='rgba')
+        tex.flip_vertical()
+        self.canvas.before.get_group('blur')[0].texture = tex
+
+        Window.canvas.insert(0, app.root.canvas)
+
     # close button hovering behavior
     def on_mouse_pos(self, __, pos):
         self._hovering_close_btn = self.collides_close_button(*pos)
@@ -551,25 +549,15 @@ class CustPopup(Popup):
         else:
             Animation(_close_button_color=theme.sec, d=.1).start(self)
 
-    def on_touch_down(self, touch):
-        # handle close button
-        if self.collides_close_button(*touch.pos):
-            self.dismiss()
-
-        return super().on_touch_down(touch)
-
     def collides_close_button(self, x, y):
         btn = self.canvas.after.get_group('close_button')[0]
         return btn.pos[0] <= x <= btn.pos[0] + btn.size[0] and btn.pos[
             1] <= y <= btn.pos[1] + btn.size[1]
 
-    def on_pos(self, *args):
-        self.icon_rect.pos = self.pos
-
     def dance_icon(self, *args):
-        curr_x, curr_y = self.icon_rect.pos
+        curr_x, curr_y = self._icon_rect.pos
         (Animation(pos=[curr_x, curr_y + 10], d=.4, t='out_expo') + Animation(
-            pos=[curr_x, curr_y], d=.2, t='out_bounce')).start(self.icon_rect)
+            pos=[curr_x, curr_y], d=.2, t='out_bounce')).start(self._icon_rect)
 
     def on_open(self, *args):
         Animation(
@@ -1264,9 +1252,9 @@ class RootLayout(BoxLayout, HoveringBehavior):
     def after_synced(self):
         self.sync_popup.dismiss()
         if not IS_ADMIN:
-            self.admin_btn = RunAsAdminButton()
             self.run_as_admin_shown = self.run_as_admin_shown
-            self.admin_btn.ping()
+            if hasattr(self, 'admin_btn'):
+                self.admin_btn.ping()
 
     def on_mouse_pos(self, _, pos):
         x, y = pos
@@ -1297,9 +1285,11 @@ class RootLayout(BoxLayout, HoveringBehavior):
     @run_as_admin_shown.setter
     def run_as_admin_shown(self, value):
         if value:
+            self.admin_btn = RunAsAdminButton()
             self.admin_btn.open()
-        else:
+        elif hasattr(self, 'admin_btn'):
             self.admin_btn.dismiss()
+            del self.admin_btn
 
         conf.run_as_admin_shown = value
 

@@ -378,6 +378,17 @@ RootLayout:
             group: 'blur'
             size: Window.size
 
+    canvas:
+        Color:
+            rgba: 1, 1, 1, 1
+
+        Rectangle:
+            group: 'icon'
+            pos: self.pos
+            size: root._icon_tex.size if root._icon_tex else (0, 0)
+            texture: root._icon_tex
+            
+
     canvas.after:
         Color:
             rgba: self._close_button_color[:-1] + [self.show_close_button]
@@ -977,7 +988,7 @@ RootLayout:
                     LabelIconButton:
                         text: 'Show license'
                         icon: '\ue785'
-                        command: Factory.DisclaimerPopup().open
+                        command: lambda: Factory.DisclaimerPopup().open()
 
                     SectionLabel:
                         text: 'Danger zone'

@@ -14,6 +14,8 @@ The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpda
 **Bugfixes**
   - Fixed the *Play now* button.
   - Fixed scanning directories to be enormously slow in some cases.
+  - Fixed bug causing the GUI to stop rendering after a *popup* was displayed.
+  - Fixed bug causing the *popup* when showing the license from the *settings* to have grey background.
 
 **Other**
   - A lasting notification will be shown when scanning dlls.
