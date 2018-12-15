@@ -166,7 +166,9 @@ class RootLayout(BoxLayout):
 
     def logo_visible(self, visible):
         Animation(opacity=visible, d=.5, t='out_expo').start(self.ids.logo)
-        Animation(size=[300, 400] if visible else [300, 150], d=.5, t='out_expo').start(Window)
+        Animation(
+            size=[300, 400] if visible else [300, 150], d=.5,
+            t='out_expo').start(Window)
 
     def already_installed(self):
         self.logo_rotate_clock.cancel()
@@ -187,7 +189,9 @@ class RootLayout(BoxLayout):
             try:
                 shutil.rmtree(REPO_PATH)
             except PermissionError:
-                app.info('[color=f55]Failed to remove directory[/color]\n\nPlese do it manually')
+                app.info(
+                    '[color=f55]Failed to remove the directory[/color]\n\nPlese do it manually'
+                )
             else:
                 self.logo_visible(True)
                 self.begin_logo_rotation()
