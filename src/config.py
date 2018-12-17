@@ -42,3 +42,6 @@ class Conf:
     def __dump_to_file(self):
         with open(object.__getattribute__(self, '__path'), 'w') as conf:
             conf.write(yaml.dump(object.__getattribute__(self, '__store')))
+
+    def get(self, key, default):
+        return getattr(self, key, default)

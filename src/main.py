@@ -1595,11 +1595,13 @@ class XtremeUpdaterApp(App):
             REPO_PATH = os.path.abspath(os.path.join(os.path.dirname(sys.executable), os.pardir))
             # REPO_PATH = r"C:\Users\jakub\AppData\Local\XtremeUpdater\repo"
             self.update_client = UpdateClient(REPO_PATH)
-            if self.update_client.is_update_available():
-                print(self.update_client.is_update_available())
+            if self.update_client.is_update_available() or conf.get('force_update', False):
+                Logger.info('Application considered as outdated!')
                 self.update_notif = WorkingNotif(text='Downloading an update')
                 self.update_notif.open()
                 self._download_update()
+            else:
+                Logger.info('Application considered as up-to-date')
 
     @new_thread
     def _download_update(self):
