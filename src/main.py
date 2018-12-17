@@ -63,6 +63,7 @@ from dll_updater import DllUpdater
 from fontcolor import font_color
 from get_image_url import get_image_url_from_response, TEMPLATE, HEADERS
 from cropped_thumbnail import cropped_thumbnail
+from update_client import UpdateClient
 
 IS_ADMIN = ctypes.windll.shell32.IsUserAnAdmin()
 STORE_PATH = '.config/config.yaml'
@@ -1588,6 +1589,33 @@ class ConfLastDlls:
 
 
 class XtremeUpdaterApp(App):
+    def on_start(self):
+        # Check for updates
+        if hasattr(sys, 'frozen'):# or True:
+            REPO_PATH = os.path.abspath(os.path.join(os.path.dirname(sys.executable), os.pardir))
+            # REPO_PATH = r"C:\Users\jakub\AppData\Local\XtremeUpdater\repo"
+            self.update_client = UpdateClient(REPO_PATH)
+            if self.update_client.is_update_available():
+                print(self.update_client.is_update_available())
+                self.update_notif = WorkingNotif(text='Downloading an update')
+                self.update_notif.open()
+                self._download_update()
+
+    @new_thread
+    def _download_update(self):
+        # Download update utility and display a popup
+        if self.update_client.download_util():
+            self.update_notif.dismiss()
+            Clock.schedule_once(lambda *__: Factory.UpdateRestartPopup().open(), 0)
+
+    def _restart_for_update(self):
+        # Dismiss popup and run update utility
+        if hasattr(self, 'update_notif'):
+            self.update_notif.dismiss()
+
+        self.update_client.run_util()
+        self.stop()
+
     def open_settings(self):
         self.root.goto_page(3)
 
@@ -1607,4 +1635,4 @@ if __name__ == '__main__':
     app = XtremeUpdaterApp()
     app.run()
 
-__version__ = '0.7.2'
+__version__ = '0.7.3'

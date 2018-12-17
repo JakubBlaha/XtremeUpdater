@@ -491,6 +491,31 @@ RootLayout:
 
             Widget:
 
+<UpdateRestartPopup@CustPopup>:
+    title: f'[color={theme.PRIM}]Restart[/color] required'
+    separator_color: theme.prim
+    icon: '\ue896'
+    auto_dismiss: False
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        Label:
+            text: f'We need to restart [color={theme.PRIM}]XtremeUpdater[/color] in order to apply an update. Click below to continue.'
+            markup: True
+            text_size: self.size
+            valign: 'top'
+            padding: 10, 10
+
+        BoxLayout:
+            Widget:
+            BackgroundedButton:
+                text: 'Restart'
+                on_release: app._restart_for_update()
+                size_hint: None, None
+                size: 200, 40
+            Widget:
+
 <Notification>:
     title: '   ' + self.title_
     title_size: 22
