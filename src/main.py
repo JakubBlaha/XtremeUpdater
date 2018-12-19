@@ -1496,27 +1496,6 @@ class RootLayout(BoxLayout, HoveringBehavior):
         self.uninstall_popup = Factory.UninstallPopup()
         self.uninstall_popup.open()
 
-    def uninstall(self):
-        LNK_PATH = os.path.expanduser(
-            '~\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\XtremeUpdater.lnk'
-        )
-        UNINST_PATH = 'C:\\XtremeUpdaterUninstall\\XtremeUpdater-Uninstall.bat'
-        UNINST_DATA = ('@timeout /t 5 /nobreak\n'
-                       '@rmdir /q /s %localappdata%\\XtremeUpdater\n'
-                       '(goto) 2>nul & del "%~f0"')
-
-        try:
-            os.remove(LNK_PATH)
-        except FileNotFoundError:
-            pass
-
-        os.makedirs(os.path.dirname(UNINST_PATH), exist_ok=True)
-        with open(UNINST_PATH, 'w') as stream:
-            stream.write(UNINST_DATA)
-
-        os.startfile(UNINST_PATH)
-        app.stop()
-
     @silent_exc
     def export_logs(self):
         OUTPUT = os.path.expanduser('~\\Desktop\\XtremeUpdater_Logs.zip')

@@ -7,6 +7,7 @@
 #:import dirname os.path.dirname
 #:import Factory kivy.factory.Factory
 #:import platform platform
+#:import uninstall uninstall.uninstall
 
 #:set Config app.Config
 #:set version app.version
@@ -458,7 +459,7 @@ RootLayout:
 
     AcceptDecliene:
         pos: root.x + root.width - self.width - 10, root.y + 10
-        proceed_command: app.root.uninstall
+        proceed_command: uninstall
         decline_command: root.dismiss
 
 <DisclaimerPopup@CustPopup>:
