@@ -3,45 +3,56 @@ import yaml
 from kivy.logger import Logger
 
 
-class Conf:
-    __store = {}
-    __path = ''
+class ConfigMeta(type):
+    path = ''
+    _store = {'proxy_ref': None}
 
-    def __init__(self, path, defaults):
-        object.__setattr__(self, '__path', path)
+    def reload_store(cls):
+        # Ensure config file
+        if not os.path.isfile(cls.path):
+            os.makedirs(os.path.dirname(cls.path), exist_ok=True)
+            try:
+                open(cls.path, 'w').close()
+            except OSError:
+                Logger.error(
+                    f'Config: Failed to create the config file in {cls.path}. Is direcotry: {os.path.isdir(cls.path)}'
+                )
+            return
 
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        # Load config file
+        with open(cls.path) as f:
+            data = yaml.load(f)
+        if not type(data) == dict:
+            return
+        cls._store.update(data)
+        Logger.info(f'Config: Reloaded store from {cls.path} | {cls._store}')
 
+    def dump_to_file(cls):
         try:
-            with open(path, 'r') as config:
-                object.__setattr__(self, '__store', {
-                    **defaults,
-                    **yaml.load(config)
-                })
-        except FileNotFoundError:
-            Logger.warning('Config file not found!')
-            Logger.info(
-                f'Creating config file at {path} with values {defaults}..'
+            with open(cls.path, 'w') as f:
+                yaml.dump(cls._store, f)
+        except OSError:
+            Logger.error(
+                f'Config: Failed to dump the config {cls._store} to {cls.path}'
             )
+        else:
+            Logger.info(f'Config: Dumped config to {cls.path} | {cls._store}')
 
-            with open(path, 'w') as f:
-                yaml.dump(defaults, f)
+    def __getattr__(cls, name):
+        return cls._store[name]
 
-            object.__setattr__(self, '__store', defaults)
-
-    def __setattr__(self, name, value):
-        object.__getattribute__(self, '__store')[name] = value
-        self.__dump_to_file()
-
-    def __getattr__(self, name):
+    def __setattr__(cls, name, value):
         try:
-            return object.__getattribute__(self, '__store')[name]
+            cls.name
         except KeyError:
-            raise AttributeError
+            cls._store[name] = value
+            Logger.info(f'Config: Set `{name}` to `{value}`')
+        else:
+            return type.__setattr__(cls, name, value)
 
-    def __dump_to_file(self):
-        with open(object.__getattribute__(self, '__path'), 'w') as conf:
-            conf.write(yaml.dump(object.__getattribute__(self, '__store')))
+    def get(cls, name, default):
+        return cls._store.get(name, default)
 
-    def get(self, key, default):
-        return getattr(self, key, default)
+
+class Config(metaclass=ConfigMeta):
+    path = '.config/config.yaml'

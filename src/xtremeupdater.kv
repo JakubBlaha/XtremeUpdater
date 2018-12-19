@@ -1,17 +1,17 @@
 #:kivy 1.10.1
 
-#:import main main
-#:import conf main.conf
-#:import theme main.theme
 #:import Window kivy.core.window.Window
 #:import Tweaks tweaks.Tweaks
 #:import get_version_number get_version_number.get_version_number
 #:import startfile os.startfile
-#:import version main.__version__
-#:import __file__ main.__file__
 #:import dirname os.path.dirname
 #:import Factory kivy.factory.Factory
 #:import platform platform
+
+#:set Config app.Config
+#:set version app.version
+#:set theme app.theme
+#:set as_admin app.as_admin
 
 RootLayout:
 <CustButton>:
@@ -167,7 +167,7 @@ RootLayout:
     bar_color: theme.sec
     bar_inactive_color: [0, 0, 0, 0]
     scroll_type: ['content', 'bars']
-    smooth: conf.animations
+    smooth: Config.get('animations', True)
 
 <DllView>:
     viewclass: 'DllViewItem'
@@ -472,7 +472,7 @@ RootLayout:
         orientation: 'vertical'
 
         Label:
-            text: open(dirname(__file__) + '\\LICENSE').read()
+            text: open('LICENSE').read()
             text_size: self.size
             padding: 10, 0
             size_hint_x: None
@@ -797,7 +797,7 @@ RootLayout:
 
     Content:
         id: content
-        anim_kwargs: {'t': 'out_expo', 'd': .5 * conf.animations}
+        anim_kwargs: {'t': 'out_expo', 'd': .5 * Config.get('animations', True)}
         commands: {2: lambda: Factory.IsAdminNotif().open()}
 
         ContentLayout:
@@ -908,7 +908,7 @@ RootLayout:
                         text: 'Allow GameDVR'
                         active_callback: Tweaks.switch_dvr
                         active: Tweaks.is_dvr()
-                        disabled: not main.IS_ADMIN or platform.release() != '10'
+                        disabled: not as_admin or platform.release() != '10'
 
                     SectionLabel:
                         text: 'Fault Tolerant Heap'
@@ -918,13 +918,13 @@ RootLayout:
                             text: 'Enable FTH'
                             active_callback: Tweaks.switch_fth
                             active: Tweaks.is_fth()
-                            disabled: not main.IS_ADMIN
+                            disabled: not as_admin
 
                         LabelIconButton:
                             id: clear_fth_btn
                             text: 'Clear FTH'
                             icon: '\ue74c'
-                            disabled: not (Tweaks.fth_value() and main.IS_ADMIN)
+                            disabled: not (Tweaks.fth_value() and as_admin)
                             command: Tweaks.clear_fth
 
         ContentLayout:
@@ -982,17 +982,17 @@ RootLayout:
                     LabelSwitch:
                         text: 'Enable animations'
                         active_callback: root.switch_animations_enabled
-                        active: conf.animations
+                        active: Config.get('animations', True)
 
                     LabelSwitch:
                         text: 'Enable mouse highlight'
                         active_callback: root.switch_mouse_highlight
-                        active: conf.mouse_highlight
+                        active: Config.get('mouse_highlight', True)
 
                     LabelSwitch:
                         text: 'Decorate head'
                         active_callback: lambda __, value: setattr(root.ids.header_label, 'decor_enabled', value)
-                        active: conf.head_decor
+                        active: Config.head_decor
 
                     SectionLabel:
                         text: 'Cache'

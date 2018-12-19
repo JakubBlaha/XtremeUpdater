@@ -1,3 +1,5 @@
+__version__ = '0.7.3'
+
 import easygui
 import yaml
 import os
@@ -15,16 +17,16 @@ from io import BytesIO
 import kivy
 kivy.require('1.10.1')
 
-from kivy import Config
-Config.set('graphics', 'width', 1000)
-Config.set('graphics', 'height', 550)
-Config.set('graphics', 'borderless', 1)
-Config.set('graphics', 'resizable', 0)
-Config.set('graphics', 'multisamples', 0)
-Config.set('graphics', 'maxfps', 60)
-Config.set('input', 'mouse', 'mouse, disable_multitouch')
-Config.set('kivy', 'window_icon', 'img/icon.ico')
-Config.set('kivy', 'log_dir', os.getcwd() + '/logs')
+from kivy import Config as KivyConfig
+KivyConfig.set('graphics', 'width', 1000)
+KivyConfig.set('graphics', 'height', 550)
+KivyConfig.set('graphics', 'borderless', 1)
+KivyConfig.set('graphics', 'resizable', 0)
+KivyConfig.set('graphics', 'multisamples', 0)
+KivyConfig.set('graphics', 'maxfps', 60)
+KivyConfig.set('input', 'mouse', 'mouse, disable_multitouch')
+KivyConfig.set('kivy', 'window_icon', 'img/icon.ico')
+KivyConfig.set('kivy', 'log_dir', os.getcwd() + '/logs')
 
 from kivy.app import App
 from kivy.logger import Logger
@@ -58,7 +60,8 @@ from hovering import HoveringBehavior
 from windowdragbehavior import WindowDragBehavior
 
 from theme import Theme
-from config import Conf
+from config import Config
+Config.reload_store()
 from dll_updater import DllUpdater
 from fontcolor import font_color
 from get_image_url import get_image_url_from_response, TEMPLATE, HEADERS
@@ -134,7 +137,7 @@ class Animation(Animation):
     def __init__(self, **kw):
         super().__init__(**kw)
         try:
-            self._duration *= conf.animations
+            self._duration *= Config.get('animations', True)
         except (NameError, AttributeError):
             pass
 
@@ -177,17 +180,17 @@ class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        self.decor_enabled = conf.head_decor
+        self.decor_enabled = Config.get('head_decor', True)
 
         if self.decor_enabled:
             Clock.schedule_once(
                 lambda *args: Clock.schedule_once(self.setup_decor))
 
-            if conf.animations:
+            if Config.get('animations', True):
                 Clock.schedule_once(lambda *args: Clock.schedule_interval(self.random_decor_rotation, .5))
 
     def on_decor_enabled(self, __, value):
-        conf.head_decor = value
+        Config.head_decor = value
 
         if value:
             self.setup_decor()
@@ -355,7 +358,7 @@ class OverdrawLabel(FloatLayout):
 
         Animation.stop_all(self)
         Animation(opacity=1, d=.2).start(self)
-        if conf.animations:
+        if Config.get('animations', True):
             anim = (
                 Animation(angle=self.__MAX_TILT, d=.3, t='in_out_expo') +
                 Animation(angle=0, d=1, t='out_elastic') + Animation(d=2) +
@@ -532,8 +535,7 @@ class CustPopup(Popup):
         img = img.filter(ImageFilter.GaussianBlur(50))
 
         tex = Texture.create(size=img.size)
-        tex.blit_buffer(
-            pbuffer=img.tobytes(), size=img.size, colorfmt='rgba')
+        tex.blit_buffer(pbuffer=img.tobytes(), size=img.size, colorfmt='rgba')
         tex.flip_vertical()
         self.canvas.before.get_group('blur')[0].texture = tex
 
@@ -918,7 +920,7 @@ class SyncPopup(Popup, NoiseTexture, IgnoreTouchBehavior):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        if conf.animations:
+        if Config.get('animations', True):
             Clock.schedule_interval(self.rotate_icon, 2)
 
     def rotate_icon(self, *args):
@@ -1071,7 +1073,7 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-        if not conf.animations:
+        if not Config.get('animations', True):
             return
 
         anim = Animation(d=0)
@@ -1143,7 +1145,7 @@ class ThemeSwitcher(BoxLayout):
                 display_height=self.height, d=.2, t='out_expo')).start(self)
 
     def on_theme(self, __, theme_):
-        theme_.set_theme()
+        Config.theme = theme_.name
         self.display_colors = list(theme_.get_values_kivy_color().values())
 
         def on_complete(*args):
@@ -1154,7 +1156,7 @@ class ThemeSwitcher(BoxLayout):
         anim.bind(on_complete=on_complete)
         anim.start(self.ids.label)
 
-        if self.theme.name != theme.name:
+        if theme_.name != theme.name:
             Notification(
                 title='Restart required',
                 message=
@@ -1212,7 +1214,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         super().__init__(**kw)
 
         self.bar = self.ids.bar
-        self.switch_mouse_highlight(None, conf.mouse_highlight)
+        self.switch_mouse_highlight(None, Config.get('mouse_highlight', True))
 
         def on_frame(*args):
             self.show_sync_popup()
@@ -1268,10 +1270,10 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.unbind_hovering()
             self.mouse_highlight_pos = -120, -120
 
-        conf.mouse_highlight = value
+        Config.mouse_highlight = value
 
     def switch_animations_enabled(self, _, value):
-        conf.animations = value
+        Config.animations = value
         Notification(
             title_='Restart required',
             message=
@@ -1280,7 +1282,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
     @property
     def run_as_admin_shown(self):
-        return getattr(conf, 'run_as_admin_shown', True)
+        return Config.get('run_as_admin_shown', True)
 
     @run_as_admin_shown.setter
     def run_as_admin_shown(self, value):
@@ -1291,7 +1293,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.admin_btn.dismiss()
             del self.admin_btn
 
-        conf.run_as_admin_shown = value
+        Config.run_as_admin_shown = value
 
     @new_thread
     def load_directory(self):
@@ -1341,10 +1343,10 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.ids.selective_update_btn.disabled = False
             self.ids.update_all_btn.disabled = False
 
-            if conf.show_disclaimer:
+            if Config.get('show_disclaimer', True):
                 Clock.schedule_once(
                     lambda *args: Factory.DisclaimerPopup().open())
-                conf.show_disclaimer = False
+                Config.show_disclaimer = False
 
         self.goto_page(0)
         self.bar.ping()
@@ -1591,11 +1593,13 @@ class ConfLastDlls:
 class XtremeUpdaterApp(App):
     def on_start(self):
         # Check for updates
-        if hasattr(sys, 'frozen'):# or True:
-            REPO_PATH = os.path.abspath(os.path.join(os.path.dirname(sys.executable), os.pardir))
+        if hasattr(sys, 'frozen'):  # or True:
+            REPO_PATH = os.path.abspath(
+                os.path.join(os.path.dirname(sys.executable), os.pardir))
             # REPO_PATH = r"C:\Users\jakub\AppData\Local\XtremeUpdater\repo"
             self.update_client = UpdateClient(REPO_PATH)
-            if self.update_client.is_update_available() or conf.get('force_update', False):
+            if self.update_client.is_update_available() or Config.get(
+                    'force_update', False):
                 Logger.info('Application considered as outdated!')
                 self.update_notif = WorkingNotif(text='Downloading an update')
                 self.update_notif.open()
@@ -1603,12 +1607,16 @@ class XtremeUpdaterApp(App):
             else:
                 Logger.info('Application considered as up-to-date')
 
+    def on_stop(self):
+        Config.dump_to_file()
+
     @new_thread
     def _download_update(self):
         # Download update utility and display a popup
         if self.update_client.download_util():
             self.update_notif.dismiss()
-            Clock.schedule_once(lambda *__: Factory.UpdateRestartPopup().open(), 0)
+            Clock.schedule_once(
+                lambda *__: Factory.UpdateRestartPopup().open(), 0)
 
     def _restart_for_update(self):
         # Dismiss popup and run update utility
@@ -1622,12 +1630,10 @@ class XtremeUpdaterApp(App):
         self.root.goto_page(3)
 
 
-Logger.info('Reading config..')
-conf = Conf(STORE_PATH, DEFAULT_STORE)
-
 Logger.info('Reading theme..')
-theme = Theme()
+theme = Theme(name=Config.get('theme', 'default'))
 
+print(__name__)
 if __name__ == '__main__':
     Logger.info(f'System = {platform.system()}')
     Logger.info(f'Release = {platform.release()}')
@@ -1635,6 +1641,11 @@ if __name__ == '__main__':
     Window.clearcolor = theme.dark
 
     app = XtremeUpdaterApp()
-    app.run()
 
-__version__ = '0.7.3'
+    # set attributes required by .kv file
+    app.Config = Config
+    app.version = __version__
+    app.theme = theme
+    app.as_admin = IS_ADMIN
+
+    app.run()

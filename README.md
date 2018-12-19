@@ -10,6 +10,10 @@ Website is located at https://xtremeupdater.com.
 Support and chat at [discord](https://discord.gg/ZD6rxw9).
 The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpdater-Distribution)
 
+## v0.7.3
+**Other**
+  - Introduced new updating mechanism.
+
 ## v0.7.2
 **Bugfixes**
   - Fixed the *Play now* button.
