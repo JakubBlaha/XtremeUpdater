@@ -1579,6 +1579,7 @@ class XtremeUpdaterApp(App):
             self.update_client = UpdateClient(REPO_PATH)
             if self.update_client.is_update_available() or Config.get(
                     'force_update', False):
+                Config.force_update = False
                 Logger.info('Application considered as outdated!')
                 self.update_notif = WorkingNotif(text='Downloading an update')
                 self.update_notif.open()
