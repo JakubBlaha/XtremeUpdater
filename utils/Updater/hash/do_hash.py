@@ -1,7 +1,7 @@
 import os
 from hashlib import sha1
 
-EXE_PATH = os.path.abspath(r'..\updater-utility\update-utility.exe')
+EXE_PATH = os.path.abspath(r'..\update-utility\update-utility.exe')
 HASH_FILE_FILENAME = 'sha1'
 
 hash_default = input(f'Hash file {EXE_PATH}? [y]/n: ') != 'n'

@@ -8,7 +8,7 @@ from hashlib import sha1
 
 
 class UpdateClient:
-    UTIL_URL = 'https://github.com/XtremeWare/XtremeUpdater/raw/master/utils/Updater/updater-utility/update-utility.exe'
+    UTIL_URL = 'https://github.com/XtremeWare/XtremeUpdater/raw/master/utils/Updater/update-utility/update-utility.exe'
     HASH_URL = 'https://raw.githubusercontent.com/XtremeWare/XtremeUpdater/master/utils/Updater/hash/sha1'
 
     _util_path = ''
