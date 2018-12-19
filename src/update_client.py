@@ -33,17 +33,19 @@ class UpdateClient:
         else:
             self.info('Fetched origin')
 
-        IGNORED_PHRASES = ('.cache', '.config', '.backup', 'logs') # HOTFIX
         status = self.repo.status()
         self.info(f'Original status: {status}')
-        for key in tuple(status.keys()):
-            for phrase in IGNORED_PHRASES:
-                if phrase in key:
-                    self.warning(f'Ignored key |{key}| with value |{status.pop(key)}| in conflict with |{phrase}|')
-                    break
 
-        self.info(f'Considered status: {status}')
-        return status
+        # Filter out ignored files
+        considered_status = {}
+        for key, flag in status.items():
+            if flag == pygit2.GIT_STATUS_IGNORED:
+                self.warning(f'Ignored key `{key}`')
+                continue
+            considered_status[key] = flag
+
+        self.info(f'Considered status: {considered_status}')
+        return considered_status
 
     def download_util(self, hook=None):
         os.makedirs(os.path.split(self._util_path)[0], exist_ok=True)

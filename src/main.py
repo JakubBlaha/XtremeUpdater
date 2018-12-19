@@ -1593,10 +1593,10 @@ class ConfLastDlls:
 class XtremeUpdaterApp(App):
     def on_start(self):
         # Check for updates
-        if hasattr(sys, 'frozen'):  # or True:
+        if hasattr(sys, 'frozen'): # or True: # debug
             REPO_PATH = os.path.abspath(
                 os.path.join(os.path.dirname(sys.executable), os.pardir))
-            # REPO_PATH = r"C:\Users\jakub\AppData\Local\XtremeUpdater\repo"
+            # REPO_PATH = r"C:\Users\jakub\AppData\Local\XtremeUpdater\repo" # debug
             self.update_client = UpdateClient(REPO_PATH)
             if self.update_client.is_update_available() or Config.get(
                     'force_update', False):
@@ -1633,7 +1633,6 @@ class XtremeUpdaterApp(App):
 Logger.info('Reading theme..')
 theme = Theme(name=Config.get('theme', 'default'))
 
-print(__name__)
 if __name__ == '__main__':
     Logger.info(f'System = {platform.system()}')
     Logger.info(f'Release = {platform.release()}')
