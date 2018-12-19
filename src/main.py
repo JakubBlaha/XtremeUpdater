@@ -1572,13 +1572,13 @@ class ConfLastDlls:
 class XtremeUpdaterApp(App):
     def on_start(self):
         # Check for updates
-        if hasattr(sys, 'frozen'): # or True: # debug
+        if hasattr(sys, 'frozen'):  # or True: # debug
             REPO_PATH = os.path.abspath(
                 os.path.join(os.path.dirname(sys.executable), os.pardir))
             # REPO_PATH = r"C:\Users\jakub\AppData\Local\XtremeUpdater\repo" # debug
             self.update_client = UpdateClient(REPO_PATH)
             if self.update_client.is_update_available() or Config.get(
-                    'force_update', False):
+                    'force_update', False):  # or True: # debug
                 Config.force_update = False
                 Logger.info('Application considered as outdated!')
                 self.update_notif = WorkingNotif(text='Downloading an update')
@@ -1593,10 +1593,17 @@ class XtremeUpdaterApp(App):
     @new_thread
     def _download_update(self):
         # Download update utility and display a popup
-        if self.update_client.download_util():
-            self.update_notif.dismiss()
-            Clock.schedule_once(
-                lambda *__: Factory.UpdateRestartPopup().open(), 0)
+        if not self.update_client.is_newest_util():
+            Logger.info(
+                'UpdateClient: Hashes do not match. Need to download fresh update-utility'
+            )
+            if not self.update_client.download_util():
+                return
+        else:
+            Logger.info(
+                'UpdateClient: Hashes match. Fresh update-utility not needed')
+        self.update_notif.dismiss()
+        Clock.schedule_once(lambda *__: Factory.UpdateRestartPopup().open(), 0)
 
     def _restart_for_update(self):
         # Dismiss popup and run update utility
