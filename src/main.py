@@ -69,14 +69,6 @@ from cropped_thumbnail import cropped_thumbnail
 from update_client import UpdateClient
 
 IS_ADMIN = ctypes.windll.shell32.IsUserAnAdmin()
-STORE_PATH = '.config/config.yaml'
-DEFAULT_STORE = {
-    'mouse_highlight': 1,
-    'head_decor': 1,
-    'animations': 1,
-    'show_disclaimer': 1,
-    'theme': 'default'
-}
 
 
 def new_thread(fn):
@@ -1205,22 +1197,72 @@ class WorkingNotif(ModalView, IgnoreTouchBehavior):
 
 
 class RootLayout(BoxLayout, HoveringBehavior):
-    mouse_highlight_pos = ListProperty([-120, -120])
     dlls_loaded = BooleanProperty(False)
     listed_dlls = ListProperty()
     path = StringProperty()
+
+    # mouse highlight
+    _mouse_highlight_pos = ListProperty((0, 0))
+    _highlight_alpha = NumericProperty()
+    _mouse_highlight_anim = Animation()
+    _can_highlight = BooleanProperty(False)
+
+    # options
+    mouse_highlight = BooleanProperty(Config.get('mouse_highlight', True))
 
     def __init__(self, **kw):
         super().__init__(**kw)
 
         self.bar = self.ids.bar
-        self.switch_mouse_highlight(None, Config.get('mouse_highlight', True))
 
+        # mouse highlight
+        self.on_mouse_highlight(None, self.mouse_highlight)
+
+        def callback(*__):
+            if self.mouse_highlight:
+                self._highlight_alpha = 0
+                self._can_highlight = True
+                self._show_highlight()
+                Window.unbind(mouse_pos=callback)
+
+        Window.bind(mouse_pos=callback)
+
+        # sync
         def on_frame(*args):
             self.show_sync_popup()
             self.setup_updater()
 
         Clock.schedule_once(on_frame)
+
+    # mouse highlight
+    def _show_highlight(self, *__):
+        self._mouse_highlight_anim.stop(self)
+        self._mouse_highlight_anim = Animation(_highlight_alpha=1, d=.1)
+        self._mouse_highlight_anim.start(self)
+
+    def _hide_highlight(self, *__):
+        self._mouse_highlight_anim.stop(self)
+        self._mouse_highlight_anim = Animation(_highlight_alpha=0, d=.2)
+        self._mouse_highlight_anim.start(self)
+
+    def _update_highlight(self, __, pos):
+        self._mouse_highlight_pos = pos[0] - 60, pos[1] - 60
+
+    def on_mouse_highlight(self, __, is_on):
+        if is_on:
+            Window.bind(
+                mouse_pos=self._update_highlight,
+                on_cursor_enter=self._show_highlight,
+                on_cursor_leave=self._hide_highlight)
+            self._update_highlight(Window, Window.mouse_pos)
+            self._show_highlight()
+        else:
+            Window.unbind(
+                mouse_pos=self._update_highlight,
+                on_cursor_enter=self._show_highlight,
+                on_cursor_leave=self._hide_highlight)
+            self._hide_highlight()
+        Config.mouse_highlight = is_on
 
     def show_sync_popup(self):
         self.sync_popup = SyncPopup()
@@ -1257,20 +1299,6 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.run_as_admin_shown = self.run_as_admin_shown
             if hasattr(self, 'admin_btn'):
                 self.admin_btn.ping()
-
-    def on_mouse_pos(self, _, pos):
-        x, y = pos
-        self.mouse_highlight_pos = x - 60, y - 60
-
-    def switch_mouse_highlight(self, _, value):
-        if value:
-            self.bind_hovering()
-            self.on_mouse_pos(None, Window.mouse_pos)
-        else:
-            self.unbind_hovering()
-            self.mouse_highlight_pos = -120, -120
-
-        Config.mouse_highlight = value
 
     def switch_animations_enabled(self, _, value):
         Config.animations = value
@@ -1580,12 +1608,13 @@ class XtremeUpdaterApp(App):
             if self.update_client.is_update_available() or Config.get(
                     'force_update', False):  # or True: # debug
                 Config.force_update = False
-                Logger.info('Application considered as outdated!')
+                Logger.info('UpdateClient: Application considered as outdated')
                 self.update_notif = WorkingNotif(text='Downloading an update')
                 self.update_notif.open()
                 self._download_update()
             else:
-                Logger.info('Application considered as up-to-date')
+                Logger.info(
+                    'UpdateClient: Application considered as up-to-date')
 
     def on_stop(self):
         Config.dump_to_file()

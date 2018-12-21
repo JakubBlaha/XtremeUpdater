@@ -746,11 +746,12 @@ RootLayout:
     canvas.after:
         Color:
             rgb: theme.prim
+            a: self._highlight_alpha if self._can_highlight else 0
 
         Rectangle:
             group: 'mouse_highlight'
             source: 'img/mouse_highlight.png'
-            pos: self.mouse_highlight_pos
+            pos: self._mouse_highlight_pos
             size: 120, 120
 
     BoxLayout:
@@ -987,8 +988,8 @@ RootLayout:
 
                     LabelSwitch:
                         text: 'Enable mouse highlight'
-                        active_callback: root.switch_mouse_highlight
-                        active: Config.get('mouse_highlight', True)
+                        active_callback: lambda __, is_on: setattr(root, 'mouse_highlight', is_on)
+                        active: root.mouse_highlight
 
                     LabelSwitch:
                         text: 'Decorate head'
