@@ -11,8 +11,15 @@ Support and chat at [discord](https://discord.gg/ZD6rxw9).
 The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpdater-Distribution)
 
 ## v0.7.3
+**Features**
+  - Revamped tweaks. Jsons and python modules can be inserted into the `src/tweaks` folder.
+
+**Bugfixes**
+  - Switches now do not graphically switch if the actual switch fails to apply.
+
 **Other**
   - Introduced new updating mechanism.
+  - Alerts on buttons and switches
 
 ## v0.7.2
 **Bugfixes**

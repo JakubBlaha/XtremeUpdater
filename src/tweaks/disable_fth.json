@@ -1,0 +1,18 @@
+{
+    "tweak_class": "RegistryTweak",
+    "apply_values": {
+        "HKLM\\SOFTWARE\\Microsoft\\FTH\\Enabled": [false, "REG_DWORD"]
+    },
+    "detach_values": {
+        "HKLM\\SOFTWARE\\Microsoft\\FTH\\Enabled": [true, "REG_DWORD"]
+    },
+    "apply_notif": {
+        "title": "Disabled [color={theme.PRIM}]FTH[/color]",
+        "message": "[color={theme.PRIM}]Fault Tolerant Heap[/color] has been disabled."
+    },
+    "detach_notif": {
+        "title": "Enabled [color={theme.PRIM}]FTH[/color]",
+        "message": "[color={theme.PRIM}]Fault Tolerant Heap[/color] has been enabled."
+    },
+    "admin_required": true
+}

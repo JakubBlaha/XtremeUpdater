@@ -1,0 +1,8 @@
+{
+    "tweak_class": "CommandTweak",
+    "apply_command": "del /q/f/s %TEMP%\\*",
+    "apply_notif": {
+        "title": "Deleted [color={theme.PRIM}]temporary files[/color]",
+        "message": "All [color={theme.PRIM}]temporary files[/color] have been deleted."
+    }
+}

@@ -55,6 +55,8 @@ from kivy.uix.label import Label, CoreLabel
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.textinput import TextInput
 from kivy.properties import StringProperty, ObjectProperty, DictProperty, ListProperty, NumericProperty, BooleanProperty
+from kivy.event import EventDispatcher
+from kivy.metrics import sp
 
 from hovering import HoveringBehavior
 from windowdragbehavior import WindowDragBehavior
@@ -100,6 +102,18 @@ def notify_restart(fn):
             message=
             f'This [color={theme.PRIM}]tweak[/color] may not work until the system is [color={theme.PRIM}]restarted[/color].'
         ).open()
+
+    return wrapper
+
+
+def refer_func(fn):
+    '''
+    Passes the function as an argument to the function itself. Can be used for
+    referring itself.
+    '''
+
+    def wrapper(*args, **kw):
+        return fn(fn, *args, **kw)
 
     return wrapper
 
@@ -276,58 +290,73 @@ class BackgroundedButton(CustButton):
     pass
 
 
-class LabelIconButton(BoxLayout):
-    text = StringProperty()
+class IconButton(CustButton):
     icon = StringProperty()
 
-    def __init__(self, **kw):
-        super().__init__(**kw)
 
-        def on_frame(*args):
-            self.ids.label.bind(text=self.on_label_text)
-            self.on_label_text()
+class WarningBehavior(EventDispatcher):
+    '''
+    Manages `self.warning_level` depending on the `self.command` attribute
+    validity.
 
-        Clock.schedule_once(on_frame)
+    Used for `LabelIconButton` and `LabelSwitch` classes.
+    '''
 
-    def on_label_text(self, *args):
-        if self.ids.label.text:
-            Animation(width=40, d=.5, t='out_expo').start(self.ids.button)
-            Animation(opacity=1, d=.5).start(self.ids.label)
+    warning_icon = StringProperty('\ue783')
+    warning_level = NumericProperty(2)  # TODO -1, custom
+    command = ObjectProperty()
 
+    @refer_func
+    def on_command(fn, self, __, command):  # TODO set to callable
+        if not callable(command):
+            self.warning_level = 2
+            self.unbind(command=fn)
+            self.command = lambda: None
+            self.bind(command=fn)
         else:
+            self.warning_level = 0
+
+
+class LabelIconButton(IconButton, WarningBehavior):
+    text_ = StringProperty()  # Label text
+    font_size_ = NumericProperty(sp(15))  # Label font_size
+    opacity_ = NumericProperty()  # Label opacity
+
+    _btn_width = NumericProperty(340)
+
+    def on_text_(self, __, text):
+        if app.built:
             Animation(
-                width=self.width, d=.5, t='out_expo').start(self.ids.button)
-            self.ids.label.opacity = 0
+                _btn_width=self.height if text else self.width, 
+                opacity_=1 if text else 0,
+                d=.5,
+                t='out_expo').start(self)
+        else:
+            self._btn_width = self.height if text else self.width
+            self.opacity_ = 1 if text else 0
 
 
 class CustSwitch(Widget):
     active = BooleanProperty(False)
-    _switch_x = NumericProperty(0)
+    command = ObjectProperty()
+
+    # internal
+    _switch_x_normal = NumericProperty(0)
 
     def on_active(self, *args):
-        self.trigger_switch()
+        Animation(_switch_x_normal=self.active, d=.2, t='out_expo').start(self)
 
     def on_touch_down(self, touch):
-        if self.collide_point(*touch.pos):
+        if not (self.collide_point(*touch.pos)
+                and callable(self.command)) or self.disabled:
+            return
+
+        if self.command(None, not self.active) is not False:
             self.active = not self.active
-            self.trigger_switch()
-
-    def trigger_switch(self):
-        Animation(_switch_x=self.active * 20, d=.2, t='out_expo').start(self)
 
 
-class LabelSwitch(BoxLayout):
+class LabelSwitch(CustSwitch, WarningBehavior):
     text = StringProperty()
-    active = BooleanProperty()
-    active_callback = ObjectProperty(lambda *args: None)
-
-    def __init__(self, **kw):
-        super().__init__(**kw)
-
-        def on_frame(*args):
-            self.ids.switch.bind(active=self.active_callback)
-
-        Clock.schedule_once(on_frame)
 
 
 class OverdrawLabel(FloatLayout):
@@ -1472,7 +1501,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         if not path:
             path = ''
 
-        self.ids.game_add_form_dir.text = path
+        self.ids.game_add_form_dir.text_ = path
 
     def game_launch_path_button_callback(self):
         path = easygui.fileopenbox(
@@ -1481,7 +1510,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
         if not path:
             path = ''
 
-        self.ids.game_add_form_launch.text = path
+        self.ids.game_add_form_launch.text_ = path
 
     def add_game_callback(self):
         game_name = self.ids.game_name_input.text
@@ -1511,8 +1540,8 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
     def cancel_add_game_callback(self):
         self.ids.game_name_input.text = ''
-        self.ids.game_add_form_dir.text = ''
-        self.ids.game_add_form_launch.text = ''
+        self.ids.game_add_form_dir.text_ = ''
+        self.ids.game_add_form_launch.text_ = ''
         self.ids.url_input.text = ''
         self.goto_page(1)
 
