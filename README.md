@@ -14,6 +14,9 @@ The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpda
 **Features**
   - Revamped tweaks. Jsons and python modules can be inserted into the `src/tweaks` folder.
 
+**Tweaks**
+  - Notifications can now stack.
+
 **Bugfixes**
   - Switches now do not graphically switch if the actual switch fails to apply.
 

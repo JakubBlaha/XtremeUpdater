@@ -167,6 +167,8 @@ class TweakBase:
         "admin_required": True
     }
     ```
+    `yaml` format can be used for instead of `json` in every subclass.
+
     Attributes:
         `type_` - Will contain the tweak type whenever
         the instance is constructed from a json file.
@@ -483,7 +485,8 @@ class TweaksMeta(type):
 
     def __init__(cls, *args, **kw):
         super().__init__(*args, **kw)
-        sys.path.append(os.path.abspath(cls.tweaks_path))
+
+        sys.path.insert(0, os.path.abspath(cls.tweaks_path))
         cls.reload_tweaks()
 
     def reload_tweaks(cls):
@@ -500,28 +503,37 @@ class TweaksMeta(type):
             if entry.name in SKIPPED_NAMES:
                 continue
 
-            FILETYPE_FUNCS.get(
+            ret = FILETYPE_FUNCS.get(
                 os.path.splitext(entry.name)[1], cls._dummy_ext)(entry)
+
+            if ret is False:  # Error
+                setattr(
+                    cls, entry.name,
+                    DummyTweak(requested_name=os.path.splitext(entry.name)[0]))
 
     def _load_yaml(cls, entry):
         with open(entry.path) as f:
-            cls._load_dict(yaml.load(f), entry.name)
+            try:
+                return cls._load_dict(yaml.load(f), entry.name)
+            except yaml.scanner.ScannerError:
+                Logger.error(f'Tweaks: Failed to read {entry.name}')
+                return False
 
     def _load_json(cls, entry):
         with open(entry.path) as f:
-            cls._load_dict(json.load(f), entry.name)
+            try:
+                return cls._load_dict(json.load(f), entry.name)
+            except json.decoder.JSONDecodeError:
+                Logger.error(f'Tweaks: Failed to read {entry.name}')
+                return False
 
     def _load_dict(cls, data, fname):
         try:
             _class_name = data['tweak_class']
         except KeyError:
-            Logger.error(
-                f'Tweaks: Key "tweak_class" not found in {fname}. '
-                'DummyTweak class will be used.')
-            _class_name = 'DummyTweak'
-            _class_key_found = False
-        else:
-            _class_key_found = True
+            Logger.error(f'Tweaks: Key "tweak_class" not found in {fname}. '
+                         'DummyTweak class will be used.')
+            return False
 
         try:
             _class = TWEAKS_CLASSES[_class_name]
@@ -529,42 +541,41 @@ class TweaksMeta(type):
             Logger.error('Tweaks: Matching tweak class not found for '
                          f'{_class_name}. File: {fname}. DummyTweak '
                          'class will be used.')
-            _class = DummyTweak
+            return False
 
         name = os.path.splitext(fname)[0]
-        if _class_key_found:
-            data.pop('tweak_class')
+        data.pop('tweak_class')
+
         try:
             setattr(cls, name, _class(**data))  # Create class
         except TypeError:
             Logger.error('Tweaks: Failed to initialize a tweak class from '
                          f'file {fname} with data {data}. Invalid data.')
-            setattr(cls, name, DummyTweak(fname))
+            return False
 
     def _load_py(cls, entry):
         _mod_name = os.path.splitext(entry.name)[0]
 
         try:
-            pckg = __import__(_mod_name)
+            mod = __import__(_mod_name)
         except Exception as ex:
             Logger.error(f'Tweaks: {ex} occured when loading {entry.name} '
                          f'PythonTweak.\n{traceback.format_exc()}')
-        else:
-            try:
+            return False
 
-                class Tweak(pckg.PythonTweak, PythonTweak):
-                    pass
-            except AttributeError:
-                Logger.error(
-                    f'Tweaks: No PythonTweak class found in {entry.name}')
-            else:
-                setattr(cls, _mod_name, Tweak())
-                Logger.warning(f'Tweaks: Created a PythonTweak {_mod_name}. '
-                               'This may not be safe.')
-                return True
+        try:
+            class Tweak(mod.PythonTweak, PythonTweak):
+                pass
+        except AttributeError:
+            Logger.error(
+                f'Tweaks: No PythonTweak class found in {entry.name}')
+            raise
+            return False
 
-        setattr(cls, _mod_name, DummyTweak(requested_name=_mod_name))
-        return False
+        setattr(cls, _mod_name, Tweak())
+        Logger.warning(f'Tweaks: Created a PythonTweak {_mod_name}. '
+                        'This may not be safe.')
+        return True
 
     def _dummy_ext(cls, entry):
         Logger.error(f'Tweaks: No matching load func for file {entry.name}')
