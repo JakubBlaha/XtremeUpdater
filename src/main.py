@@ -43,7 +43,6 @@ from kivy.uix.button import Button
 from kivy.uix.image import CoreImage
 from kivy.uix.spinner import Spinner
 from custpagelayout import PageLayout
-from ignoretouch import IgnoreTouchBehavior
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.modalview import ModalView
 from kivy.graphics.texture import Texture
@@ -58,9 +57,11 @@ from kivy.properties import StringProperty, ObjectProperty, DictProperty, ListPr
 from kivy.event import EventDispatcher
 from kivy.metrics import sp
 
+# custom uix
+from uix.notifications import Notification, WorkingNotif
+
 from hovering import HoveringBehavior
 from windowdragbehavior import WindowDragBehavior
-
 from theme import Theme
 from config import Config
 Config.reload_store()
@@ -327,7 +328,7 @@ class LabelIconButton(IconButton, WarningBehavior):
     def on_text_(self, __, text):
         if app.built:
             Animation(
-                _btn_width=self.height if text else self.width, 
+                _btn_width=self.height if text else self.width,
                 opacity_=1 if text else 0,
                 d=.5,
                 t='out_expo').start(self)
@@ -935,7 +936,7 @@ class DllView(RecycleView):
             child.refresh_hovering()
 
 
-class SyncPopup(Popup, NoiseTexture, IgnoreTouchBehavior):
+class SyncPopup(Popup, NoiseTexture):
     icon_rotation = NumericProperty()
 
     def __init__(self, **kw):
@@ -1016,49 +1017,6 @@ class WorkingBar(Widget):
         self.unwork()
         Animation.stop_all(self)
         Animation(_x1=0, _x2=value, d=.5, t='out_expo').start(self)
-
-
-class Notification(Popup, IgnoreTouchBehavior):
-    title_ = StringProperty('Notification')
-    message = StringProperty('Example message')
-    _decor_size = ListProperty([6, 20])
-    _bg_offset = NumericProperty(-200)
-
-    def __init__(self, **kw):
-        super().__init__(**kw)
-
-        self.children[0].children[2].markup = True
-
-        is_notif = hasattr(app, 'curr_notif')
-
-        if is_notif:
-            app.curr_notif.dismiss()
-
-        app.curr_notif = self
-
-        anim = (
-            Animation(_decor_size=[self._decor_size[0], 0], d=0) + Animation(
-                opacity=1,
-                _bg_offset=0,
-                _decor_size=self._decor_size,
-                d=.5,
-                t='out_expo'))
-
-        Clock.schedule_once(lambda *args: anim.start(self), is_notif * .5)
-        Clock.schedule_once(self.dismiss, is_notif * .5 + 3)
-
-    def dismiss(self, *args):
-        anim = Animation(
-            opacity=0, _bg_offset=200, _decor_size=[0, 0], d=.5, t='in_expo')
-        anim.bind(
-            on_complete=lambda *args: super(Notification, self).dismiss())
-        anim.start(self)
-
-        try:
-            if app.curr_notif is self:
-                del app.curr_notif
-        except AttributeError:
-            pass
 
 
 class IsAdminNotif(Notification):
@@ -1192,37 +1150,6 @@ class ThemeSwitcher(BoxLayout):
 
     def next_theme(self):
         self.themes.append(self.themes.pop(0))
-
-
-class WorkingNotif(ModalView, IgnoreTouchBehavior):
-    text = StringProperty()
-
-    _highlight_alpha = NumericProperty(.8)
-
-    def open(self, *args, **kw):
-        if not kw.get('animation', True):
-            self.pos_hint = {'top': 1}
-        return super().open(*args, **kw)
-
-    def on_open(self):
-        # Come-in animation
-        Animation(pos_hint={'top': 1}, d=.5, t='out_expo').start(self)
-
-        # Bg flashing animation
-        anim = (Animation(_highlight_alpha=.8, t="out_expo") + Animation(
-            _highlight_alpha=0, t="out_expo"))
-        anim.repeat = True
-        anim.start(self)
-
-    def dismiss(self, *args):
-        # Come-out animation
-        anim = Animation(
-            pos_hint={'top': (Window.height + self.height) / Window.height},
-            d=.5,
-            t='out_expo')
-        anim.bind(
-            on_complete=lambda *__: super(WorkingNotif, self).dismiss(args))
-        anim.start(self)
 
 
 class RootLayout(BoxLayout, HoveringBehavior):

@@ -16,6 +16,7 @@ kivy-deps-angle = "*"
 humanize = "*"
 
 [dev-packages]
+yapf = "*"
 
 [requires]
 python_version = "3.7"

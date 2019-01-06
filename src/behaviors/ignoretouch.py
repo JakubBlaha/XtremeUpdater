@@ -1,4 +1,5 @@
 class IgnoreTouchBehavior:
+    ''' Inherit from this class to ignore all touch events. '''
     def __init_subclass__(cls, *args, **kw):
         super().__init_subclass__(*args, **kw)
 
