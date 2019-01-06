@@ -8,6 +8,7 @@ from kivy.clock import Clock
 from kivy.core.window import Window
 
 from behaviors.ignoretouch import IgnoreTouchBehavior
+# from ..behaviors.ignoretouch import IgnoreTouchBehavior
 # TODO: relative imports don't work
 
 

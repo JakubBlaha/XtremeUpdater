@@ -1,0 +1,7 @@
+tweak_class: CommandTweak
+apply_command: Rundll32.exe fthsvc.dll,FthSysprepSpecialize
+apply_notif:
+  title: Cleared [color={theme.PRIM}]FTH[/color]
+  message: Deleted [color={theme.PRIM}]all[/color] applications from [color={theme.PRIM}]Fault
+    Tolerant Heap[/color] state.
+admin_required: true

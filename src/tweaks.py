@@ -474,7 +474,7 @@ TWEAKS_CLASSES = {
     'RegistryTweak': RegistryTweak
 }
 
-import json
+import json, yaml
 
 
 class TweaksMeta(type):
@@ -489,21 +489,34 @@ class TweaksMeta(type):
     def reload_tweaks(cls):
         ''' Reload all tweaks from `self.tweaks_path`. '''
 
-        FILETYPE_FUNCS = {'.json': cls._load_json, '.py': cls._load_py}
-        # TODO skip __pycache__
+        FILETYPE_FUNCS = {
+            '.json': cls._load_json,
+            '.py': cls._load_py,
+            '.yaml': cls._load_yaml
+        }
+        SKIPPED_NAMES = ['__pycache__']
+
         for entry in os.scandir(cls.tweaks_path):
+            if entry.name in SKIPPED_NAMES:
+                continue
+
             FILETYPE_FUNCS.get(
                 os.path.splitext(entry.name)[1], cls._dummy_ext)(entry)
 
+    def _load_yaml(cls, entry):
+        with open(entry.path) as f:
+            cls._load_dict(yaml.load(f), entry.name)
+
     def _load_json(cls, entry):
         with open(entry.path) as f:
-            data = json.load(f)
+            cls._load_dict(json.load(f), entry.name)
 
+    def _load_dict(cls, data, fname):
         try:
             _class_name = data['tweak_class']
         except KeyError:
             Logger.error(
-                f'Tweaks: Key "tweak_class" not found in {entry.name}. '
+                f'Tweaks: Key "tweak_class" not found in {fname}. '
                 'DummyTweak class will be used.')
             _class_name = 'DummyTweak'
             _class_key_found = False
@@ -514,19 +527,19 @@ class TweaksMeta(type):
             _class = TWEAKS_CLASSES[_class_name]
         except KeyError:
             Logger.error('Tweaks: Matching tweak class not found for '
-                         f'{_class_name}. File: {entry.name}. DummyTweak '
+                         f'{_class_name}. File: {fname}. DummyTweak '
                          'class will be used.')
             _class = DummyTweak
 
-        name = os.path.splitext(entry.name)[0]
+        name = os.path.splitext(fname)[0]
         if _class_key_found:
             data.pop('tweak_class')
         try:
             setattr(cls, name, _class(**data))  # Create class
         except TypeError:
             Logger.error('Tweaks: Failed to initialize a tweak class from '
-                         f'file {entry.name} with data {data}. Invalid data.')
-            setattr(cls, name, DummyTweak(entry.name))
+                         f'file {fname} with data {data}. Invalid data.')
+            setattr(cls, name, DummyTweak(fname))
 
     def _load_py(cls, entry):
         _mod_name = os.path.splitext(entry.name)[0]
@@ -538,6 +551,7 @@ class TweaksMeta(type):
                          f'PythonTweak.\n{traceback.format_exc()}')
         else:
             try:
+
                 class Tweak(pckg.PythonTweak, PythonTweak):
                     pass
             except AttributeError:
@@ -588,5 +602,3 @@ if __name__ == '__main__':
 
 # TODO add applied/not applied tweak property to cmd tweaks
 # TODO regex reg values ??
-# TODO error handling
-# TODO add support for yaml / only yaml ??
