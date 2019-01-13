@@ -1,0 +1,18 @@
+tweak_class: RegistryTweak
+text: Raise paged pool memory limit
+group: "fsutil ? #TODO"
+admin_required: true
+apply_values:
+  HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\NtfsMemoryUsage:
+   - 2
+   - REG_DWORD
+detach_values:
+  HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\NtfsMemoryUsage:
+   - 1
+   - REG_DWORD
+apply_notif:
+  title: "[color={theme.PRIM}]Increased[/color] memory limit"
+  message: "[color={theme.PRIM}]NTFS paged pool memory limit[/color] has been [color={theme.PRIM}]increased[/color]."
+detach_notif:
+  title: "[color={theme.PRIM}]Decreased[/color] memory limit"
+  message: "[color={theme.PRIM}]NTFS paged pool memory limit[/color] has been [color={theme.PRIM}]decreased[/color]."
