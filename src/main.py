@@ -1043,7 +1043,7 @@ class ThemeSwitcher(BoxLayout):
 
         if theme_.name != theme.name:
             Notification(
-                title='Restart required',
+                title_='Restart required',
                 message=
                 f'Please [color={theme.PRIM}]restart[/color] XtremeUpdater to set the new theme.'
             ).open()
