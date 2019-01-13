@@ -59,6 +59,7 @@ from kivy.metrics import sp
 
 # custom uix
 from uix.notifications import Notification, WorkingNotif
+from uix.button import CustButton
 
 from hovering import HoveringBehavior
 from windowdragbehavior import WindowDragBehavior
@@ -263,101 +264,6 @@ class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
 
     def clear_decor(self):
         self.canvas.remove_group('decor')
-
-
-class CustButton(Button, HoveringBehavior):
-    _orig_font_opacity = 1
-
-    def __init__(self, **kw):
-        super().__init__(**kw)
-        self.orig_font_opacity = self.color[3]
-
-    def on_disabled(self, *args):
-        if self.disabled:
-            self._orig_font_opacity = self.color[3]
-            Animation(color=self.color[:3] + [.1], d=.1).start(self)
-            if self.hovering:
-                self.on_leave()
-
-        else:
-            Animation(
-                color=self.color[:3] + [self._orig_font_opacity],
-                d=.1).start(self)
-            if self.hovering:
-                self.on_enter()
-
-
-class BackgroundedButton(CustButton):
-    pass
-
-
-class IconButton(CustButton):
-    icon = StringProperty()
-
-
-class WarningBehavior(EventDispatcher):
-    '''
-    Manages `self.warning_level` depending on the `self.command` attribute
-    validity.
-
-    Used for `LabelIconButton` and `LabelSwitch` classes.
-    '''
-
-    warning_icon = StringProperty('\ue783')
-    warning_level = NumericProperty(2)  # TODO -1, custom
-    command = ObjectProperty()
-
-    @refer_func
-    def on_command(fn, self, __, command):  # TODO set to callable
-        if not callable(command):
-            self.warning_level = 2
-            self.unbind(command=fn)
-            self.command = lambda: None
-            self.bind(command=fn)
-        else:
-            self.warning_level = 0
-
-
-class LabelIconButton(IconButton, WarningBehavior):
-    text_ = StringProperty()  # Label text
-    font_size_ = NumericProperty(sp(15))  # Label font_size
-    opacity_ = NumericProperty()  # Label opacity
-
-    _btn_width = NumericProperty(340)
-
-    def on_text_(self, __, text):
-        if app.built:
-            Animation(
-                _btn_width=self.height if text else self.width,
-                opacity_=1 if text else 0,
-                d=.5,
-                t='out_expo').start(self)
-        else:
-            self._btn_width = self.height if text else self.width
-            self.opacity_ = 1 if text else 0
-
-
-class CustSwitch(Widget):
-    active = BooleanProperty(False)
-    command = ObjectProperty()
-
-    # internal
-    _switch_x_normal = NumericProperty(0)
-
-    def on_active(self, *args):
-        Animation(_switch_x_normal=self.active, d=.2, t='out_expo').start(self)
-
-    def on_touch_down(self, touch):
-        if not (self.collide_point(*touch.pos)
-                and callable(self.command)) or self.disabled:
-            return
-
-        if self.command(None, not self.active) is not False:
-            self.active = not self.active
-
-
-class LabelSwitch(CustSwitch, WarningBehavior):
-    text = StringProperty()
 
 
 class OverdrawLabel(FloatLayout):

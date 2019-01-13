@@ -9,6 +9,8 @@
 #:import platform platform
 #:import uninstall uninstall.uninstall
 
+#:import TweaksManager uix.tweaks_manager.TweaksManager
+
 #:set Config app.Config
 #:set version app.version
 #:set theme app.theme
@@ -72,6 +74,7 @@ RootLayout:
     halign: 'left'
     valign: 'center'
     padding: (self._btn_width - self.font_size) / 2, 0
+    _btn_width: self.height
 
     canvas.before:
         # Label bg
@@ -107,6 +110,9 @@ RootLayout:
         halign: 'right'
         padding: 10, 8
         color: {1: (1, 1, 0, 1), 2: (1, .3, .3, 1)}.get(root.warning_level, (0, 0, 0, 0))
+
+<ExpandableLabelIconButton>:
+    _btn_width: 340
 
 <NavigationButton>:
     markup: True
@@ -909,47 +915,50 @@ RootLayout:
 
         ContentLayout:
             id: content_system
-            
+
             SmoothScrollView:
-                BoxLayout:
-                    orientation: 'vertical'
-                    padding: 10, 40
-                    spacing: 10
-                    size_hint_y: None
-                    height: self.minimum_height
+                TweaksManager:
+                    tweaks: Tweaks.tweaks
 
-                    SectionLabel:
-                        text: 'Temporary files'
+                # BoxLayout:
+                #     orientation: 'vertical'
+                #     padding: 10, 40
+                #     spacing: 10
+                #     size_hint_y: None
+                #     height: self.minimum_height
 
-                    LabelIconButton:
-                        text_: "Clear user's temp folder"
-                        icon: '\ue74d'
-                        command: Tweaks.clear_tmp
+                #     SectionLabel:
+                #         text: 'Temporary files'
 
-                    SectionLabel:
-                        text: 'Xbox GameDVR'
+                #     LabelIconButton:
+                #         text_: "Clear user's temp folder"
+                #         icon: '\ue74d'
+                #         command: Tweaks.clear_tmp
 
-                    LabelSwitch:
-                        text: 'Allow GameDVR'
-                        command: Tweaks.disable_dvr.switch
-                        active: not Tweaks.disable_dvr.active
-                        disabled: not Tweaks.disable_dvr.available
+                #     SectionLabel:
+                #         text: 'Xbox GameDVR'
 
-                    SectionLabel:
-                        text: 'Fault Tolerant Heap'
+                #     LabelSwitch:
+                #         text: 'Allow GameDVR'
+                #         command: Tweaks.disable_dvr.switch
+                #         active: not Tweaks.disable_dvr.active
+                #         disabled: not Tweaks.disable_dvr.available
+
+                #     SectionLabel:
+                #         text: 'Fault Tolerant Heap'
                     
-                    SectionBox:
-                        LabelSwitch:
-                            text: 'Allow FTH'
-                            command: Tweaks.disable_fth.switch
-                            active: not Tweaks.disable_fth.active
-                            disabled: not Tweaks.disable_fth.available
+                #     SectionBox:
+                #         LabelSwitch:
+                #             text: 'Allow FTH'
+                #             command: Tweaks.disable_fth.switch
+                #             active: not Tweaks.disable_fth.active
+                #             disabled: not Tweaks.disable_fth.available
 
-                        LabelIconButton:
-                            text_: 'Clear FTH'
-                            icon: '\ue74c'
-                            disabled: not Tweaks.clear_fth.available # TODO
-                            command: Tweaks.clear_fth # TODO
+                #         LabelIconButton:
+                #             text_: 'Clear FTH'
+                #             icon: '\ue74c'
+                #             disabled: not Tweaks.clear_fth.available # TODO
+                #             command: Tweaks.clear_fth # TODO
 
         ContentLayout:
             id: content_settings
@@ -1081,7 +1090,7 @@ RootLayout:
                     SectionLabel:
                         text: 'Game dll directory'
                     
-                    LabelIconButton:
+                    ExpandableLabelIconButton:
                         id: game_add_form_dir
                         text_: ''
                         icon: '\uf12b'
@@ -1096,7 +1105,7 @@ RootLayout:
                         height: 40
                         spacing: self.parent.padding[0]
 
-                        LabelIconButton:
+                        ExpandableLabelIconButton:
                             id: game_add_form_launch
                             text_: ''
                             icon: '\ue7c3'

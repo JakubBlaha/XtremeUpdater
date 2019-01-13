@@ -1,4 +1,7 @@
 tweak_class: CommandTweak
+text: Clear FTH
+icon: "\ue74c"
+group: Fault Tolerant Heap
 apply_command: Rundll32.exe fthsvc.dll,FthSysprepSpecialize
 apply_notif:
   title: Cleared [color={theme.PRIM}]FTH[/color]

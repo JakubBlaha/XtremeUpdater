@@ -1,4 +1,6 @@
 tweak_class: RegistryTweak
+text: Disable FTH
+group: Fault Tolerant Heap
 apply_values:
   HKLM\SOFTWARE\Microsoft\FTH\Enabled:
   - false

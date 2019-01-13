@@ -1,4 +1,6 @@
 tweak_class: RegistryTweak
+text: Disable DVR
+group: Xbox GameDVR
 apply_values:
   HKCU\System\GameConfigStore\GameDVR_enabled:
   - 0

@@ -1,4 +1,7 @@
 tweak_class: CommandTweak
+text: Clear temp files
+icon: "\ue74d"
+group: Temporary files
 apply_command: del /q/f/s %TEMP%\*
 apply_notif:
   title: Deleted [color={theme.PRIM}]temporary files[/color]

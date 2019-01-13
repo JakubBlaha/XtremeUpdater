@@ -164,7 +164,8 @@ class TweakBase:
             "message": "Tweak has been disabled."
         }
         "show_failure": False,
-        "admin_required": True
+        "admin_required": True,
+        "group": "Test group"
     }
     ```
     `yaml` format can be used for instead of `json` in every subclass.
@@ -172,6 +173,11 @@ class TweakBase:
     Attributes:
         `type_` - Will contain the tweak type whenever
         the instance is constructed from a json file.
+
+        `text` - The text that will be used as the tweak title.
+
+        `group` - The group text that will be shown alongside with the tweak
+        widget.
 
         `apply_notif` - A dictionary containing `title` and `message` keys for
         the notification that will be shown when the tweak is applied.
@@ -186,6 +192,8 @@ class TweakBase:
         to be applied successfully. Default is `False`.
     '''
 
+    text: str = ''
+    group: str = ''
     show_failure: bool = True
     apply_notif: dict = None
     detach_notif: dict = None
@@ -200,6 +208,9 @@ class TweakBase:
         if success and self.apply_notif:
             return self._notify(self.apply_notif['title'],
                                 self.apply_notif['message'])
+        elif success:
+            return self._notify('Application successful',
+                                "We've successfully applied that tweak.")
         elif self.show_failure:
             return self._notify('Application failed',
                                 "We are sorry. We couldn't apply that tweak.")
@@ -209,9 +220,13 @@ class TweakBase:
         Notifies of the success or a failure of the tweak detach depending
         on the `success` parameter.
         '''
+
         if success and self.detach_notif:
             return self._notify(self.detach_notif['title'],
                                 self.detach_notif['message'])
+        elif success:
+            return self._notify('Detach successful',
+                                "We've successfully reverted that tweak.")
         elif self.show_failure:
             self._notify('Disable failed',
                          "We are sorry. We couldn't disable that tweak.")
@@ -276,10 +291,14 @@ class CommandTweak(TweakBase):
 
         `detach_command` - Similar to `apply_command` except it does not
         have to be specified if the tweak is one-off.
+
+        `icon` - The icon from `segmdl2.ttf` that will be used for button
+        if available.
     '''
 
     apply_command: str = ''
     detach_command: str = ''
+    icon: str = ''
 
     def _apply(self, command):
         # Internal use
@@ -481,6 +500,7 @@ import json, yaml
 
 class TweaksMeta(type):
     tweaks_path = ''
+    tweaks = []
     proxy_ref = None
 
     def __init__(cls, *args, **kw):
@@ -564,17 +584,17 @@ class TweaksMeta(type):
             return False
 
         try:
+
             class Tweak(mod.PythonTweak, PythonTweak):
                 pass
         except AttributeError:
-            Logger.error(
-                f'Tweaks: No PythonTweak class found in {entry.name}')
+            Logger.error(f'Tweaks: No PythonTweak class found in {entry.name}')
             raise
             return False
 
         setattr(cls, _mod_name, Tweak())
         Logger.warning(f'Tweaks: Created a PythonTweak {_mod_name}. '
-                        'This may not be safe.')
+                       'This may not be safe.')
         return True
 
     def _dummy_ext(cls, entry):
@@ -583,6 +603,12 @@ class TweaksMeta(type):
     def __getattr__(cls, name):
         Logger.warning('TweaksMeta: Returned a DummyTweak')
         return DummyTweak(requested_name=name)
+
+    def __setattr__(cls, name, value):
+        if type(value) in TWEAKS_CLASSES.values():
+            cls.tweaks.append(value)
+
+        return super().__setattr__(name, value)
 
 
 class Tweaks(metaclass=TweaksMeta):
