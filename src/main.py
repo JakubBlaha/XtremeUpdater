@@ -59,10 +59,10 @@ from kivy.metrics import sp
 
 # custom uix
 from uix.notifications import Notification, WorkingNotif
-from uix.button import CustButton
 
 from hovering import HoveringBehavior
 from windowdragbehavior import WindowDragBehavior
+from behaviors.warning_behavior import WarningBehavior
 from theme import Theme
 from config import Config
 Config.reload_store()
@@ -118,6 +118,65 @@ def refer_func(fn):
         return fn(fn, *args, **kw)
 
     return wrapper
+
+
+# UIX TODO: move to individual files
+# BUTTONS
+class CustButton(Button, HoveringBehavior):
+    disabled = BooleanProperty(False)
+
+
+class BackgroundedButton(CustButton):
+    pass
+
+
+class IconButton(CustButton):
+    icon = StringProperty()
+
+
+class LabelIconButton(IconButton, WarningBehavior):
+    text_ = StringProperty()  # Label text
+    font_size_ = NumericProperty(sp(15))  # Label font_size
+    opacity_ = NumericProperty(1)  # Label opacity
+
+    _btn_width = NumericProperty()
+
+class ExpandableLabelIconButton(LabelIconButton):
+    def on_text_(self, __, text):
+        if not App.get_running_app().built:  # Do not waste resources
+            Animation(
+                _btn_width=self.height if text else self.width,
+                opacity_=1 if text else 0,
+                d=.5,
+                t='out_expo').start(self)
+        else:
+            self._btn_width = self.height if text else self.width
+            self.opacity_ = 1 if text else 0
+
+
+# SWITCHES
+class CustSwitch(Widget):
+    active = BooleanProperty(False)
+    command = ObjectProperty()
+    disabled = BooleanProperty(False)
+
+    # Internal use
+    _switch_x_normal = NumericProperty(0)
+
+    def on_active(self, *args):
+        Animation(_switch_x_normal=self.active, d=.2, t='out_expo').start(self)
+
+    def on_touch_down(self, touch):
+        if not (self.collide_point(*touch.pos)
+                and callable(self.command)) or self.disabled:
+            return
+
+        if self.command(None, not self.active) is not False:
+            self.active = not self.active
+
+
+class LabelSwitch(CustSwitch, WarningBehavior):
+    text = StringProperty()
 
 
 class CustTextInput(TextInput):
@@ -1411,6 +1470,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
             height=160).open()
 
 
+# Config TODO: move to individual file
 class ConfLastDlls:
     PATH = '.config/LastDlls.yaml'
 
@@ -1519,7 +1579,7 @@ if __name__ == '__main__':
 
     app = XtremeUpdaterApp()
 
-    # set attributes required by .kv file
+    # set attributes required by the .kv file
     app.Config = Config
     app.version = __version__
     app.theme = theme

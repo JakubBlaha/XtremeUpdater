@@ -1,17 +1,16 @@
 from kivy.lang.builder import Builder
-# from kivy.uix.gridlayout import GridLayout
-from kivy.uix.stacklayout import StackLayout
+# from kivy.uix.stacklayout import StackLayout
 from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import ListProperty, StringProperty
+from kivy.properties import ListProperty, StringProperty, BooleanProperty
 from kivy.logger import Logger
+from kivy.clock import Clock
+from kivy.factory import Factory
 
 import sys, os
 sys.path.insert(0, os.path.abspath(
     os.path.join(__file__, os.pardir, os.pardir)))
 
 from tweaks import TWEAKS_CLASSES, Tweaks
-from uix.switch import LabelSwitch
-from uix.button import LabelIconButton
 
 kv = \
 '''
@@ -90,17 +89,17 @@ class TweaksManager(BoxLayout):
 
             # add widget
             if hasattr(tweak, 'switch'):
-                wg = LabelSwitch(
-                    text=tweak.text,
-                    command=tweak.switch,
-                    active=tweak.active,
-                    disabled=not tweak.available)
+                wg = Factory.LabelSwitch()
+                wg.text = tweak.text
+                wg.command = tweak.switch
+                wg.active = tweak.active
+                wg.disabled = not tweak.available
             else:
-                wg = LabelIconButton(
-                    text_=tweak.text,
-                    icon=tweak.icon,
-                    command=tweak.apply,
-                    disabled=not tweak.available)
+                wg = Factory.LabelIconButton()
+                wg.text_ = tweak.text
+                wg.icon = tweak.icon
+                wg.command = tweak.apply
+                wg.disabled = not tweak.available
 
             group = self._get_group(tweak.group)
             group.add(wg)

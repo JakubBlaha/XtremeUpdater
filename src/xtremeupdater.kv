@@ -17,21 +17,6 @@
 #:set as_admin app.as_admin
 
 RootLayout:
-<CustButton>:
-    background_normal: 'img/FFFFFF-1.png'
-    background_disabled_normal: self.background_normal
-    background_down: self.background_normal
-    background_disabled_down: self.background_normal
-    background_color: 0, 0, 0, 0
-    hovering_attrs: {'color': theme.prim}
-    anim_kw: {'d': .1}
-    border: 0, 0, 0, 0
-
-<BackgroundedButton>:
-    background_color: theme.bg
-    hovering_attrs: {'background_color': theme.dark}
-    font_size: 24
-
 <HeaderLabel>:
     text: '[color=ddd]Xtreme[/color]Updater'
     font_name: 'fnt/Roboto-Black.ttf'
@@ -54,10 +39,23 @@ RootLayout:
             pos: self.pos
             size: self.size
 
-<HeaderButton@CustButton+NoiseTexture>:
-    size_hint_x: None
-    width: self.height
-    noise_color: theme.sec
+# BUTTONS
+<CustButton>:
+    background_normal: 'img/FFFFFF-1.png'
+    background_disabled_normal: self.background_normal
+    background_down: self.background_normal
+    background_disabled_down: self.background_normal
+    background_color: 0, 0, 0, 0
+    hovering_attrs: {'color': theme.prim}
+    anim_kw: {'d': .1}
+    border: 0, 0, 0, 0
+    # opacity: .5 if self.disabled else 1
+    color: self.color[:-1] + [1 - self.disabled * .5]
+
+<BackgroundedButton>:
+    background_color: theme.bg
+    hovering_attrs: {'background_color': theme.dark}
+    font_size: 24
 
 <IconButton>:
     size_hint_x: None
@@ -136,6 +134,82 @@ RootLayout:
     icon: self.text
     width: self.height
 
+<HeaderButton@CustButton+NoiseTexture>:
+    size_hint_x: None
+    width: self.height
+    noise_color: theme.sec
+
+# SWITCHES
+<CustSwitch>:
+    size_hint: None, None
+    size: 40, 40
+    canvas:
+        Color:
+            rgba: theme.prim
+
+        Rectangle:
+            size: self.height / 2, self.height
+            pos: self.pos
+
+        Color:
+            rgba: theme.bg
+
+        Rectangle:
+            size: self.height / 2, self.height
+            pos: self.x + self.height / 2, self.y
+
+        Color:
+            rgba: theme.sec
+
+        Rectangle:
+            source: 'img/FFFFFF-1.png'
+            size: 20, self.height + 6
+            pos: self.x + self._switch_x_normal * self.height / 2, self.y - 3
+
+    Label:
+        text: '\ue72e'
+        font_name: 'fnt/segmdl2.ttf'
+        font_size: 16
+        pos: root.x + root._switch_x_normal * root.height / 2, root.y + 4
+        size: 20, 10
+        opacity: float(root.disabled)
+        color: theme.bg
+
+<LabelSwitch>:
+    size_hint: None, None
+    size: 340, 40
+
+    canvas.before:
+        Color:
+            rgba: theme.bg
+
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    Label:
+        id: text_label
+        text: root.text
+        text_size: self.size
+        valign: 'center'
+        padding: root.height + 10, 0
+        markup: True
+        pos: root.pos
+        size: root.size
+        # opacity: .8 if root.disabled else 1
+
+    Label:
+        text: root.warning_icon
+        font_name: 'fnt/segmdl2.ttf'
+        font_size: 20
+        pos: root.pos
+        size: root.size
+        text_size: self.size
+        halign: 'right'
+        padding: 10, 8
+        color: {1: (1, 1, 0, 1), 2: (1, .3, .3, 1)}.get(root.warning_level, (0, 0, 0, 0))
+
+# ---------
 <Navigation>:
     size_hint_y: None
     height: 40
@@ -603,73 +677,6 @@ RootLayout:
         opacity: root._btn_opacity
         color: 1, 1, 1, .8
 
-<CustSwitch>:
-    size_hint: None, None
-    size: 40, 40
-    canvas:
-        Color:
-            rgba: theme.prim
-
-        Rectangle:
-            size: self.height / 2, self.height
-            pos: self.pos
-
-        Color:
-            rgba: theme.bg
-
-        Rectangle:
-            size: self.height / 2, self.height
-            pos: self.x + self.width / 2, self.y
-
-        Color:
-            rgba: theme.sec
-
-        Rectangle:
-            source: 'img/FFFFFF-1.png'
-            size: 20, self.height + 6
-            pos: self.x + self._switch_x_normal * self.height / 2, self.y - 3
-
-    Label:
-        text: '\ue72e'
-        font_name: 'fnt/segmdl2.ttf'
-        font_size: 16
-        pos: root.x + root._switch_x_normal * root.height / 2, root.y + 4
-        size: 20, 10
-        opacity: float(root.disabled)
-        color: theme.bg
-
-<LabelSwitch>:
-    size_hint: None, None
-    size: 340, 40
-
-    canvas.before:
-        Color:
-            rgba: theme.bg
-
-        Rectangle:
-            pos: self.pos
-            size: self.size
-
-    Label:
-        text: root.text
-        text_size: self.size
-        valign: 'center'
-        padding: root.height + 10, 0
-        markup: True
-        pos: root.pos
-        size: root.size
-
-    Label:
-        text: root.warning_icon
-        font_name: 'fnt/segmdl2.ttf'
-        font_size: 20
-        pos: root.pos
-        size: root.size
-        text_size: self.size
-        halign: 'right'
-        padding: 10, 8
-        color: {1: (1, 1, 0, 1), 2: (1, .3, .3, 1)}.get(root.warning_level, (0, 0, 0, 0))
-
 <WorkingBar>:
     canvas:
         Color:
@@ -919,46 +926,6 @@ RootLayout:
             SmoothScrollView:
                 TweaksManager:
                     tweaks: Tweaks.tweaks
-
-                # BoxLayout:
-                #     orientation: 'vertical'
-                #     padding: 10, 40
-                #     spacing: 10
-                #     size_hint_y: None
-                #     height: self.minimum_height
-
-                #     SectionLabel:
-                #         text: 'Temporary files'
-
-                #     LabelIconButton:
-                #         text_: "Clear user's temp folder"
-                #         icon: '\ue74d'
-                #         command: Tweaks.clear_tmp
-
-                #     SectionLabel:
-                #         text: 'Xbox GameDVR'
-
-                #     LabelSwitch:
-                #         text: 'Allow GameDVR'
-                #         command: Tweaks.disable_dvr.switch
-                #         active: not Tweaks.disable_dvr.active
-                #         disabled: not Tweaks.disable_dvr.available
-
-                #     SectionLabel:
-                #         text: 'Fault Tolerant Heap'
-                    
-                #     SectionBox:
-                #         LabelSwitch:
-                #             text: 'Allow FTH'
-                #             command: Tweaks.disable_fth.switch
-                #             active: not Tweaks.disable_fth.active
-                #             disabled: not Tweaks.disable_fth.available
-
-                #         LabelIconButton:
-                #             text_: 'Clear FTH'
-                #             icon: '\ue74c'
-                #             disabled: not Tweaks.clear_fth.available # TODO
-                #             command: Tweaks.clear_fth # TODO
 
         ContentLayout:
             id: content_settings
