@@ -63,6 +63,7 @@ from pythoncom import CoInitialize
 from pygit2 import clone_repository
 from win32com.client import Dispatch
 import shutil
+import subprocess
 
 REPO_URL = 'https://github.com/XtremeWare/XtremeUpdater-Distribution'
 LAUNCHER_URL = r'https://github.com/XtremeWare/XtremeUpdater/raw/master/utils/XtremeUpdater%20Launcher/launcher/launcher.exe'
@@ -72,6 +73,17 @@ REPO_PATH = PATH + 'repo'
 LAUNCHER_PATH = PATH + 'launcher.exe'
 START_PATH = USR_PATH + '\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\'
 LNK_PATH = START_PATH + 'XtremeUpdater.lnk'
+
+
+def clear_installation_dir():
+    ''' Removes the installation directory. Return `True` if success. '''
+    try:
+        subprocess.Popen(
+            ['powershell.exe', f'Remove-Item {PATH} -Force -Recurse'])
+    except Exception:
+        Logger.error(f'ClearDir: {traceback.format_exc()}')
+        return False
+    return True
 
 
 def clone():
@@ -186,16 +198,15 @@ class RootLayout(BoxLayout):
         elif ref == 'logs':
             os.startfile(LOGS_PATH)
         elif ref == 'overwrite_dir':
-            try:
-                shutil.rmtree(REPO_PATH)
-            except PermissionError:
-                app.info(
-                    '[color=f55]Failed to remove the directory[/color]\n\nPlese do it manually'
-                )
-            else:
+            ret = clear_installation_dir()
+            if ret:
                 self.logo_visible(True)
                 self.begin_logo_rotation()
                 start_new(setup, ())
+            else:
+                app.info(
+                    '[color=f55]Failed to remove the directory[/color]\n\nPlese do it manually'
+                )
 
     def info(self, text):
         self.ids.info.text = text

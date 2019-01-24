@@ -1,0 +1,165 @@
+#:kivy 1.10.1
+
+#:import WindowDragBehavior windowdragbehavior.WindowDragBehavior
+
+Root:
+<CustProgressBar>:
+    _px: self.padding_x
+
+    canvas:
+        # bg line
+        Color:
+            rgba: self.background_color
+        Line:
+            points: self.x + self._px, self.y + self.height / 2, self.right - self._px, self.y + self.height / 2
+            width: self.height * .5
+            cap: 'none'
+
+        # progress line
+        Color:
+            rgba: self.color
+        Line:
+            points: self.x + self._px, self.y + self.height / 2, self.x + self._px + (self.width - self._px * 2) * self._normal, self.y + self.height / 2
+            width: self.height * .5
+            cap: 'none'
+
+<CustButton>:
+    background_color: app.Theme.bg
+    background_hovering_color: app.Theme.sec
+
+    canvas.before:
+        Color:
+            rgba: self._background_color
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+
+<TodoLabel@Label>:
+    text_size: self.size
+    valign: 'center'
+    size_hint_y: None
+    height: 20
+
+
+<TodoList>:
+    cols: 1
+    padding: 10, 20
+    spacing: 10
+
+<DragBoxLayout@BoxLayout+WindowDragBehavior>:
+
+<Root>:
+    orientation: 'vertical'
+    padding: 10, 10
+    # spacing: 0, 20
+
+    canvas:
+        Color:
+            rgba: app.Theme.bg
+        Line:
+            rectangle: 1, 0, self.width - 1.5, self.height - 1
+
+    DragBoxLayout:
+        id: 'top'
+        size_hint_y: None
+        height: 140
+
+        Image:
+            source: 'icon_no_bg.png'
+            size_hint_x: None
+            width: self.height
+
+        Label:
+            text: f'Welcome to\n  [size=60][b][color=fff]Xtreme[/color][color={app.Theme.hex("prim")}]Updater[/color][/b][/size]'
+            color: app.Theme.sec
+            text_size: self.size
+            font_size: 24
+            padding: 20, 20
+            markup: True
+
+    Widget:
+        size_hint_y: None
+        height: 20
+
+        canvas:
+            Color:
+                rgba: app.Theme.sec
+            Line:
+                points: self.x + 10, self.center_y, self.right - 10, self.center_y
+
+    Label:
+        id: status_lb
+        text: app.status
+        color: app.Theme.sec
+        text_size: self.size
+        valign: 'top'
+        padding: 10, 10
+        size_hint_y: None
+        height: 40
+        markup: True
+
+    CustProgressBar:
+        id: progressbar
+        color: app.Theme.prim
+        normal: app.install_progress
+        background_color: app.Theme.sec
+        padding_x: 10
+        size_hint_y: None
+        height: 10
+
+    BoxLayout:
+        TodoList:
+            id: todo
+            items: app.progress_items
+            size_hint_x: .5
+
+        RelativeLayout:
+            Label:
+                id: percent_lb
+                text: '{0:.8f}[size=200]%[/size]'.format(progressbar.normal*100*(not app.error))
+                color: app.Theme.sec
+                markup: True
+                font_size: 32
+                text_size: self.size
+                halign: 'right'
+                padding: 10, 10
+                size_hint_y: None
+                height: 210
+
+                # canvas.before:
+                #     Color:
+                #         rgb: 0, 1, 1
+                #     Rectangle:
+                #         pos: self.pos
+                #         size: self.size
+
+            Label:
+                text: percent_lb.text
+                color: progressbar.color
+                markup: True
+                font_size: percent_lb.font_size
+                text_size: self.size
+                halign: percent_lb.halign
+                padding: percent_lb.padding
+                size_hint_y: None
+                height: max((percent_lb.height - 50) * progressbar._normal * (not app.error) + 50, .01)
+
+                # canvas:
+                #     Color:
+                #         rgb: 0, 1, 0
+                #     Rectangle:
+                #         pos: self.pos
+                #         size: self.size
+
+    BoxLayout:
+        size_hint_y: None
+        height: 80
+        padding: 10, 10
+
+        CustButton:
+            id: install_btn
+            text: 'Install'
+            bold: True
+            on_release: app.install()
+            opacity: 1 - self.disabled * .5

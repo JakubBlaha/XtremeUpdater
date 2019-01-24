@@ -14,9 +14,11 @@ kivy-deps-glew = "*"
 "kivy-deps-sdl2" = "*"
 kivy-deps-angle = "*"
 humanize = "*"
+"pygit2" = "*"
 
 [dev-packages]
 yapf = "*"
+pyinstaller = "*"
 
 [requires]
 python_version = "3.7"
