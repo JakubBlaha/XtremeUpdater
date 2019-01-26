@@ -1004,7 +1004,6 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
     _disp_icon = NumericProperty(1)
     _btn_opacity = NumericProperty(1)
     _border_template = [
-        [0, 1, 0, 1, 0, 1],
         [0, 1, 1, 1, 1, 1],
         [0, 1, 1, 1, 1, 0],
         [1, 1, 1, 1, 1, 0],
@@ -1012,6 +1011,7 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
         [1, 0, 0, 0, 0, 0],
         [1, 0, 0, 0, 0, 1],
         [0, 0, 0, 0, 0, 1],
+        [0, 1, 0, 1, 0, 1],
     ]
 
     def __init__(self, **kw):
@@ -1020,7 +1020,7 @@ class RunAsAdminButton(ModalView, HoveringBehavior):
         if not Config.get('animations', True):
             return
 
-        anim = Animation(d=0)
+        anim = Animation(d=1)
         for points in self._border_template:
             anim += Animation(_border_points=points, d=.3, t='in_out_quint')
 

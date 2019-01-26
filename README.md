@@ -16,6 +16,7 @@ The binaries at the [distribution repo](https://github.com/XtremeWare/XtremeUpda
 
 **Tweaks**
   - Notifications can now stack.
+  - Updated *RunAsAdmin* button animation.
 
 **Bugfixes**
   - Switches now do not graphically switch if the actual switch fails to apply.
