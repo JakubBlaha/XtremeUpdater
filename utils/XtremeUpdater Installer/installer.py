@@ -116,8 +116,7 @@ class Installer:
     def reset(cls):
         try:
             cls._repo.reset(
-                cls._repo.lookup_reference('refs/remotes/origin/master').
-                get_object().oid, GIT_RESET_HARD)
+                cls._repo.lookup_reference('refs/remotes/origin/master').target, GIT_RESET_HARD)
         except GitError:
             return False
         return True
@@ -150,6 +149,7 @@ class Installer:
         yield True
 
         if _discovered:
+            # skip cloning
             yield True
             yield True
             yield True
@@ -356,10 +356,10 @@ class InstallerApp(App):
         'Creating a lovely shortcut..', 'Waking up XtremeUpdater..'
     ]
 
-    def __init__(cls, *args, **kw):
+    def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
 
-        cls.Theme = Theme
+        self.Theme = Theme
 
         # animate window
         def on_frame(__):
@@ -370,47 +370,49 @@ class InstallerApp(App):
 
         Clock.schedule_once(on_frame)
 
-    def install(cls):
-        cls.error = False
-        cls.root.ids.install_btn.disabled = True
-        cls.root.ids.progressbar.normal = 0
-        Animation(color=Theme.prim, d=.5).start(cls.root.ids.progressbar)
-        for key in cls.progress_items.keys():
-            cls.progress_items[key] = None
+    def install(self):
+        self.error = False
+        self.root.ids.install_btn.disabled = True
+        self.root.ids.progressbar.normal = 0
+        Animation(color=Theme.prim, d=.5).start(self.root.ids.progressbar)
+        for key in self.progress_items.keys():
+            self.progress_items[key] = None
 
-        start_new(cls._install, ())
+        start_new(self._install, ())
 
-    def _install(cls):
+    def _install(self):
         success = True
-        keys = tuple(cls.progress_items.keys())
+        keys = tuple(self.progress_items.keys())
         for index, ret in enumerate(Installer.full_install()):
             _last = index == len(keys) - 1
 
             # white text
             if ret and not _last:
-                cls.progress_items[keys[index + 1]] = -1
-                cls.status = cls.PROGRESS_MESSAGES[index + 1]
+                self.progress_items[keys[index + 1]] = -1
+                self.status = self.PROGRESS_MESSAGES[index + 1]
             # colored text
-            cls.progress_items[keys[index]] = ret
+            self.progress_items[keys[index]] = ret
             # reload todo-list
-            cls.root.ids.todo.items = cls.progress_items
-            cls.root.ids.todo.reload()
+            self.root.ids.todo.items = self.progress_items
+            self.root.ids.todo.reload()
             # error
             if not ret:
                 success = False
-                cls.root.ids.install_btn.disabled = False
-                cls.error = True
-                cls.status = ("I'm sorry.. I was not a good boy this time. "
+                self.root.ids.install_btn.disabled = False
+                self.error = True
+                self.status = ("I'm sorry.. I was not a good boy this time. "
                                'An error occured, please contact our support.')
                 break
 
         # Animate progressbar
         Animation(
             color=((not success) * .7 + .3, success * .7 + .3, .3, 1),
-            d=.5).start(cls.root.ids.progressbar)
-        cls.root.ids.progressbar.normal = 1
+            d=.5).start(self.root.ids.progressbar)
+        self.root.ids.progressbar.normal = 1
         if success:
-            cls.status = 'You can now use [i]XtremeUpdater[/i]. Nice!'
+            self.status = 'You can now use [i]XtremeUpdater[/i]. Nice!'
+
+        Clock.schedule_once(self.stop, 5)
 
 
 if __name__ == '__main__':
