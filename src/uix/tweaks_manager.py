@@ -73,14 +73,10 @@ class TweaksManager(BoxLayout):
     tweaks = ListProperty()
 
     # Internal use
-    _tweaks = []
     _groups = []
 
     def on_tweaks(self, __, tweaks):
-        # get added tweaks
-        new = [tweak for tweak in tweaks if not tweak in self._tweaks]
-
-        for tweak in new:
+        for tweak in sorted(tweaks, key=lambda x: x.group):
             # validate
             if not self._validate_tweak(tweak):
                 Logger.error('TweaksManager: Skipped a tweak'
@@ -103,9 +99,6 @@ class TweaksManager(BoxLayout):
 
             group = self._get_group(tweak.group)
             group.add(wg)
-
-        # update old list
-        self._tweaks = tweaks
 
     def _validate_tweak(self, tweak):
         return type(tweak) in TWEAKS_CLASSES.values()
