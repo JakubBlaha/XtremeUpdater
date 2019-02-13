@@ -522,7 +522,7 @@ class TweaksMeta(type):
         SKIPPED_NAMES = ['__pycache__']
 
         for entry in os.scandir(cls.tweaks_path):
-            if entry.name in SKIPPED_NAMES:
+            if entry.name in SKIPPED_NAMES or entry.name.startswith('_'):
                 continue
 
             ret = FILETYPE_FUNCS.get(
