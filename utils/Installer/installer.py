@@ -18,7 +18,7 @@ Config.set('graphics', 'borderless', True)
 Config.set('graphics', 'resizable', False)
 Config.set('graphics', 'maxfps', 60)
 Config.set('input', 'mouse', 'mouse, disable_multitouch')
-Config.set('kivy', 'window_icon', 'img/icon.ico')
+Config.set('kivy', 'window_icon', 'img/icon_no_bg.ico')
 
 from kivy.resources import resource_add_path
 from kivy.app import App
