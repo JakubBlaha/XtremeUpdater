@@ -54,8 +54,7 @@ class Launcher(tk.Tk):
         self._info('Resetting the repository..')
         try:
             repo.reset(
-                repo.lookup_reference('refs/remotes/origin/master').
-                get_object().oid, GIT_RESET_HARD)
+                repo.lookup_reference('refs/remotes/origin/master').target, GIT_RESET_HARD)
         except GitError:
             self._error('Failed to reset the repository!')
 
