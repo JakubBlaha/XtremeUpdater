@@ -1,6 +1,6 @@
 tweak_class: RegistryTweak
 text: Raise paged pool memory limit
-group: "fsutil ? #TODO"
+group: Memory management
 admin_required: true
 apply_values:
   HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\NtfsMemoryUsage:

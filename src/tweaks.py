@@ -254,6 +254,8 @@ class DummyTweak:
     available = False
     active = False
     switch = None
+    text = 'A broken tweak, sry..'
+    group = 'Broken tweaks'
 
     def __init__(self, *args, **kw):
         Logger.warning(f'DummyTweak: Created a DummyTweak. args: {args}, '
