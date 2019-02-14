@@ -987,7 +987,7 @@ RootLayout:
                     LabelSwitch:
                         text: 'Enable mouse highlight'
                         command: lambda __, is_on: setattr(root, 'mouse_highlight', is_on)
-                        active: Config.mouse_highlight
+                        active: Config.get('mouse_highlight', False)
 
                     LabelSwitch:
                         text: 'Decorate head'
