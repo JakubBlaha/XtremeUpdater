@@ -18,7 +18,6 @@ humanize = "*"
 
 [dev-packages]
 yapf = "*"
-pyinstaller = "*"
 
 [requires]
 python_version = "3.7"
