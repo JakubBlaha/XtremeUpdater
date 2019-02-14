@@ -17,6 +17,7 @@ Config.set('graphics', 'height', 570)
 Config.set('graphics', 'borderless', True)
 Config.set('graphics', 'resizable', False)
 Config.set('graphics', 'maxfps', 60)
+Config.set('graphics', 'multisamples', 0)
 Config.set('input', 'mouse', 'mouse, disable_multitouch')
 Config.set('kivy', 'window_icon', 'img/icon_no_bg.ico')
 
@@ -137,6 +138,9 @@ class Installer:
     @staticmethod
     def start():
         ''' Starts the actual application after installed. '''
+        # cwd
+        os.chdir(os.path.join(LOCAL_REPO_PATH, 'XtremeUpdater'))
+
         try:
             return not os.startfile(EXE_PATH)
         except FileNotFoundError:
