@@ -18,6 +18,7 @@ humanize = "*"
 
 [dev-packages]
 yapf = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.7"
