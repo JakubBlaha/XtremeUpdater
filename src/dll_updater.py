@@ -1,11 +1,29 @@
 from kivy.app import App
 from urllib.request import urlopen
-from bs4 import BeautifulSoup
 from shutil import copy, rmtree
+from github import Github
 import os
+
 
 def get_data(url):
     return urlopen(url).read()
+
+
+def ensure_git(fn):
+    def wrapper(self, *args, **kw):
+        if not getattr(self, 'git'):
+            self.git = Github()
+        return fn(self, *args, **kw)
+
+    return wrapper
+
+def ensure_repo(fn):
+    def wrapper(self, *args, **kw):
+        if not getattr(self, 'repo'):
+            self.repo = self.git.get_repo(DllUpdater.REPO_NAME)
+        return fn(self, *args, **kw)
+
+    return wrapper
 
 
 class DllUpdater:
@@ -13,7 +31,11 @@ class DllUpdater:
     RAW_URL = "https://github.com/XtremeWare/XtremeUpdater/raw/master/dll/"
     BACKUP_DIR = ".backup/"
     CACHE_DIR = '.cache/dlls/'
+    REPO_NAME = 'JakubBlaha/XtremeUpdater'
     available_dlls = ()
+
+    git = None
+    repo = None
 
     @staticmethod
     def local_dlls(path):
@@ -22,21 +44,16 @@ class DllUpdater:
                 if f.endswith(".dll"):
                     yield dp.replace(path, '') + f'\\{f}'
 
+    @ensure_git
+    @ensure_repo
     def load_available_dlls(self):
         try:
-            html = get_data(self.URL)
-            soup = BeautifulSoup(html, 'html.parser')
-            _available_dlls = []
-            for a in soup.find_all('a', {'class': 'js-navigation-open'}):
-                if a.parent.parent.get('class')[0] == 'content':
-                    _available_dlls.append(a.text)
-
-        except:
+            contents = self.repo.get_dir_contents('dll')
+        except Exception:
             return False
-
         else:
-            self.available_dlls = tuple(_available_dlls)
-            return True                       
+            self.available_dlls = [i.name for i in contents]
+            return True
 
     @classmethod
     def _download_dll(cls, dllname):
@@ -72,7 +89,7 @@ class DllUpdater:
                     data = f.read()
             except FileNotFoundError:
                 data = cls._download_dll(dll_name)
-                
+
             with open(local_dll_path, 'rb') as f:
                 local_dll_data = f.read()
 
@@ -80,7 +97,8 @@ class DllUpdater:
                 cls._backup_dll(path, dll)
                 copy(cls.CACHE_DIR + dll_name, path + dll)
 
-            App.get_running_app().root.bar.set_value(1 / dll_count * (index + 1))
+            App.get_running_app().root.bar.set_value(
+                1 / dll_count * (index + 1))
 
         App.get_running_app().root.bar.ping()
 
@@ -89,7 +107,8 @@ class DllUpdater:
 
         restored = []
         for dll in dlls:
-            src = os.path.abspath(self.BACKUP_DIR + os.path.splitdrive(path)[1] + dll)
+            src = os.path.abspath(self.BACKUP_DIR +
+                                  os.path.splitdrive(path)[1] + dll)
             dst = os.path.abspath(path + dll)
             try:
                 copy(src, dst)
@@ -98,7 +117,7 @@ class DllUpdater:
             else:
                 os.remove(src)
                 restored.append(dll)
-        
+
         return (restored, set(dlls) - set(restored))
 
     def available_restore(self, path):
