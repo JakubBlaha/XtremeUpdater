@@ -26,12 +26,11 @@ class WarningBehavior(EventDispatcher):
     warning_level = NumericProperty(2)  # TODO -1, custom
     command = ObjectProperty()
 
-    @refer_func
-    def on_command(fn, self, __, command):  # TODO set to callable
+    def on_command(self, __, command):  # TODO set to callable
         if not callable(command):
-            self.warning_level = 2
-            self.unbind(command=fn)
-            self.command = lambda: None
-            self.bind(command=fn)
+            self.set_warning_level(2)
         else:
-            self.warning_level = 0
+            self.set_warning_level(0)
+
+    def set_warning_level(self, level: int):
+        self.warning_level = level

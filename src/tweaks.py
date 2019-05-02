@@ -1,137 +1,10 @@
 import os
-import shutil
 import platform
 from kivy.app import App
 from kivy.factory import Factory
-from tempfile import gettempdir
-from humanize import naturalsize
 from winreg import *
-from main import IS_ADMIN, silent_exc, notify_restart, theme
+from main import theme
 
-APP = App.get_running_app()
-
-if platform.machine().endswith('64'):
-    VIEW_FLAG = KEY_WOW64_64KEY
-else:
-    VIEW_FLAG = KEY_WOW64_32KEY
-
-
-def get_size(path):
-    total_size = 0
-    for dirpath, dirnames, filenames in os.walk(path):
-        for f in filenames:
-            path = os.path.join(dirpath, f)
-            total_size += os.path.getsize(path)
-
-    return total_size
-
-
-class Tweaks:
-    @staticmethod
-    def clear_temps():
-        tmp_dir = gettempdir()
-        init_size = get_size(tmp_dir)
-
-        shutil.rmtree(tmp_dir, ignore_errors=True)
-
-        finish_size = get_size(tmp_dir)
-        freed_size = init_size - finish_size
-
-        APP.root.bar.ping()
-        Factory.Notification(
-            title_=f'Freed up [color=5f5]{naturalsize(freed_size)}[/color]',
-            message=
-            f'Before: {naturalsize(init_size)}    After: {naturalsize(finish_size)}'
-        ).open()
-
-    @staticmethod
-    def is_dvr():
-        key = OpenKeyEx(HKEY_CURRENT_USER, r'System\GameConfigStore')
-        GameDVR_enabled = QueryValueEx(key, 'GameDVR_enabled')[0]
-
-        try:
-            key = OpenKeyEx(HKEY_LOCAL_MACHINE,
-                            r'SOFTWARE\Policies\Microsoft\Windows\GameDVR')
-            AllowGameDVR = QueryValueEx(key, 'AllowGameDVR')[0]
-
-        except (OSError, FileNotFoundError):
-            AllowGameDVR = 1
-
-        return GameDVR_enabled or AllowGameDVR
-
-    @staticmethod
-    @silent_exc
-    @notify_restart
-    def switch_dvr(_, enabled):
-        key = OpenKeyEx(HKEY_CURRENT_USER, r'System\GameConfigStore', 0,
-                        KEY_SET_VALUE)
-        SetValueEx(key, 'GameDVR_enabled', None, REG_DWORD, enabled)
-
-        key = OpenKeyEx(HKEY_LOCAL_MACHINE,
-                        r'SOFTWARE\Policies\Microsoft\Windows\GameDVR', 0,
-                        KEY_SET_VALUE)
-        SetValueEx(key, 'AllowGameDVR', None, REG_DWORD, enabled)
-
-    @staticmethod
-    def fth_value():
-        try:
-            key = OpenKey(
-                HKEY_LOCAL_MACHINE,
-                r'SOFTWARE\Microsoft\FTH\State',
-                access=KEY_READ | VIEW_FLAG)
-        except OSError:
-            return False
-
-        try:
-            EnumValue(key, 0)
-        except OSError:
-            return False
-        else:
-            return True
-
-    @staticmethod
-    @silent_exc
-    @notify_restart
-    def clear_fth():
-        APP.root.ids.clear_fth_btn.disabled = True
-
-        key = OpenKey(
-            HKEY_LOCAL_MACHINE,
-            r'SOFTWARE\Microsoft\FTH\State',
-            access=KEY_WRITE | KEY_READ | VIEW_FLAG)
-        while True:
-            try:
-                name = EnumValue(key, 0)[0]
-            except OSError:
-                break
-            else:
-                DeleteValue(key, name)
-
-    @staticmethod
-    def is_fth():
-        try:
-            key = OpenKey(
-                HKEY_LOCAL_MACHINE,
-                r'SOFTWARE\Microsoft\FTH',
-                access=KEY_READ | VIEW_FLAG)
-        except Exception:
-            return False
-        else:
-            return QueryValueEx(key, 'Enabled')[0]
-
-    @staticmethod
-    @silent_exc
-    @notify_restart
-    def switch_fth(__, enabled):
-        key = OpenKey(
-            HKEY_LOCAL_MACHINE,
-            r'SOFTWARE\Microsoft\FTH',
-            access=KEY_WRITE | VIEW_FLAG)
-        SetValueEx(key, 'Enabled', None, REG_DWORD, enabled)
-
-
-# TODO clear the old code
-# NEW API
 from kivy.logger import Logger
 import ctypes
 from dataclasses import dataclass, field
@@ -242,11 +115,20 @@ class TweakBase:
         return True
 
     @property
-    def available(self):
+    def available(self) -> bool:
         # TODO more uses than only `self.admin_required`
         ''' Return whether the tweak is available or not. '''
         return ((ctypes.windll.shell32.IsUserAnAdmin() and self.admin_required)
                 or not self.admin_required)
+
+    @property
+    def valid(self) -> bool:
+        '''
+        Whether the tweak is valid or not. Note that this is not the same as
+        the `available` property.
+        '''
+
+        return True
 
 
 class DummyTweak:
@@ -273,6 +155,10 @@ class DummyTweak:
 
     def detach(self):
         self()
+
+    @property
+    def valid(self) -> bool:
+        return False
 
 
 @dataclass
@@ -326,6 +212,10 @@ class CommandTweak(TweakBase):
         `detach_command` attribute is not set. '''
 
         return self.apply()
+
+    @property
+    def valid(self) -> bool:
+        return super().valid and self.apply_command
 
 
 REG_TYPES = {
@@ -434,6 +324,14 @@ class RegistryTweak(TweakBase):
         if self.active:
             return self.detach()
         return self.apply()
+
+    # @property
+    # def available(self) -> bool:
+    #     return super().available and self.__available
+
+    @property
+    def valid(self) -> bool:
+        return self.apply_values and self.detach_values
 
     @property
     def active(self):

@@ -134,7 +134,7 @@ class IconButton(CustButton):
     icon = StringProperty()
 
 
-class LabelIconButton(IconButton, WarningBehavior):
+class LabelIconButton(WarningBehavior, IconButton):
     text_ = StringProperty()  # Label text
     font_size_ = NumericProperty(sp(15))  # Label font_size
     opacity_ = NumericProperty(1)  # Label opacity
@@ -175,7 +175,7 @@ class CustSwitch(Widget):
             self.active = not self.active
 
 
-class LabelSwitch(CustSwitch, WarningBehavior):
+class LabelSwitch(WarningBehavior, CustSwitch):
     text = StringProperty()
 
 
