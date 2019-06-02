@@ -141,6 +141,7 @@ class LabelIconButton(WarningBehavior, IconButton):
 
     _btn_width = NumericProperty()
 
+
 class ExpandableLabelIconButton(LabelIconButton):
     def on_text_(self, __, text):
         if not App.get_running_app().built:  # Do not waste resources
@@ -214,8 +215,8 @@ class NoiseTexture(Widget):
 
     def __init__(self, **kw):
         super().__init__(**kw)
-        Clock.schedule_once(
-            lambda *args: Clock.schedule_once(self.update_texture))
+        Clock.schedule_once(lambda *args: Clock.schedule_once(self.
+                                                              update_texture))
 
     def update_texture(self, *args):
         tex = CoreImage('img/noise_texture.png').texture
@@ -250,11 +251,12 @@ class HeaderLabel(Label, WindowDragBehavior, NoiseTexture):
         self.decor_enabled = Config.get('head_decor', True)
 
         if self.decor_enabled:
-            Clock.schedule_once(
-                lambda *args: Clock.schedule_once(self.setup_decor))
+            Clock.schedule_once(lambda *args: Clock.schedule_once(self.
+                                                                  setup_decor))
 
             if Config.get('animations', True):
-                Clock.schedule_once(lambda *args: Clock.schedule_interval(self.random_decor_rotation, .5))
+                Clock.schedule_once(lambda *args: Clock.schedule_interval(
+                    self.random_decor_rotation, .5))
 
     def on_decor_enabled(self, __, value):
         Config.head_decor = value
@@ -405,6 +407,7 @@ class GameCollection(ScrollView):
         for game, data in custom_paths.items():
             path = data['path']
             launch_path = data['launchPath']
+            print(game, path)
 
             button = GameButton(
                 text=game, path=path, exe=launch_path, custom=True)
@@ -582,7 +585,8 @@ class ImageCacher:
 
         UrlRequest(
             TEMPLATE.format(query),
-            lambda req, result: cls.on_request_success(req, result, query, AsyncImageInstance),
+            lambda req, result: cls.on_request_success(req, result, query,
+                                                       AsyncImageInstance),
             req_headers=HEADERS)
 
     @classmethod
@@ -969,9 +973,8 @@ class WorkingBar(Widget):
             del self.working_anim
 
     def clear(self, *args):
-        Clock.schedule_once(
-            lambda *args: Animation(_x1=0, _x2=0, d=.5, t='out_expo').start(self)
-        )
+        Clock.schedule_once(lambda *args: Animation(
+            _x1=0, _x2=0, d=.5, t='out_expo').start(self))
 
     def set_value(self, value: float):
         self.unwork()
@@ -1286,8 +1289,8 @@ class RootLayout(BoxLayout, HoveringBehavior):
             self.ids.update_all_btn.disabled = False
 
             if Config.get('show_disclaimer', True):
-                Clock.schedule_once(
-                    lambda *args: Factory.DisclaimerPopup().open())
+                Clock.schedule_once(lambda *args: Factory.DisclaimerPopup().
+                                    open())
                 Config.show_disclaimer = False
 
         self.goto_page(0)
@@ -1399,9 +1402,9 @@ class RootLayout(BoxLayout, HoveringBehavior):
 
     def add_game_callback(self):
         game_name = self.ids.game_name_input.text
-        game_patch_dir = self.ids.game_add_form_dir.text
-        game_launch_path = (self.ids.game_add_form_launch.text
-                            if self.ids.game_add_form_launch.text else
+        game_patch_dir = self.ids.game_add_form_dir.text_
+        game_launch_path = (self.ids.game_add_form_launch.text_
+                            if self.ids.game_add_form_launch.text_ else
                             self.ids.url_input.text)
 
         if not (game_name and game_patch_dir and game_launch_path):
