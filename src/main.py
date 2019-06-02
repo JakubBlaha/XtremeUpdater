@@ -1131,9 +1131,7 @@ class RootLayout(BoxLayout, HoveringBehavior):
     # options
     mouse_highlight = BooleanProperty(Config.get('mouse_highlight', True))
 
-    def __init__(self, **kw):
-        super().__init__(**kw)
-
+    def on_kv_post(self, *args):
         self.bar = self.ids.bar
 
         # mouse highlight
