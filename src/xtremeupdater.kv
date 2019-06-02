@@ -288,13 +288,13 @@ RootLayout:
         padding: root.padding
         color: root.color
 
-<SmoothScrollView>:
+<ScrollView>:
     scroll_wheel_distance: 100
     bar_width: 10
     bar_color: theme.sec
     bar_inactive_color: [0, 0, 0, 0]
     scroll_type: ['content', 'bars']
-    smooth: Config.get('animations', True)
+    smooth_scroll_end: Config.get('animations', True) * 10
 
 <DllView>:
     viewclass: 'DllViewItem'
@@ -503,7 +503,7 @@ RootLayout:
     BoxLayout:
         orientation: 'vertical'
 
-        SmoothScrollView:
+        ScrollView:
             Label:
                 text: root.message
                 text_size: self.width, None
@@ -923,14 +923,14 @@ RootLayout:
         ContentLayout:
             id: content_system
 
-            SmoothScrollView:
+            ScrollView:
                 TweaksManager:
                     tweaks: Tweaks.tweaks
 
         ContentLayout:
             id: content_settings
 
-            SmoothScrollView:
+            ScrollView:
                 BoxLayout:
                     orientation: 'vertical'
                     padding: 10, 40
@@ -1037,7 +1037,7 @@ RootLayout:
                         size_hint_y: None
 
         ContentLayout:
-            SmoothScrollView:
+            ScrollView:
                 BoxLayout:
                     orientation: 'vertical'
                     padding: 20, 0

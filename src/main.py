@@ -46,8 +46,8 @@ from custpagelayout import PageLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.modalview import ModalView
 from kivy.graphics.texture import Texture
-from scrollview import ScrollView as SmoothScrollView
 from kivy.uix.recycleview import RecycleView
+from kivy.uix.scrollview import ScrollView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.graphics import Rectangle, Color, Rotate, PushMatrix, PopMatrix, Fbo, Translate, Scale
 from kivy.uix.label import Label, CoreLabel
@@ -361,12 +361,7 @@ class OverdrawLabel(FloatLayout):
         anim.start(self)
 
 
-class SmoothScrollView(SmoothScrollView):
-    # Has to be here for the rule to be applied
-    pass
-
-
-class GameCollection(SmoothScrollView):
+class GameCollection(ScrollView):
     COMMON_PATHS_URL = 'https://raw.githubusercontent.com/XtremeWare/XtremeUpdater/master/res/CommonPaths.yaml'
     COMMON_PATHS_CACHE_PATH = '.cache/common/paths/CommonPaths.yaml'
     CUSTOM_PATHS_PATH = '.config/CustomPaths.json'
